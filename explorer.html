@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Transformer3D - Mobile Educational Explorer</title>
+    <meta name="description" content="Explore a 3D power transformer part by part, with cutaway view and the formulas behind each component.">
+
+    <meta name="theme-color" content="#080c14">
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="preload" href="vendor/fonts/inter-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="css/tailwind.css">
+    <link rel="stylesheet" href="css/app.css">
+    <link rel="stylesheet" href="vendor/fa/fa.css">
+    <link rel="stylesheet" href="vendor/katex/katex.min.css">
+    <script src="vendor/three.min.js"></script>
+    <script src="vendor/OrbitControls.js"></script>
+    <script src="vendor/katex/katex.min.js"></script>
+    <script src="js/share.js"></script>
+
+    <style>
+        * {
+            -webkit-tap-highlight-color: transparent;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #080c14;
+            color: #f3f4f6;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Fixed middle 3D box square sizing relative to width on mobile */
+        .viewport-container {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            max-height: 38vh;
+            position: relative;
+            background: radial-gradient(circle at 50% 40%, #1e293b 0%, #080c14 85%);
+            border-bottom: 1px solid rgba(0, 240, 255, 0.2);
+            flex-shrink: 0;
+        }
+
+        /* Glassmorphic Cards */
+        .glass-card {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .glass-card.active {
+            background: rgba(14, 165, 233, 0.18);
+            border-color: #00f0ff;
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.25);
+        }
+
+        /* Glow effects */
+        .text-glow {
+            text-shadow: 0 0 12px rgba(0, 240, 255, 0.7);
+        }
+
+        /* Quick Pills scrollbar hide */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* Custom Scrollbar */
+        .custom-scroll::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scroll::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.6);
+        }
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: #0284c7;
+            border-radius: 4px;
+        }
+
+        .katex-display {
+            margin: 0.3em 0 !important;
+            overflow-x: auto;
+            overflow-y: hidden;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 1. TOP SECTION: Fixed Header -->
+    <header class="h-14 bg-gray-950/95 backdrop-blur-md border-b border-gray-800/80 px-4 flex items-center justify-between z-30 shrink-0">
+        <div class="flex items-center space-x-2.5">
+            <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center text-white shadow-lg shadow-cyan-500/20">
+                <i class="fa-solid fa-bolt text-sm animate-pulse"></i>
+            </div>
+            <div>
+                <div class="text-[10px] font-mono text-cyan-400 font-semibold tracking-widest uppercase">TRANSFORMER 3D EXPLORER</div>
+                <h1 class="text-xs font-bold text-white leading-none">Power Transformer Explorer</h1>
+            </div>
+        </div>
+
+        <div class="flex items-center space-x-1.5">
+            <!-- Cutaway Mode Toggle Button -->
+            <button id="btn-cutaway" class="px-2 py-1.5 rounded-lg text-xs font-medium bg-gray-900 hover:bg-gray-800 text-cyan-400 border border-cyan-500/30 transition flex items-center gap-1">
+                <i class="fa-solid fa-cube text-xs"></i>
+                <span id="cutaway-lbl" class="text-[11px] font-mono">Cutaway</span>
+            </button>
+
+            <!-- Light Mode Toggle -->
+            <button id="btn-light-preset" class="p-1.5 px-2 rounded-lg text-xs font-medium bg-gray-900 hover:bg-gray-800 text-amber-400 border border-amber-500/30 transition">
+                <i class="fa-solid fa-sun text-xs"></i>
+            </button>
+
+            <!-- Download Button -->
+            <button id="btn-download" class="p-1.5 px-2.5 rounded-lg text-xs font-semibold bg-cyan-500 hover:bg-cyan-400 text-gray-950 shadow-lg shadow-cyan-500/30 transition flex items-center gap-1">
+                <i class="fa-solid fa-file-arrow-down text-xs"></i>
+                <span class="text-[11px] font-bold">Notes</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- 2. MIDDLE SECTION: Fixed 3D Viewport (Square Aspect Ratio locked) -->
+    <div class="viewport-container shadow-2xl overflow-hidden z-20">
+        <canvas id="transformer-canvas" class="w-full h-full cursor-grab active:cursor-grabbing"></canvas>
+
+        <!-- Dynamic Lead Callout Overlay Badge -->
+        <div id="callout-badge" class="absolute top-3 left-3 glass-card px-3 py-1.5 rounded-lg border border-cyan-500/40 flex items-center gap-2 pointer-events-none transition-all duration-300 z-10">
+            <span class="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span>
+            <div>
+                <div class="text-[8px] font-mono text-gray-400 uppercase tracking-widest">Active Inspection</div>
+                <div id="callout-name" class="text-xs font-bold text-cyan-300 text-glow">01. Main Oil Tank</div>
+            </div>
+        </div>
+
+        <!-- Mode Overlay Tag -->
+        <div id="cutaway-tag" class="hidden absolute top-3 right-3 bg-amber-500/20 border border-amber-500/40 text-amber-300 text-[10px] font-mono px-2 py-0.5 rounded-full flex items-center gap-1 z-10">
+            <i class="fa-solid fa-eye text-xs"></i> Cutaway Active
+        </div>
+
+        <!-- Interactive hint -->
+        <div class="absolute bottom-2 right-3 text-[10px] text-gray-400 font-mono bg-gray-950/70 px-2 py-1 rounded-md backdrop-blur border border-gray-800 z-10">
+            <i class="fa-solid fa-arrows-spin text-cyan-400 mr-1"></i>360° Free Orbit Controls
+        </div>
+    </div>
+
+    <!-- STICKY QUICK SELECTOR PILLS -->
+    <div class="sticky top-0 bg-gray-950/95 backdrop-blur-md border-b border-gray-800/80 px-3 py-2 z-10 shrink-0">
+        <div id="quick-pills" class="flex items-center space-x-2 overflow-x-auto no-scrollbar py-0.5">
+            <!-- Dynamically Rendered Quick Nav Pills -->
+        </div>
+    </div>
+
+    <!-- 3. BOTTOM SECTION: Scrollable Educational Content Area -->
+    <main id="main-content" class="flex-1 overflow-y-auto custom-scroll bg-gray-950 p-4 space-y-4">
+        
+        <div class="flex items-center justify-between pb-1 border-b border-gray-800/80">
+            <span class="text-xs font-mono font-semibold text-gray-400 uppercase tracking-wider">
+                <i class="fa-solid fa-layer-group text-cyan-400 mr-1.5"></i>Component Detailed Analysis
+            </span>
+            <span class="text-[10px] font-mono text-cyan-400">10 Modules</span>
+        </div>
+
+        <!-- Dynamic Component List Container -->
+        <div id="parts-list" class="space-y-3.5 pb-10">
+            <!-- Rendered dynamically by JavaScript -->
+        </div>
+        <a href="calculator.html" class="block glass-panel glass-card rounded-xl p-4 border border-cyan-500/40 hover:border-cyan-300 transition">
+                <div class="flex items-center justify-between gap-3"><div><div class="text-sm font-bold text-white">Next: solve the numbers</div><div class="text-[11px] text-gray-400 mt-0.5">Open the Transformer Calculator and change turns, voltage and frequency.</div></div><i class="fa-solid fa-calculator text-cyan-400"></i></div></a>
+    </main>
+
+    <!-- Study Guide Download Modal -->
+    <div id="modal-download" class="hidden fixed inset-0 z-50 bg-gray-950/80 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="glass-card max-w-sm w-full rounded-2xl p-5 border border-gray-700 shadow-2xl relative">
+            <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center gap-2 text-blue-400">
+                    <i class="fa-solid fa-graduation-cap text-lg"></i>
+                    <h3 class="text-base font-bold text-white">Study Sheet Export</h3>
+                </div>
+                <button id="modal-close" class="text-gray-400 hover:text-white text-base">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <p class="text-xs text-gray-300 mb-4">Export detailed electrical engineering notes for exam preparation & diploma studies.</p>
+            
+            <div class="space-y-2.5">
+                <button id="btn-export-txt" class="w-full glass-card p-3 rounded-xl flex items-center justify-between text-left hover:border-blue-500">
+                    <div>
+                        <div class="text-xs font-bold text-white">Diploma Study Sheet (.TXT)</div>
+                        <div class="text-[10px] text-gray-400">Complete materials & working principles list.</div>
+                    </div>
+                    <i class="fa-solid fa-download text-xs text-blue-400"></i>
+                </button>
+
+                <button id="btn-export-html" class="w-full glass-card p-3 rounded-xl flex items-center justify-between text-left hover:border-cyan-500">
+                    <div>
+                        <div class="text-xs font-bold text-white">Share this app (link)</div>
+                        <div class="text-[10px] text-gray-400">Send the live link to a friend.</div>
+                    </div>
+                    <i class="fa-solid fa-code text-xs text-cyan-400"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <nav class="app-nav" aria-label="Main"><a href="index.html" class="nav-tab"><i class="fa-solid fa-house"></i><span>Home</span></a><a href="explorer.html" class="nav-tab" aria-current="page"><i class="fa-solid fa-cube"></i><span>Explorer</span></a><a href="calculator.html" class="nav-tab"><i class="fa-solid fa-calculator"></i><span>Calculator</span></a></nav>
+
+    <!-- Application JavaScript Logic -->
+    <script>
+        // --- 1. TRANSFORMER DATA SHEET WITH FORMULAS ---
+        const transformerPartsData = [
+            {
+                id: 'tank',
+                name: 'Main Oil Tank',
+                type: 'External Structure',
+                isInternal: false,
+                spec: 'Welded Structural Steel Plate (8mm - 12mm) with Polyurethane Finish & Stiffeners',
+                function: 'Houses laminated iron core, copper windings, and dielectric mineral oil while providing structural support and ground shielding.',
+                principle: 'Heat dissipation via natural air convection and radiation from outer surface area:',
+                formula: 'Q = h \\cdot A \\cdot (T_{\\text{tank}} - T_{\\text{ambient}})',
+                camPos: { x: 4.5, y: 1.5, z: 5.5 },
+                targetPos: { x: 0, y: 0, z: 0 }
+            },
+            {
+                id: 'hv-bushings',
+                name: 'High-Voltage (HV) Bushings',
+                type: 'High Insulation Lead',
+                isInternal: false,
+                spec: 'Wet-Process Glazed Porcelain Ceramic Sheds (Maroon) with Central Brass Conductor Stud',
+                function: 'Insulates high-voltage transmission lines (11kV to 400kV) passing through the grounded tank wall.',
+                principle: 'Shed petticoat geometry maximizes creepage distance to prevent flashover in humid air:',
+                formula: 'd_{\\text{creepage}} \\ge 25 \\text{ mm/kV}',
+                camPos: { x: -1.4, y: 3.6, z: 2.6 },
+                targetPos: { x: -1.0, y: 2.0, z: 0 }
+            },
+            {
+                id: 'lv-bushings',
+                name: 'Low-Voltage (LV) Bushings',
+                type: 'High Current Terminal',
+                isInternal: false,
+                spec: 'Short Heavy Glazed Porcelain Bushings with Solid Copper Terminal Connectors',
+                function: 'Carries high secondary load current at stepped-down voltage levels to distribution busbars.',
+                principle: 'Current density limit to prevent conductor thermal degradation:',
+                formula: 'J = \\frac{I_2}{A} \\le 2.5 \\text{ A/mm}^2, \\quad P_{\\text{loss}} = I_2^2 R_2',
+                camPos: { x: 1.6, y: 3.2, z: 2.5 },
+                targetPos: { x: 1.0, y: 1.8, z: 0 }
+            },
+            {
+                id: 'core',
+                name: 'Laminated Steel Core',
+                type: 'Magnetic Circuit',
+                isInternal: true,
+                spec: 'Cold-Rolled Grain-Oriented (CRGO) Silicon Steel Laminations (0.23mm thick) with Carlite insulation',
+                function: 'Provides a high-permeability, low-reluctance magnetic path linking primary and secondary windings.',
+                principle: 'Total core loss is the sum of hysteresis loss and eddy current loss:',
+                formula: 'P_{\\text{core}} = P_h + P_e = k_h f B_m^{1.6} + k_e f^2 t^2 B_m^2',
+                camPos: { x: 1.8, y: 0.8, z: 2.2 },
+                targetPos: { x: 0, y: -0.1, z: 0 }
+            },
+            {
+                id: 'hv-windings',
+                name: 'HV Copper Windings (Outer Coils)',
+                type: 'High-Voltage Circuit',
+                isInternal: true,
+                spec: 'Segmented Disc Winding arrangement using Kraft-paper insulated electrolytic copper conductors',
+                function: 'Receives or steps up high-voltage low-current electricity via mutual electromagnetic induction.',
+                principle: 'EMF Induced in primary and secondary coils by alternating magnetic flux:',
+                formula: 'E_1 = 4.44 \\cdot f \\cdot N_1 \\cdot \\Phi_m, \\quad K = \\frac{V_2}{V_1} = \\frac{N_2}{N_1}',
+                camPos: { x: 0.0, y: 0.4, z: 2.2 },
+                targetPos: { x: 0, y: 0.2, z: 0 }
+            },
+            {
+                id: 'lv-windings',
+                name: 'LV Copper Windings (Inner Coils)',
+                type: 'High-Current Circuit',
+                isInternal: true,
+                spec: 'Heavy Rectangular Copper Strip Helical Windings placed directly next to core limbs',
+                function: 'Delivers stepped-down high secondary load currents with minimal leakage reactance.',
+                principle: 'Percentage electrical efficiency under given power factor:',
+                formula: '\\eta = \\frac{V_2 I_2 \\cos\\phi_2}{V_2 I_2 \\cos\\phi_2 + P_{\\text{core}} + I_2^2 R_{\\text{eq2}}} \\times 100\\%',
+                camPos: { x: -0.78, y: 0.1, z: 1.8 },
+                targetPos: { x: -0.78, y: 0, z: 0 }
+            },
+            {
+                id: 'conservator',
+                name: 'Conservator Tank',
+                type: 'Auxiliary Reservoir',
+                isInternal: false,
+                spec: 'Cylindrical Carbon Steel Expansion Vessel with Air Cell Bag & Sight Level Gauge',
+                function: 'Accommodates expansion and contraction of dielectric oil during temperature changes.',
+                principle: 'Oil volumetric expansion formula based on temperature coefficient:',
+                formula: '\\Delta V = V_0 \\cdot \\beta \\cdot \\Delta T \\quad (\\beta \\approx 0.00078 /^\\circ\\text{C})',
+                camPos: { x: 2.8, y: 3.3, z: -1.8 },
+                targetPos: { x: 1.2, y: 2.5, z: -1.0 }
+            },
+            {
+                id: 'buchholz',
+                name: 'Buchholz Relay',
+                type: 'Protective Safety Unit',
+                isInternal: false,
+                spec: 'Cast Iron Gas & Surge Actuated Dual-Float Relay with Reed Alarm Switches',
+                function: 'Detects internal arcing or insulation gas accumulation and trips circuit breaker on heavy surges.',
+                principle: 'Gas accumulation fault threshold for alarm trip signal:',
+                formula: 'V_{\\text{gas}} \\ge 250\\text{ cm}^3 \\implies \\text{Alarm Activation}',
+                camPos: { x: 1.1, y: 2.6, z: -0.5 },
+                targetPos: { x: 0.6, y: 2.0, z: -0.8 }
+            },
+            {
+                id: 'radiator',
+                name: 'Radiator & Cooling Fins',
+                type: 'Heat Exchanger',
+                isInternal: false,
+                spec: 'Pressed Elliptical Steel Sheet Radiator Panels (ONAN Natural Cooling)',
+                function: 'Dissipates heat generated by core and copper losses via natural thermosiphon oil circulation.',
+                principle: 'Thermosiphon fluid buoyancy flow rate:',
+                formula: 'Q_{\\text{flow}} \\propto (\\rho_{\\text{cold}} - \\rho_{\\text{hot}}) \\cdot g \\cdot h',
+                camPos: { x: -4.2, y: 0.6, z: 1.8 },
+                targetPos: { x: -2.2, y: 0, z: 0 }
+            },
+            {
+                id: 'breather',
+                name: 'Silica Gel Breather',
+                type: 'Moisture Filter',
+                isInternal: false,
+                spec: 'Clear Cylinder filled with Cobalt-Chloride Silica Gel Beads & Oil Seal Cup',
+                function: 'Filters ambient moisture out of air drawn into conservator tank during thermal cooling cycles.',
+                principle: 'Dielectric breakdown strength requirement of dry transformer oil:',
+                formula: 'V_{\\text{breakdown}} > 60 \\text{ kV / 2.5mm gap}',
+                camPos: { x: 3.2, y: 1.3, z: -1.6 },
+                targetPos: { x: 2.1, y: 0.8, z: -1.0 }
+            }
+        ];
+
+        let selectedPartIndex = 0;
+        let isCutawayActive = false;
+        let isBrightPreset = false;
+        const partMeshes = {};
+
+        // --- 2. THREE.JS ENGINE & LIGHTING SETUP ---
+        let scene, camera, renderer, controls;
+        let ambientLight, keyLight, fillLight, rimLight, bounceLight;
+        let targetCamPos = new THREE.Vector3(4.5, 1.5, 5.5);
+        let targetLookAt = new THREE.Vector3(0, 0, 0);
+        let flying = false;
+
+        function createStudioEnvMap() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 512;
+            canvas.height = 512;
+            const ctx = canvas.getContext('2d');
+            const grad = ctx.createRadialGradient(256, 256, 10, 256, 256, 256);
+            grad.addColorStop(0, '#38bdf8');
+            grad.addColorStop(0.3, '#1e293b');
+            grad.addColorStop(0.7, '#0f172a');
+            grad.addColorStop(1, '#020617');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, 512, 512);
+            const texture = new THREE.CanvasTexture(canvas);
+            texture.mapping = THREE.EquirectangularReflectionMapping;
+            return texture;
+        }
+
+        function initThreeJS() {
+            const container = document.querySelector('.viewport-container');
+            const canvas = document.getElementById('transformer-canvas');
+
+            scene = new THREE.Scene();
+            scene.fog = new THREE.FogExp2(0x080c14, 0.02);
+
+            const envTexture = createStudioEnvMap();
+            scene.environment = envTexture;
+
+            camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 100);
+            camera.position.set(targetCamPos.x, targetCamPos.y, targetCamPos.z);
+
+            renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true, powerPreference: "high-performance" });
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.shadowMap.enabled = false;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            renderer.toneMapping = THREE.ACESFilmicToneMapping;
+            renderer.toneMappingExposure = 1.4;
+
+            // UNRESTRICTED FREE ORBIT CONTROLS
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            controls.maxDistance = 14;
+            controls.minDistance = 1.0;
+            controls.minPolarAngle = 0;             // Allow full tilt to top view
+            controls.maxPolarAngle = Math.PI;       // Allow full tilt to bottom view
+            controls.autoRotate = false;
+            controls.addEventListener('start', () => { flying = false; });
+
+            // 4-POINT HIGH VISIBILITY LIGHTING
+            ambientLight = new THREE.AmbientLight(0xf8fafc, 1.2);
+            scene.add(ambientLight);
+
+            keyLight = new THREE.DirectionalLight(0xffffff, 2.5);
+            keyLight.position.set(8, 14, 10);
+            keyLight.castShadow = false;
+            keyLight.shadow.mapSize.width = 1024;
+            keyLight.shadow.mapSize.height = 1024;
+            scene.add(keyLight);
+
+            fillLight = new THREE.DirectionalLight(0x38bdf8, 1.5);
+            fillLight.position.set(-10, 6, -8);
+            scene.add(fillLight);
+
+            rimLight = new THREE.DirectionalLight(0xfbbf24, 1.8);
+            rimLight.position.set(0, 10, -12);
+            scene.add(rimLight);
+
+            bounceLight = new THREE.DirectionalLight(0xe2e8f0, 1.2);
+            bounceLight.position.set(0, -12, 0);
+            scene.add(bounceLight);
+
+            buildRealisticTransformerModel();
+            isolateMaterials();
+
+            window.addEventListener('resize', onResize);
+            animate();
+        }
+
+        // --- 3. TRANSFORMER 3D MODEL ASSEMBLY ---
+        function buildRealisticTransformerModel() {
+            const rootGroup = new THREE.Group();
+            scene.add(rootGroup);
+
+            // Materials
+            const tankMat = new THREE.MeshStandardMaterial({ color: 0x334155, metalness: 0.85, roughness: 0.2, envMapIntensity: 1.5, transparent: true, opacity: 1.0 });
+            const coreMat = new THREE.MeshStandardMaterial({ color: 0x475569, metalness: 0.92, roughness: 0.15, envMapIntensity: 2.0, transparent: true, opacity: 1.0 });
+            const hvCopperMat = new THREE.MeshStandardMaterial({ color: 0xd97706, metalness: 0.95, roughness: 0.12, envMapIntensity: 2.5, transparent: true, opacity: 1.0 });
+            const lvCopperMat = new THREE.MeshStandardMaterial({ color: 0xb45309, metalness: 0.9, roughness: 0.2, envMapIntensity: 2.2, transparent: true, opacity: 1.0 });
+            const porcelainHVMat = new THREE.MeshStandardMaterial({ color: 0x451a03, metalness: 0.15, roughness: 0.05, envMapIntensity: 2.5, transparent: true, opacity: 1.0 });
+            const porcelainLVMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, metalness: 0.15, roughness: 0.08, envMapIntensity: 2.0, transparent: true, opacity: 1.0 });
+            const radiatorMat = new THREE.MeshStandardMaterial({ color: 0x334155, metalness: 0.8, roughness: 0.3, transparent: true, opacity: 1.0 });
+            const glassMat = new THREE.MeshPhysicalMaterial({ color: 0x0284c7, transparent: true, opacity: 0.65, roughness: 0.1, transmission: 0.85, thickness: 0.5 });
+            const brassMat = new THREE.MeshStandardMaterial({ color: 0xf59e0b, metalness: 0.9, roughness: 0.2 });
+
+            // 1. Tank
+            const tankGroup = new THREE.Group();
+            const body = new THREE.Mesh(new THREE.BoxGeometry(3.0, 2.2, 1.8), tankMat);
+            body.castShadow = true; body.receiveShadow = true;
+            tankGroup.add(body);
+            const base = new THREE.Mesh(new THREE.BoxGeometry(3.4, 0.2, 2.2), tankMat);
+            base.position.y = -1.1;
+            tankGroup.add(base);
+            [-1.2, -0.4, 0.4, 1.2].forEach(x => {
+                const ribF = new THREE.Mesh(new THREE.BoxGeometry(0.08, 2.0, 0.08), tankMat);
+                ribF.position.set(x, 0, 0.94);
+                const ribB = ribF.clone(); ribB.position.z = -0.94;
+                tankGroup.add(ribF); tankGroup.add(ribB);
+            });
+            partMeshes['tank'] = tankGroup; rootGroup.add(tankGroup);
+
+            // 2. HV Bushings
+            const makeBushing = (h, r, mat) => {
+                const bg = new THREE.Group();
+                const stem = new THREE.Mesh(new THREE.CylinderGeometry(r * 0.5, r * 0.5, h, 24), mat); bg.add(stem);
+                for(let i = 0; i < 6; i++) {
+                    const shed = new THREE.Mesh(new THREE.CylinderGeometry(r * 1.4, r * 0.6, 0.06, 24), mat);
+                    shed.position.y = -h / 2 + (h / 6) * i + 0.12; bg.add(shed);
+                }
+                const terminal = new THREE.Mesh(new THREE.CylinderGeometry(r * 0.35, r * 0.35, 0.2, 12), brassMat);
+                terminal.position.y = h / 2 + 0.1; bg.add(terminal);
+                return bg;
+            };
+            const hvGroup = new THREE.Group();
+            [-0.9, 0, 0.9].forEach(x => { const b = makeBushing(1.3, 0.16, porcelainHVMat); b.position.set(x, 1.75, 0.2); hvGroup.add(b); });
+            partMeshes['hv-bushings'] = hvGroup; rootGroup.add(hvGroup);
+
+            // 3. LV Bushings
+            const lvGroup = new THREE.Group();
+            [-0.7, 0, 0.7].forEach(x => { const b = makeBushing(0.8, 0.12, porcelainLVMat); b.position.set(x, 1.5, -0.4); lvGroup.add(b); });
+            partMeshes['lv-bushings'] = lvGroup; rootGroup.add(lvGroup);
+
+            // 4. Core
+            const coreGroup = new THREE.Group();
+            const yokeTop = new THREE.Mesh(new THREE.BoxGeometry(2.3, 0.32, 0.38), coreMat); yokeTop.position.y = 0.65;
+            const yokeBot = yokeTop.clone(); yokeBot.position.y = -0.65;
+            coreGroup.add(yokeTop); coreGroup.add(yokeBot);
+            [-0.78, 0, 0.78].forEach(x => {
+                const leg = new THREE.Mesh(new THREE.BoxGeometry(0.32, 1.1, 0.32), coreMat); leg.position.x = x; coreGroup.add(leg);
+            });
+            partMeshes['core'] = coreGroup; rootGroup.add(coreGroup);
+
+            // 5. HV Windings (Outer Disc Coils)
+            const hvWindingGroup = new THREE.Group();
+            [-0.78, 0, 0.78].forEach(x => {
+                for(let d = 0; d < 6; d++) {
+                    const disc = new THREE.Mesh(new THREE.CylinderGeometry(0.36, 0.36, 0.11, 32), hvCopperMat);
+                    disc.position.set(x, -0.42 + d * 0.16, 0);
+                    hvWindingGroup.add(disc);
+                }
+            });
+            partMeshes['hv-windings'] = hvWindingGroup; rootGroup.add(hvWindingGroup);
+
+            // 6. LV Windings (Inner Coils)
+            const lvWindingGroup = new THREE.Group();
+            [-0.78, 0, 0.78].forEach(x => {
+                const innerCylinder = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.24, 1.05, 32), lvCopperMat);
+                innerCylinder.position.set(x, 0, 0);
+                lvWindingGroup.add(innerCylinder);
+            });
+            partMeshes['lv-windings'] = lvWindingGroup; rootGroup.add(lvWindingGroup);
+
+            // 7. Conservator
+            const consGroup = new THREE.Group();
+            const consBody = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.4, 2.1, 32), tankMat);
+            consBody.rotation.z = Math.PI / 2; consBody.position.set(1.1, 2.45, -0.75);
+            const sightGlass = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.4, 0.05), glassMat); sightGlass.position.set(1.1, 2.45, -0.34);
+            consGroup.add(consBody); consGroup.add(sightGlass);
+            partMeshes['conservator'] = consGroup; rootGroup.add(consGroup);
+
+            // 8. Buchholz Relay
+            const buchGroup = new THREE.Group();
+            const pipeSeg = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 0.5, 16), tankMat);
+            pipeSeg.rotation.z = Math.PI / 4; pipeSeg.position.set(0.6, 2.05, -0.75);
+            const chamber = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.15, 0.3, 20), brassMat); chamber.position.set(0.6, 2.05, -0.75);
+            buchGroup.add(pipeSeg); buchGroup.add(chamber);
+            partMeshes['buchholz'] = buchGroup; rootGroup.add(buchGroup);
+
+            // 9. Radiator
+            const radGroup = new THREE.Group();
+            [-1.75, 1.75].forEach(sideX => {
+                for(let i = 0; i < 6; i++) {
+                    const fin = new THREE.Mesh(new THREE.BoxGeometry(0.035, 1.7, 1.05), radiatorMat);
+                    fin.position.set(sideX + (i * 0.09 * (sideX > 0 ? 1 : -1)), -0.1, 0);
+                    radGroup.add(fin);
+                }
+            });
+            partMeshes['radiator'] = radGroup; rootGroup.add(radGroup);
+
+            // 10. Silica Gel Breather
+            const breathGroup = new THREE.Group();
+            const bBody = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.6, 24), glassMat); bBody.position.set(2.15, 0.85, -0.75);
+            const bGel = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 0.5, 16), new THREE.MeshStandardMaterial({ color: 0x0284c7, roughness: 0.4 })); bGel.position.set(2.15, 0.85, -0.75);
+            breathGroup.add(bBody); breathGroup.add(bGel);
+            partMeshes['breather'] = breathGroup; rootGroup.add(breathGroup);
+        }
+
+        // Each part gets its own materials so fading one part never changes another
+        function isolateMaterials() {
+            Object.values(partMeshes).forEach(group => {
+                const seen = new Map();
+                group.traverse(o => {
+                    if (!o.isMesh) return;
+                    if (!seen.has(o.material)) seen.set(o.material, o.material.clone());
+                    o.material = seen.get(o.material);
+                });
+            });
+        }
+
+        // --- 4. ANIMATION LOOP & FOCUS LOGIC ---
+        function animate() {
+            requestAnimationFrame(animate);
+
+            if (flying) {
+                camera.position.lerp(targetCamPos, 0.08);
+                controls.target.lerp(targetLookAt, 0.08);
+                if (camera.position.distanceTo(targetCamPos) < 0.01 && controls.target.distanceTo(targetLookAt) < 0.01) flying = false;
+            }
+            controls.update();
+
+            renderer.render(scene, camera);
+        }
+
+        function onResize() {
+            const container = document.querySelector('.viewport-container');
+            if (!container) return;
+            camera.aspect = container.clientWidth / container.clientHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(container.clientWidth, container.clientHeight);
+        }
+
+        function focusPart(index, scrollCard = false) {
+            selectedPartIndex = index;
+            const part = transformerPartsData[index];
+
+            document.getElementById('callout-name').textContent = `0${index + 1}. ${part.name}`;
+
+            if (part.isInternal && !isCutawayActive) {
+                toggleCutawayMode(true);
+            }
+
+            targetCamPos.set(part.camPos.x, part.camPos.y, part.camPos.z);
+            targetLookAt.set(part.targetPos.x, part.targetPos.y, part.targetPos.z);
+            flying = true;
+
+            Object.keys(partMeshes).forEach(key => {
+                const group = partMeshes[key];
+                group.traverse(mesh => {
+                    if (mesh.isMesh) {
+                        if (key === part.id) {
+                            mesh.material.transparent = false;
+                            mesh.material.opacity = 1.0;
+                        } else {
+                            mesh.material.transparent = true;
+                            mesh.material.opacity = (key === 'tank' && isCutawayActive) ? 0.12 : 0.22;
+                        }
+                    }
+                });
+            });
+
+            // Highlight Active Card & Sticky Pill
+            document.querySelectorAll('.part-card').forEach((card, idx) => {
+                card.classList.toggle('active', idx === index);
+            });
+            document.querySelectorAll('.pill-btn').forEach((pill, idx) => {
+                if (idx === index) {
+                    pill.className = 'pill-btn px-3 py-1 rounded-full text-xs font-mono font-semibold bg-cyan-500 text-gray-950 shadow-md shadow-cyan-500/30 shrink-0';
+                    const box = pill.parentElement, pr = pill.getBoundingClientRect(), br = box.getBoundingClientRect();
+                    box.scrollTo({ left: box.scrollLeft + (pr.left - br.left) - (br.width - pr.width) / 2, behavior: 'smooth' });
+                } else {
+                    pill.className = 'pill-btn px-3 py-1 rounded-full text-xs font-mono text-gray-400 bg-gray-900 border border-gray-800 shrink-0';
+                }
+            });
+
+            if (scrollCard) {
+                const targetCard = document.querySelectorAll('.part-card')[index];
+                if (targetCard) {
+                    const mainEl = document.getElementById('main-content');
+                    mainEl.scrollTo({ top: targetCard.getBoundingClientRect().top - mainEl.getBoundingClientRect().top + mainEl.scrollTop - 8, behavior: 'smooth' });
+                }
+            }
+        }
+
+        function toggleCutawayMode(forceState = null) {
+            isCutawayActive = forceState !== null ? forceState : !isCutawayActive;
+            const tank = partMeshes['tank'];
+            const cutawayTag = document.getElementById('cutaway-tag');
+
+            if (isCutawayActive) {
+                cutawayTag.classList.remove('hidden');
+                tank.traverse(m => { if (m.isMesh) { m.material.transparent = true; m.material.opacity = 0.12; } });
+            } else {
+                cutawayTag.classList.add('hidden');
+                tank.traverse(m => { if (m.isMesh) { m.material.transparent = false; m.material.opacity = 1.0; } });
+            }
+        }
+
+        function toggleLightPreset() {
+            isBrightPreset = !isBrightPreset;
+            if (isBrightPreset) {
+                ambientLight.intensity = 2.2;
+                keyLight.intensity = 3.5;
+                renderer.toneMappingExposure = 1.8;
+            } else {
+                ambientLight.intensity = 1.2;
+                keyLight.intensity = 2.5;
+                renderer.toneMappingExposure = 1.4;
+            }
+        }
+
+        // --- 5. RENDER UI & KATEX FORMULAS ---
+        function renderUI() {
+            const pillsContainer = document.getElementById('quick-pills');
+            const partsContainer = document.getElementById('parts-list');
+            pillsContainer.innerHTML = '';
+            partsContainer.innerHTML = '';
+
+            transformerPartsData.forEach((part, index) => {
+                // Quick Pill
+                const pill = document.createElement('button');
+                pill.className = `pill-btn px-3 py-1 rounded-full text-xs font-mono ${index === 0 ? 'bg-cyan-500 text-gray-950 font-semibold' : 'text-gray-400 bg-gray-900 border border-gray-800'} shrink-0 transition`;
+                pill.textContent = `0${index + 1}. ${part.name.split(' ')[0]}`;
+                pill.addEventListener('click', () => focusPart(index, true));
+                pillsContainer.appendChild(pill);
+
+                // Full Card
+                const card = document.createElement('div');
+                card.className = `part-card glass-card p-4 rounded-xl cursor-pointer ${index === 0 ? 'active' : ''}`;
+                card.innerHTML = `
+                    <div class="flex items-start justify-between gap-2 mb-2">
+                        <div class="flex items-center space-x-2.5">
+                            <span class="w-6 h-6 rounded-md ${part.isInternal ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' : 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30'} flex items-center justify-center font-mono text-[11px] font-bold">
+                                0${index + 1}
+                            </span>
+                            <h3 class="text-sm font-bold text-white tracking-wide">${part.name}</h3>
+                        </div>
+                        <span class="text-[9px] font-mono font-semibold px-2 py-0.5 rounded ${part.isInternal ? 'bg-amber-500/10 text-amber-300 border border-amber-500/20' : 'bg-cyan-500/10 text-cyan-300 border border-cyan-500/20'}">
+                            ${part.type}
+                        </span>
+                    </div>
+
+                    <p class="text-xs text-gray-300 leading-relaxed mb-3">${part.function}</p>
+
+                    <div class="grid grid-cols-1 gap-2 pt-2 border-t border-gray-800/80">
+                        <div class="text-[11px]">
+                            <span class="font-mono text-cyan-400 font-semibold uppercase text-[10px]">Construction Spec:</span>
+                            <p class="text-gray-300 text-[11px] mt-0.5">${part.spec}</p>
+                        </div>
+                        <div class="text-[11px]">
+                            <span class="font-mono text-emerald-400 font-semibold uppercase text-[10px]">Working Principle & Equation:</span>
+                            <p class="text-gray-400 text-[10px] mt-0.5">${part.principle}</p>
+                            <div class="math-expr text-cyan-300 text-[12px] mt-1 p-2 bg-gray-950 rounded-lg border border-gray-800/80 text-center" data-formula="${part.formula}"></div>
+                        </div>
+                    </div>
+                `;
+
+                card.addEventListener('click', () => focusPart(index));
+                partsContainer.appendChild(card);
+            });
+
+            // Typeset LaTeX Formulas using KaTeX
+            setTimeout(() => {
+                document.querySelectorAll('.math-expr').forEach(el => {
+                    const rawFormula = el.getAttribute('data-formula');
+                    if (rawFormula) {
+                        try {
+                            katex.render(rawFormula, el, { throwOnError: false, displayMode: true });
+                        } catch (e) {
+                            el.textContent = rawFormula;
+                        }
+                    }
+                });
+            }, 50);
+        }
+
+        // --- 6. EXPORT MODAL LOGIC ---
+        function initModal() {
+            const modal = document.getElementById('modal-download');
+            document.getElementById('btn-download').addEventListener('click', () => modal.classList.remove('hidden'));
+            document.getElementById('modal-close').addEventListener('click', () => modal.classList.add('hidden'));
+
+            document.getElementById('btn-export-txt').addEventListener('click', () => {
+                let txt = `POWER TRANSFORMER DIPLOMA STUDY SHEET\n`;
+                txt += `=========================================\n\n`;
+                transformerPartsData.forEach((p, idx) => {
+                    txt += `${idx + 1}. ${p.name.toUpperCase()} [${p.type}]\n`;
+                    txt += `   Material Specs: ${p.spec}\n`;
+                    txt += `   Function: ${p.function}\n`;
+                    txt += `   Formula: ${p.formula}\n\n`;
+                });
+                const blob = new Blob([txt], { type: 'text/plain' });
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = 'Transformer_Diploma_Study_Notes.txt';
+                a.click();
+            });
+
+            document.getElementById('btn-export-html').addEventListener('click', () => { shareApp();
+            });
+        }
+
+        window.onload = function() {
+            initThreeJS();
+            renderUI();
+            initModal();
+
+            document.getElementById('btn-cutaway').addEventListener('click', () => toggleCutawayMode());
+            document.getElementById('btn-light-preset').addEventListener('click', () => toggleLightPreset());
+            focusPart(0);
+        };
+    </script>
+</body>
+</html>

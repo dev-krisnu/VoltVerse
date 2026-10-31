@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Single-Phase Transformer Calculator & 3D Simulator</title>
+    <meta name="description" content="Single-phase transformer calculator with live 3D coils, AC oscilloscope, peak flux and phase-lag formulas.">
+
+    <meta name="theme-color" content="#080c14">
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="preload" href="vendor/fonts/inter-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="css/tailwind.css">
+    <link rel="stylesheet" href="css/app.css">
+    <link rel="stylesheet" href="vendor/fa/fa.css">
+    <link rel="stylesheet" href="vendor/katex/katex.min.css">
+    <script src="vendor/three.min.js"></script>
+    <script src="vendor/OrbitControls.js"></script>
+    <script src="vendor/katex/katex.min.js"></script>
+    <script src="js/share.js"></script>
+
+    <style>
+        * {
+            -webkit-tap-highlight-color: transparent;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #090d16;
+            color: #f3f4f6;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .viewport-container {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            max-height: 38vh;
+            position: relative;
+            background: radial-gradient(circle at 50% 50%, #1e293b 0%, #090d16 90%);
+            border-bottom: 1px solid rgba(0, 242, 254, 0.2);
+            flex-shrink: 0;
+        }
+
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .input-glow:focus {
+            outline: none;
+            border-color: #00f2fe;
+            box-shadow: 0 0 10px rgba(0, 242, 254, 0.3);
+        }
+
+        .custom-scroll::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scroll::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.6);
+        }
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: #00f2fe;
+            border-radius: 4px;
+        }
+
+        .katex-display {
+            margin: 0.2em 0 !important;
+            overflow-x: auto;
+            overflow-y: hidden;
+        }
+
+        /* Switch Toggle UI */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 48px;
+            height: 24px;
+        }
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #334155;
+            transition: .3s;
+            border-radius: 24px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 2px;
+            background-color: white;
+            transition: .3s;
+            border-radius: 50%;
+        }
+        input:checked + .slider {
+            background-color: #00f2fe;
+        }
+        input:checked + .slider:before {
+            transform: translateX(24px);
+            background-color: #090d16;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 1. TOP SECTION: Fixed Header -->
+    <header class="h-14 bg-gray-950/95 backdrop-blur-md border-b border-gray-800 px-4 flex items-center justify-between z-30 shrink-0">
+        <div class="flex items-center space-x-2.5">
+            <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center text-white shadow-lg shadow-cyan-500/20">
+                <i class="fa-solid fa-wave-square text-sm animate-pulse"></i>
+            </div>
+            <div>
+                <div class="text-[9px] font-mono text-cyan-400 font-semibold tracking-widest uppercase">1-PHASE LAB SIMULATOR</div>
+                <h1 class="text-xs font-bold text-white leading-none">Transformer Calculator</h1>
+            </div>
+        </div>
+
+        <div class="flex items-center space-x-2">
+            <!-- Reset Button -->
+            <button id="btn-reset" class="p-1.5 px-2 rounded-lg text-xs font-medium bg-gray-900 hover:bg-gray-800 text-gray-300 border border-gray-700 transition" title="Reset Values">
+                <i class="fa-solid fa-rotate-left text-xs"></i>
+            </button>
+
+            <!-- Export Study Notes -->
+            <button id="btn-export" class="px-2.5 py-1.5 rounded-lg text-xs font-bold bg-cyan-400 hover:bg-cyan-300 text-gray-950 shadow-lg shadow-cyan-500/30 transition flex items-center gap-1.5">
+                <i class="fa-solid fa-file-arrow-down text-xs"></i>
+                <span class="text-[11px]">Notes</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- 2. MIDDLE SECTION: Fixed 3D Viewport (Square Aspect Ratio locked) -->
+    <div class="viewport-container shadow-2xl overflow-hidden z-20">
+        <canvas id="transformer-canvas" class="w-full h-full cursor-grab active:cursor-grabbing"></canvas>
+
+        <!-- Power Status Overlay Badge -->
+        <div class="absolute top-3 left-3 glass-panel px-3 py-1.5 rounded-lg border border-cyan-500/30 flex items-center gap-2 pointer-events-none z-10">
+            <span id="status-dot" class="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-ping"></span>
+            <div>
+                <div class="text-[8px] font-mono text-gray-400 uppercase tracking-widest">Circuit Status</div>
+                <div id="status-text" class="text-xs font-bold text-cyan-300 font-mono">POWERED ON</div>
+            </div>
+        </div>
+
+        <!-- Real-Time Transformation Ratio Display -->
+        <div class="absolute top-3 right-3 glass-panel px-2.5 py-1 rounded-md border border-cyan-500/20 text-right pointer-events-none z-10">
+            <div class="text-[8px] font-mono text-gray-400 uppercase">Ratio K (V2/V1)</div>
+            <div id="k-ratio-display" class="text-xs font-bold text-amber-400 font-mono">0.500</div>
+        </div>
+
+        <!-- 3D Controls Hint -->
+        <div class="absolute bottom-2 right-3 text-[10px] text-gray-400 font-mono bg-gray-950/80 px-2 py-0.5 rounded-md border border-gray-800 z-10">
+            <i class="fa-solid fa-arrows-spin text-cyan-400 mr-1"></i>360° Interactive Core
+        </div>
+    </div>
+
+    <!-- 3. BOTTOM SECTION: Scrollable Calculator & Waveform Generator -->
+    <main class="flex-1 overflow-y-auto custom-scroll bg-gray-950 p-4 space-y-4">
+        
+        <!-- POWER TOGGLE & SUMMARY BAR -->
+        <div class="glass-panel p-3.5 rounded-xl flex items-center justify-between border border-cyan-500/20 shadow-md">
+            <div class="flex items-center space-x-3">
+                <label class="switch">
+                    <input type="checkbox" id="power-toggle" checked>
+                    <span class="slider"></span>
+                </label>
+                <div>
+                    <div class="text-xs font-bold text-white">Main AC Supply</div>
+                    <div class="text-[10px] text-gray-400 font-mono" id="supply-subtext">50 Hz Alternating Field</div>
+                </div>
+            </div>
+
+            <div class="text-right font-mono">
+                <div class="text-[9px] text-gray-400 uppercase">Peak Flux (Φm)</div>
+                <div id="flux-val-display" class="text-xs font-bold text-cyan-400">2.59 mWb</div>
+            </div>
+        </div>
+
+        <!-- INPUT PARAMETER MATRIX (AUTO-SOLVING) -->
+        <div class="glass-panel p-4 rounded-xl border border-gray-800 space-y-3">
+            <div class="flex items-center justify-between border-b border-gray-800 pb-2">
+                <div class="flex items-center space-x-2">
+                    <i class="fa-solid fa-sliders text-cyan-400 text-xs"></i>
+                    <h2 class="text-xs font-bold text-white uppercase tracking-wider">Transformer Parameter Solver</h2>
+                </div>
+                <span class="text-[9px] font-mono text-amber-400 bg-amber-400/10 px-2 py-0.5 rounded border border-amber-400/20">Auto-Calculate</span>
+            </div>
+
+            <!-- Primary vs Secondary Grid -->
+            <div class="grid grid-cols-2 gap-3">
+                <!-- Primary Side Inputs -->
+                <div class="space-y-2 bg-gray-900/60 p-2.5 rounded-lg border border-cyan-500/20">
+                    <div class="text-[10px] font-mono font-bold text-cyan-400 uppercase flex items-center justify-between">
+                        <span>PRIMARY (Input)</span>
+                        <i class="fa-solid fa-arrow-right-to-bracket"></i>
+                    </div>
+
+                    <div>
+                        <label class="text-[9px] text-gray-400 block font-mono">Voltage V1 (Volts)</label>
+                        <input type="number" inputmode="decimal" id="input-v1" value="230" step="any" class="w-full bg-gray-950 border border-gray-700 rounded p-1.5 text-xs font-mono font-bold text-cyan-300 input-glow">
+                    </div>
+
+                    <div>
+                        <label class="text-[9px] text-gray-400 block font-mono">Current I1 (Amps)</label>
+                        <input type="number" inputmode="decimal" id="input-i1" value="2.0" step="any" class="w-full bg-gray-950 border border-gray-700 rounded p-1.5 text-xs font-mono font-bold text-cyan-300 input-glow">
+                    </div>
+
+                    <div>
+                        <label class="text-[9px] text-gray-400 block font-mono">Turns N1 (Coil)</label>
+                        <input type="number" inputmode="decimal" id="input-n1" value="400" min="5" max="2000" step="any" class="w-full bg-gray-950 border border-gray-700 rounded p-1.5 text-xs font-mono font-bold text-cyan-300 input-glow">
+                    </div>
+                </div>
+
+                <!-- Secondary Side Inputs -->
+                <div class="space-y-2 bg-gray-900/60 p-2.5 rounded-lg border border-amber-500/20">
+                    <div class="text-[10px] font-mono font-bold text-amber-400 uppercase flex items-center justify-between">
+                        <span>SECONDARY (Output)</span>
+                        <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                    </div>
+
+                    <div>
+                        <label class="text-[9px] text-gray-400 block font-mono">Voltage V2 (Volts)</label>
+                        <input type="number" inputmode="decimal" id="input-v2" value="115" step="any" class="w-full bg-gray-950 border border-gray-700 rounded p-1.5 text-xs font-mono font-bold text-amber-300 input-glow">
+                    </div>
+
+                    <div>
+                        <label class="text-[9px] text-gray-400 block font-mono">Current I2 (Amps)</label>
+                        <input type="number" inputmode="decimal" id="input-i2" value="4.0" step="any" class="w-full bg-gray-950 border border-gray-700 rounded p-1.5 text-xs font-mono font-bold text-amber-300 input-glow">
+                    </div>
+
+                    <div>
+                        <label class="text-[9px] text-gray-400 block font-mono">Turns N2 (Coil)</label>
+                        <input type="number" inputmode="decimal" id="input-n2" value="200" min="5" max="2000" step="any" class="w-full bg-gray-950 border border-gray-700 rounded p-1.5 text-xs font-mono font-bold text-amber-300 input-glow">
+                    </div>
+                </div>
+            </div>
+
+            <!-- AC Frequency & Power Factor Bar -->
+            <div class="grid grid-cols-2 gap-3 pt-1">
+                <div>
+                    <label class="text-[9px] text-gray-400 block font-mono">AC Frequency (Hz)</label>
+                    <input type="number" inputmode="decimal" id="input-freq" value="50" step="any" class="w-full bg-gray-950 border border-gray-700 rounded p-1.5 text-xs font-mono text-emerald-300 input-glow">
+                </div>
+                <div>
+                    <label class="text-[9px] text-gray-400 block font-mono">Power Factor (cos φ)</label>
+                    <input type="number" inputmode="decimal" id="input-pf" value="0.85" min="0.1" max="1.0" step="any" class="w-full bg-gray-950 border border-gray-700 rounded p-1.5 text-xs font-mono text-emerald-300 input-glow">
+                </div>
+            </div>
+        </div>
+
+        <!-- REAL-TIME OSCILLOSCOPE WAVEFORM CANVAS -->
+        <div class="glass-panel p-3.5 rounded-xl border border-gray-800 space-y-2">
+            <div class="flex items-center justify-between border-b border-gray-800 pb-2">
+                <div class="flex items-center space-x-2">
+                    <i class="fa-solid fa-chart-line text-emerald-400 text-xs"></i>
+                    <h2 class="text-xs font-bold text-white uppercase tracking-wider">AC Waveform Oscilloscope</h2>
+                </div>
+                <div class="text-[9px] font-mono text-emerald-400" id="phase-angle-display">Phase Lag φ = 31.79°</div>
+            </div>
+
+            <!-- 2D Canvas Waveform Display -->
+            <div class="relative w-full h-36 bg-gray-950 rounded-lg border border-gray-800 overflow-hidden">
+                <canvas id="oscilloscope-canvas" class="w-full h-full"></canvas>
+            </div>
+
+            <!-- Waveform Legend & Controls -->
+            <div class="flex items-center justify-between text-[10px] font-mono pt-1">
+                <div class="flex items-center space-x-3">
+                    <span class="flex items-center gap-1 text-cyan-400"><span class="w-2 h-2 rounded-full bg-cyan-400 inline-block"></span> V1</span>
+                    <span class="flex items-center gap-1 text-amber-400"><span class="w-2 h-2 rounded-full bg-amber-400 inline-block"></span> V2</span>
+                    <span class="flex items-center gap-1 text-emerald-400"><span class="w-2 h-2 rounded-full bg-emerald-400 inline-block"></span> I1 (Lag)</span>
+                </div>
+                <div class="text-gray-400">
+                    Sweep: <span class="text-gray-200">2 Cycles</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- MATHEMATICAL FORMULA CARDS -->
+        <div class="glass-panel p-4 rounded-xl border border-gray-800 space-y-3">
+            <div class="flex items-center space-x-2 border-b border-gray-800 pb-2">
+                <i class="fa-solid fa-square-root-variable text-cyan-400 text-xs"></i>
+                <h2 class="text-xs font-bold text-white uppercase tracking-wider">Electromagnetic Equations</h2>
+            </div>
+
+            <div class="space-y-2">
+                <div class="p-2.5 bg-gray-950 rounded-lg border border-gray-800">
+                    <div class="text-[9px] font-mono text-cyan-400 uppercase">Ideal Transformation Ratio</div>
+                    <div id="math-ratio" class="text-xs text-center text-cyan-300 py-1"></div>
+                </div>
+
+                <div class="p-2.5 bg-gray-950 rounded-lg border border-gray-800">
+                    <div class="text-[9px] font-mono text-emerald-400 uppercase">EMF Equation & Peak Core Flux</div>
+                    <div id="math-emf" class="text-xs text-center text-emerald-300 py-1"></div>
+                </div>
+
+                <div class="p-2.5 bg-gray-950 rounded-lg border border-gray-800">
+                    <div class="text-[9px] font-mono text-amber-400 uppercase">Current Phase Lag Angle</div>
+                    <div id="math-phase" class="text-xs text-center text-amber-300 py-1"></div>
+                </div>
+            </div>
+        </div>
+
+        <a href="explorer.html" class="block glass-panel glass-card rounded-xl p-4 border border-cyan-500/40 hover:border-cyan-300 transition">
+                <div class="flex items-center justify-between gap-3"><div><div class="text-sm font-bold text-white">Back to the 3D Explorer</div><div class="text-[11px] text-gray-400 mt-0.5">Inspect every component of a real power transformer.</div></div><i class="fa-solid fa-cube text-cyan-400"></i></div></a>
+        <div class="pb-10"></div>
+    </main>
+
+    <!-- Study Guide Export Modal -->
+    <div id="modal-export" class="hidden fixed inset-0 z-50 bg-gray-950/80 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="glass-panel max-w-sm w-full rounded-2xl p-5 border border-gray-700 shadow-2xl relative">
+            <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center gap-2 text-cyan-400">
+                    <i class="fa-solid fa-graduation-cap text-lg"></i>
+                    <h3 class="text-base font-bold text-white">Calculation Summary</h3>
+                </div>
+                <button id="modal-close" class="text-gray-400 hover:text-white text-base">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <p class="text-xs text-gray-300 mb-4">Download calculated transformer parameters and electrical formulas.</p>
+            
+            <div class="space-y-2.5">
+                <button id="btn-dl-text" class="w-full glass-panel p-3 rounded-xl flex items-center justify-between text-left hover:border-cyan-400">
+                    <div>
+                        <div class="text-xs font-bold text-white">Download Text Summary (.TXT)</div>
+                        <div class="text-[10px] text-gray-400">Raw parameters, flux, & phase data.</div>
+                    </div>
+                    <i class="fa-solid fa-download text-xs text-cyan-400"></i>
+                </button>
+                <button id="btn-dl-html" class="w-full glass-panel p-3 rounded-xl flex items-center justify-between text-left hover:border-emerald-400">
+                    <div>
+                        <div class="text-xs font-bold text-white">Share this app (link)</div>
+                        <div class="text-[10px] text-gray-400">Send the live link to a friend.</div>
+                    </div>
+                    <i class="fa-solid fa-code text-xs text-emerald-400"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <nav class="app-nav" aria-label="Main"><a href="index.html" class="nav-tab"><i class="fa-solid fa-house"></i><span>Home</span></a><a href="explorer.html" class="nav-tab"><i class="fa-solid fa-cube"></i><span>Explorer</span></a><a href="calculator.html" class="nav-tab" aria-current="page"><i class="fa-solid fa-calculator"></i><span>Calculator</span></a></nav>
+
+    <!-- Application JavaScript Engine -->
+    <script>
+        // --- 1. GLOBAL STATE & CALCULATOR ENGINE ---
+        const state = {
+            v1: 230,
+            v2: 115,
+            i1: 2.0,
+            i2: 4.0,
+            n1: 400,
+            n2: 200,
+            freq: 50,
+            pf: 0.85,
+            powerOn: true,
+            fluxPeak: 0.00259 // Wb
+        };
+
+        // Recalculate parameters when an input changes
+        function solveTransformer(changedParam) {
+            let { v1, v2, i1, i2, n1, n2, freq, pf } = state;
+
+            // Enforce realistic bounds
+            n1 = Math.min(Math.max(n1, 5), 2000);
+            n2 = Math.min(Math.max(n2, 5), 2000);
+            if (freq < 1) freq = 1;
+            pf = Math.min(Math.max(pf, 0.1), 1);
+
+            switch (changedParam) {
+                case 'v1':
+                case 'n1':
+                case 'n2':
+                    // Solve V2 & Currents from Ratio K = N2 / N1
+                    const k_v = n2 / n1;
+                    v2 = v1 * k_v;
+                    i2 = i1 / k_v;
+                    break;
+                case 'v2':
+                    if (v1 > 0 && v2 > 0) {
+                        const k_v2 = v2 / v1;
+                        n2 = Math.min(Math.max(n1 * k_v2, 5), 2000);
+                        i2 = i1 / k_v2;
+                    }
+                    break;
+                case 'i1':
+                    const k_i1 = n2 / n1;
+                    i2 = i1 / k_i1;
+                    break;
+                case 'i2':
+                    const k_i2 = n2 / n1;
+                    i1 = i2 * k_i2;
+                    break;
+            }
+
+            // Calculate Peak Magnetic Flux via EMF Equation: E1 = 4.44 * f * N1 * Phi_m
+            const flux = v1 / (4.44 * freq * n1);
+
+            state.v1 = parseFloat(v1.toFixed(4));
+            state.v2 = parseFloat(v2.toFixed(4));
+            state.i1 = parseFloat(i1.toFixed(4));
+            state.i2 = parseFloat(i2.toFixed(4));
+            state.n1 = parseFloat(n1.toFixed(4));
+            state.n2 = parseFloat(n2.toFixed(4));
+            state.freq = parseFloat(freq);
+            state.pf = parseFloat(pf);
+            state.fluxPeak = flux;
+
+            updateUI();
+            rebuildCoilsIn3D();
+        }
+
+        function updateUI() {
+            ['v1','v2','i1','i2','n1','n2','freq','pf'].forEach(k => {
+                const el = document.getElementById('input-' + k);
+                if (el !== document.activeElement) el.value = state[k]; // never overwrite what is being typed
+            });
+
+            const k = (state.n2 / state.n1).toFixed(3);
+            document.getElementById('k-ratio-display').textContent = k;
+
+            // Flux display in mWb
+            document.getElementById('flux-val-display').textContent = (state.fluxPeak * 1000).toFixed(3) + " mWb";
+
+            // Phase Angle
+            const phiRad = Math.acos(Math.min(Math.max(state.pf, 0), 1));
+            const phiDeg = (phiRad * (180 / Math.PI)).toFixed(2);
+            document.getElementById('phase-angle-display').textContent = `Phase Lag φ = ${phiDeg}°`;
+
+            // Status Badge
+            const statusDot = document.getElementById('status-dot');
+            const statusText = document.getElementById('status-text');
+            if (state.powerOn) {
+                statusDot.className = 'w-2.5 h-2.5 rounded-full bg-cyan-400 animate-ping';
+                statusText.className = 'text-xs font-bold text-cyan-300 font-mono';
+                statusText.textContent = 'POWERED ON';
+            } else {
+                statusDot.className = 'w-2.5 h-2.5 rounded-full bg-rose-500';
+                statusText.className = 'text-xs font-bold text-rose-400 font-mono';
+                statusText.textContent = 'OFF / DISCONNECTED';
+            }
+
+            renderMathFormulas();
+        }
+
+        function renderMathFormulas() {
+            const k = (state.n2 / state.n1).toFixed(3);
+            const phiRad = Math.acos(Math.min(Math.max(state.pf, 0), 1));
+            const phiDeg = (phiRad * (180 / Math.PI)).toFixed(2);
+
+            try {
+                katex.render(`K = \\frac{V_2}{V_1} = \\frac{N_2}{N_1} = \\frac{I_1}{I_2} = ${k}`, document.getElementById('math-ratio'), { displayMode: true });
+                katex.render(`E_1 = 4.44 \\cdot f \\cdot N_1 \\cdot \\Phi_m \\implies \\Phi_m = ${(state.fluxPeak * 1000).toFixed(3)}\\text{ mWb}`, document.getElementById('math-emf'), { displayMode: true });
+                katex.render(`\\phi = \\arccos(${state.pf}) = ${phiDeg}^\\circ \\quad (\\text{Lagging})`, document.getElementById('math-phase'), { displayMode: true });
+            } catch(e) {}
+        }
+
+        // --- 2. THREE.JS 3D SCENE & DYNAMIC TURN RE-MESHING ---
+        let scene, camera, renderer, controls;
+        let primaryCoilMeshGroup, secondaryCoilMeshGroup, fluxParticlesGroup;
+        let fluxParticles = [];
+        let FLUX_PATH, coilGeo, coilMats, lastCoilCounts = "";
+
+        function initThreeJS() {
+            const container = document.querySelector('.viewport-container');
+            const canvas = document.getElementById('transformer-canvas');
+
+            scene = new THREE.Scene();
+            scene.fog = new THREE.FogExp2(0x090d16, 0.025);
+
+            camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 100);
+            camera.position.set(4.2, 2.8, 5.2);
+
+            renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true });
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.shadowMap.enabled = false;
+            renderer.toneMapping = THREE.ACESFilmicToneMapping;
+
+            // Orbit controls
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            controls.minDistance = 2.0;
+            controls.maxDistance = 12.0;
+
+            // 4-Point Studio Lighting
+            const ambient = new THREE.AmbientLight(0xffffff, 1.2);
+            scene.add(ambient);
+
+            const keyLight = new THREE.DirectionalLight(0xffffff, 2.2);
+            keyLight.position.set(6, 10, 8);
+            scene.add(keyLight);
+
+            const fillLight = new THREE.DirectionalLight(0x00f2fe, 1.2);
+            fillLight.position.set(-8, 4, -6);
+            scene.add(fillLight);
+
+            const rimLight = new THREE.DirectionalLight(0xf59e0b, 1.5);
+            rimLight.position.set(0, -6, -8);
+            scene.add(rimLight);
+
+            buildCoreStructure();
+
+            primaryCoilMeshGroup = new THREE.Group();
+            secondaryCoilMeshGroup = new THREE.Group();
+            fluxParticlesGroup = new THREE.Group();
+
+            scene.add(primaryCoilMeshGroup);
+            scene.add(secondaryCoilMeshGroup);
+            scene.add(fluxParticlesGroup);
+
+            initFluxParticles();
+            rebuildCoilsIn3D();
+
+            window.addEventListener('resize', onResize);
+            animate3D();
+        }
+
+        function buildCoreStructure() {
+            const coreMat = new THREE.MeshStandardMaterial({
+                color: 0x334155,
+                metalness: 0.9,
+                roughness: 0.2
+            });
+
+            const coreGroup = new THREE.Group();
+
+            // Laminated Shell Core Geometry
+            const yokeTop = new THREE.Mesh(new THREE.BoxGeometry(3.6, 0.45, 0.5), coreMat); yokeTop.position.y = 1.2;
+            const yokeBot = yokeTop.clone(); yokeBot.position.y = -1.2;
+            const legLeft = new THREE.Mesh(new THREE.BoxGeometry(0.45, 2.0, 0.45), coreMat); legLeft.position.x = -1.35;
+            const legRight = legLeft.clone(); legRight.position.x = 1.35;
+
+            coreGroup.add(yokeTop); coreGroup.add(yokeBot); coreGroup.add(legLeft); coreGroup.add(legRight);
+            scene.add(coreGroup);
+
+            // Labels for V1 and V2
+            const createLabelBadge = (text, x, y, z, colorHex) => {
+                const canvas = document.createElement('canvas');
+                canvas.width = 128; canvas.height = 64;
+                const ctx = canvas.getContext('2d');
+                ctx.fillStyle = colorHex;
+                ctx.font = 'Bold 32px monospace';
+                ctx.fillText(text, 20, 44);
+                const tex = new THREE.CanvasTexture(canvas);
+                const mat = new THREE.SpriteMaterial({ map: tex });
+                const sprite = new THREE.Sprite(mat);
+                sprite.position.set(x, y, z);
+                sprite.scale.set(0.8, 0.4, 1);
+                scene.add(sprite);
+            };
+
+            createLabelBadge("V1, I1", -1.35, 1.7, 0, "#00f2fe");
+            createLabelBadge("V2, I2", 1.35, 1.7, 0, "#f59e0b");
+        }
+
+        // Dynamically reconstruct coil meshes to visually match N1 and N2 ratios
+        function rebuildCoilsIn3D() {
+            if (!primaryCoilMeshGroup || !secondaryCoilMeshGroup) return;
+
+            if (!coilGeo) {
+                coilGeo = new THREE.TorusGeometry(0.38, 0.05, 12, 24);
+                coilMats = {
+                    p: new THREE.MeshStandardMaterial({ color: 0x00f2fe, metalness: 0.8, roughness: 0.2 }),
+                    s: new THREE.MeshStandardMaterial({ color: 0xf59e0b, metalness: 0.8, roughness: 0.2 })
+                };
+            }
+            const primaryMat = coilMats.p, secondaryMat = coilMats.s;
+
+            // Visual turn count scaled down for clear rendering
+            const visualTurnsN1 = Math.min(Math.max(Math.round(state.n1 / 25), 4), 22);
+            const visualTurnsN2 = Math.min(Math.max(Math.round(state.n2 / 25), 4), 22);
+
+            const counts = visualTurnsN1 + '-' + visualTurnsN2;
+            if (counts === lastCoilCounts) return; // nothing visible changed
+            lastCoilCounts = counts;
+            while (primaryCoilMeshGroup.children.length) primaryCoilMeshGroup.remove(primaryCoilMeshGroup.children[0]);
+            while (secondaryCoilMeshGroup.children.length) secondaryCoilMeshGroup.remove(secondaryCoilMeshGroup.children[0]);
+            const coilRadius = 0.38;
+            const heightSpan = 1.6;
+
+            // Build N1 Coil Helical Ring Stack
+            for (let i = 0; i < visualTurnsN1; i++) {
+                const ring = new THREE.Mesh(coilGeo, primaryMat);
+                ring.rotation.x = Math.PI / 2;
+                ring.position.set(-1.35, -heightSpan/2 + (heightSpan / visualTurnsN1) * i, 0);
+                primaryCoilMeshGroup.add(ring);
+            }
+
+            // Build N2 Coil Helical Ring Stack
+            for (let i = 0; i < visualTurnsN2; i++) {
+                const ring = new THREE.Mesh(coilGeo, secondaryMat);
+                ring.rotation.x = Math.PI / 2;
+                ring.position.set(1.35, -heightSpan/2 + (heightSpan / visualTurnsN2) * i, 0);
+                secondaryCoilMeshGroup.add(ring);
+            }
+        }
+
+        function initFluxParticles() {
+            const particleMat = new THREE.MeshBasicMaterial({ color: 0x00f2fe });
+            const geo = new THREE.SphereGeometry(0.04, 8, 8);
+
+            // Rectangular loop path around iron core limbs
+            const corners = [
+                new THREE.Vector3(-1.35, 1.2, 0),
+                new THREE.Vector3(1.35, 1.2, 0),
+                new THREE.Vector3(1.35, -1.2, 0),
+                new THREE.Vector3(-1.35, -1.2, 0)
+            ];
+
+            FLUX_PATH = corners;
+            for (let i = 0; i < 40; i++) {
+                const mesh = new THREE.Mesh(geo, particleMat);
+                fluxParticlesGroup.add(mesh);
+                fluxParticles.push({ mesh, progress: i / 40 });
+            }
+        }
+
+        function animate3D() {
+            requestAnimationFrame(animate3D);
+
+            controls.update();
+
+            // Animate Magnetic Flux Loop when Power ON
+            if (state.powerOn) {
+                fluxParticlesGroup.visible = true;
+                const speed = (state.freq / 50) * 0.008;
+
+                fluxParticles.forEach(p => {
+                    p.progress = (p.progress + speed) % 1.0;
+                    
+                    // Traverse core rectangle path
+                    const t = p.progress * 4;
+                    const seg = Math.floor(t);
+                    const frac = t - seg;
+
+                    p.mesh.position.lerpVectors(FLUX_PATH[seg], FLUX_PATH[(seg + 1) % 4], frac);
+                });
+            } else {
+                fluxParticlesGroup.visible = false;
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        function onResize() {
+            const container = document.querySelector('.viewport-container');
+            if (!container) return;
+            camera.aspect = container.clientWidth / container.clientHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(container.clientWidth, container.clientHeight);
+        }
+
+        // --- 3. LIVE AC OSCILLOSCOPE CANVAS ---
+        let oscCanvas, oscCtx;
+        let timePhase = 0;
+
+        function initOscilloscope() {
+            oscCanvas = document.getElementById('oscilloscope-canvas');
+            oscCtx = oscCanvas.getContext('2d');
+            resizeOscilloscope();
+            window.addEventListener('resize', resizeOscilloscope);
+            animateOscilloscope();
+        }
+
+        function resizeOscilloscope() {
+            if (!oscCanvas) return;
+            oscCanvas.width = oscCanvas.clientWidth * Math.min(window.devicePixelRatio, 2);
+            oscCanvas.height = oscCanvas.clientHeight * Math.min(window.devicePixelRatio, 2);
+        }
+
+        function animateOscilloscope() {
+            requestAnimationFrame(animateOscilloscope);
+            if (!oscCtx) return;
+
+            const w = oscCanvas.width;
+            const h = oscCanvas.height;
+            const midY = h / 2;
+
+            oscCtx.fillStyle = '#090d16';
+            oscCtx.fillRect(0, 0, w, h);
+
+            // Draw Grid Lines
+            oscCtx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+            oscCtx.lineWidth = 1;
+            for (let x = 0; x < w; x += 30) {
+                oscCtx.beginPath(); oscCtx.moveTo(x, 0); oscCtx.lineTo(x, h); oscCtx.stroke();
+            }
+            oscCtx.beginPath(); oscCtx.moveTo(0, midY); oscCtx.lineTo(w, midY); oscCtx.stroke();
+
+            if (!state.powerOn) return; // Flatline when power OFF
+
+            timePhase += (state.freq / 50) * 0.05;
+
+            const phiRad = Math.acos(Math.min(Math.max(state.pf, 0), 1));
+            const v1Scale = Math.min(state.v1 * 0.25, h * 0.38);
+            const v2Scale = Math.min(state.v2 * 0.25, h * 0.38);
+            const i1Scale = Math.min(state.i1 * 12, h * 0.3);
+
+            // Plot V1 (Cyan Wave)
+            oscCtx.strokeStyle = '#00f2fe';
+            oscCtx.lineWidth = 2.5;
+            oscCtx.beginPath();
+            for (let x = 0; x < w; x++) {
+                const angle = (x / w) * Math.PI * 4 + timePhase;
+                const y = midY - Math.sin(angle) * v1Scale;
+                if (x === 0) oscCtx.moveTo(x, y); else oscCtx.lineTo(x, y);
+            }
+            oscCtx.stroke();
+
+            // Plot V2 (Amber Wave)
+            oscCtx.strokeStyle = '#f59e0b';
+            oscCtx.lineWidth = 2;
+            oscCtx.beginPath();
+            for (let x = 0; x < w; x++) {
+                const angle = (x / w) * Math.PI * 4 + timePhase;
+                const y = midY - Math.sin(angle) * v2Scale;
+                if (x === 0) oscCtx.moveTo(x, y); else oscCtx.lineTo(x, y);
+            }
+            oscCtx.stroke();
+
+            // Plot I1 Lagging Current (Emerald Wave)
+            oscCtx.strokeStyle = '#10b981';
+            oscCtx.lineWidth = 1.8;
+            oscCtx.setLineDash([4, 3]);
+            oscCtx.beginPath();
+            for (let x = 0; x < w; x++) {
+                const angle = (x / w) * Math.PI * 4 + timePhase - phiRad; // Phase Shifted
+                const y = midY - Math.sin(angle) * i1Scale;
+                if (x === 0) oscCtx.moveTo(x, y); else oscCtx.lineTo(x, y);
+            }
+            oscCtx.stroke();
+            oscCtx.setLineDash([]);
+        }
+
+        // --- 4. EVENT LISTENERS & MODAL HANDLERS ---
+        function attachListeners() {
+            ['v1', 'v2', 'i1', 'i2', 'n1', 'n2', 'freq', 'pf'].forEach(id => {
+                const el = document.getElementById(`input-${id}`);
+                el.addEventListener('input', (e) => {
+                    const val = parseFloat(e.target.value);
+                    if (!isNaN(val) && val >= 0) {
+                        state[id] = val;
+                        solveTransformer(id);
+                    }
+                });
+            });
+
+            ['v1', 'v2', 'i1', 'i2', 'n1', 'n2', 'freq', 'pf'].forEach(id => {
+                const el = document.getElementById(`input-${id}`);
+                el.addEventListener('change', () => { el.value = state[id]; });
+            });
+
+            document.getElementById('power-toggle').addEventListener('change', (e) => {
+                state.powerOn = e.target.checked;
+                updateUI();
+            });
+
+            document.getElementById('btn-reset').addEventListener('click', () => {
+                state.v1 = 230; state.v2 = 115; state.i1 = 2.0; state.i2 = 4.0;
+                state.n1 = 400; state.n2 = 200; state.freq = 50; state.pf = 0.85;
+                state.powerOn = true;
+                document.getElementById('power-toggle').checked = true;
+                solveTransformer('v1');
+            });
+
+            // Modal Controls
+            const modal = document.getElementById('modal-export');
+            document.getElementById('btn-export').addEventListener('click', () => modal.classList.remove('hidden'));
+            document.getElementById('modal-close').addEventListener('click', () => modal.classList.add('hidden'));
+
+            document.getElementById('btn-dl-text').addEventListener('click', () => {
+                const phiRad = Math.acos(Math.min(Math.max(state.pf, 0), 1));
+                const phiDeg = (phiRad * (180 / Math.PI)).toFixed(2);
+                let txt = `SINGLE-PHASE TRANSFORMER CALCULATION REPORT\n`;
+                txt += `==============================================\n\n`;
+                txt += `PRIMARY SIDE:\n  Voltage V1 : ${state.v1} V\n  Current I1 : ${state.i1} A\n  Turns N1   : ${state.n1}\n\n`;
+                txt += `SECONDARY SIDE:\n  Voltage V2 : ${state.v2} V\n  Current I2 : ${state.i2} A\n  Turns N2   : ${state.n2}\n\n`;
+                txt += `ELECTROMAGNETIC METRICS:\n  Transformation Ratio K : ${(state.n2/state.n1).toFixed(3)}\n  AC Frequency (f)       : ${state.freq} Hz\n  Power Factor (cos φ)   : ${state.pf} (Phase Lag: ${phiDeg}°)\n  Peak Magnetic Flux Φm  : ${(state.fluxPeak*1000).toFixed(2)} mWb\n`;
+
+                const blob = new Blob([txt], { type: 'text/plain' });
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = 'Transformer_Calculation_Summary.txt';
+                a.click();
+            });
+
+            document.getElementById('btn-dl-html').addEventListener('click', () => { shareApp();
+            });
+        }
+
+        window.onload = function() {
+            initThreeJS();
+            initOscilloscope();
+            attachListeners();
+            solveTransformer('v1');
+        };
+    </script>
+</body>
+</html>

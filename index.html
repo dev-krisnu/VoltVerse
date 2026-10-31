@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>VoltVerse – Electrical Explorers | 3D Transformer Lab</title>
+<meta name="description" content="Take a power transformer apart in 3D, then solve its numbers with a live calculator and oscilloscope.">
+<meta name="theme-color" content="#080c14">
+<meta property="og:title" content="VoltVerse – Electrical Explorers">
+<meta property="og:description" content="Take a power transformer apart in 3D, then solve its numbers with a live calculator and oscilloscope.">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="preload" href="vendor/fonts/inter-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="css/tailwind.css">
+<link rel="stylesheet" href="css/app.css">
+<link rel="stylesheet" href="vendor/fa/fa.css">
+<link rel="prefetch" href="explorer.html"><link rel="prefetch" href="calculator.html">
+</head>
+<body class="min-h-screen bg-[#080c14] text-gray-100 antialiased" style="background-image:radial-gradient(circle at 80% 0%,#12263d 0%,#080c14 55%)">
+<header class="max-w-5xl mx-auto px-5 pt-5 flex items-center gap-2.5">
+  <div class="w-9 h-9 rounded-lg bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/20"><i class="fa-solid fa-bolt text-white"></i></div>
+  <span class="font-extrabold tracking-tight text-lg">VoltVerse</span>
+</header>
+<main class="max-w-5xl mx-auto px-5 pb-12">
+  <section class="grid md:grid-cols-2 gap-8 items-center py-10 md:py-16">
+    <div>
+      <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight leading-[1.05]">See how a transformer really works.</h1>
+      <p class="mt-4 text-gray-300 max-w-md leading-relaxed">Take a real oil-filled power transformer apart in 3D, then change the turns, voltage and frequency and watch the numbers and waveforms follow.</p>
+      <div class="mt-7 flex flex-wrap gap-3">
+        <a href="explorer.html" class="px-5 py-3 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-gray-950 font-bold shadow-lg shadow-cyan-500/30 transition">Open the 3D Explorer</a>
+        <a href="calculator.html" class="px-5 py-3 rounded-xl border border-amber-400/50 hover:bg-amber-400/10 text-amber-300 font-bold transition">Try the Calculator</a>
+      </div>
+    </div>
+    <div id="hero3d" class="relative w-full max-w-md mx-auto aspect-square">
+    <svg id="hero" viewBox="0 0 400 320" class="w-full h-full" role="img" aria-label="Animated transformer: magnetic flux circulating around an iron core between a cyan primary coil and an amber secondary coil">
+      <rect x="70" y="50" width="260" height="220" fill="none" stroke="#334155" stroke-width="34"/>
+      <g fill="#00f2fe" id="pc"></g><g fill="#f59e0b" id="sc"></g>
+      <text x="70" y="26" fill="#00f2fe" font-family="JetBrains Mono,monospace" font-size="15" font-weight="700" text-anchor="middle">V1 · N1</text>
+      <text x="330" y="26" fill="#f59e0b" font-family="JetBrains Mono,monospace" font-size="15" font-weight="700" text-anchor="middle">V2 · N2</text>
+      <g id="dots" fill="#7dd3fc"></g>
+    </svg>
+    <canvas id="hero-gl" class="hidden absolute inset-0 w-full h-full cursor-grab" style="touch-action:pan-y" aria-hidden="true"></canvas>
+    </div>
+  </section>
+  <section class="grid md:grid-cols-2 gap-4">
+    <a href="explorer.html" class="block rounded-2xl p-6 bg-slate-900/70 border border-cyan-500/30 hover:border-cyan-300 transition">
+      <h2 class="text-xl font-bold text-cyan-300">3D Explorer</h2>
+      <p class="mt-2 text-sm text-gray-300 leading-relaxed">Orbit 10 components from tank to windings. Switch to cutaway view and read the construction and working equation of each part. Export a study sheet.</p>
+    </a>
+    <a href="calculator.html" class="block rounded-2xl p-6 bg-slate-900/70 border border-amber-500/30 hover:border-amber-300 transition">
+      <h2 class="text-xl font-bold text-amber-300">Transformer Calculator</h2>
+      <p class="mt-2 text-sm text-gray-300 leading-relaxed">Enter any voltage, current or turns value and the rest solve themselves. See peak flux, phase lag and a live AC oscilloscope next to 3D coils.</p>
+    </a>
+  </section>
+</main>
+<footer class="max-w-5xl mx-auto px-5 pb-8 text-xs text-gray-500">Built for diploma-level electrical engineering students. Works on phones, tablets and desktops.</footer>
+<script>
+(function(){var p='',s='',d='',i;
+for(i=0;i<8;i++)p+='<rect x="46" y="'+(112+i*13)+'" width="48" height="9" rx="4.5"/>';
+for(i=0;i<4;i++)s+='<rect x="306" y="'+(120+i*26)+'" width="48" height="9" rx="4.5"/>';
+for(i=0;i<10;i++)d+='<circle r="4"><animateMotion dur="6s" begin="-'+(i*0.6)+'s" repeatCount="indefinite" path="M70,50 H330 V270 H70 Z"/></circle>';
+document.getElementById('pc').innerHTML=p;document.getElementById('sc').innerHTML=s;document.getElementById('dots').innerHTML=d;
+if(matchMedia('(prefers-reduced-motion: reduce)').matches)document.getElementById('hero').pauseAnimations();})();
+</script>
+<script>
+/* 3D hero: loads Three.js after the page has painted; the SVG stays as fallback if WebGL is unavailable */
+(function(){
+var box=document.getElementById('hero3d'),cv=document.getElementById('hero-gl'),still=matchMedia('(prefers-reduced-motion: reduce)').matches;
+function start(){try{
+var T=THREE,r=new T.WebGLRenderer({canvas:cv,antialias:true,alpha:true});r.setPixelRatio(Math.min(devicePixelRatio,2));
+var sc=new T.Scene(),cam=new T.PerspectiveCamera(40,1,.1,50);cam.position.set(4.6,2.6,6.2);cam.lookAt(0,0,0);
+sc.add(new T.AmbientLight(0xffffff,1.1));
+[[0xffffff,2.2,6,10,8],[0x00f2fe,1.2,-8,4,-6],[0xf59e0b,1.4,0,-6,-8]].forEach(function(l){var d=new T.DirectionalLight(l[0],l[1]);d.position.set(l[2],l[3],l[4]);sc.add(d);});
+var rig=new T.Group();sc.add(rig);
+var core=new T.MeshStandardMaterial({color:0x475569,metalness:.9,roughness:.25});
+function box3(w,h,d,x,y){var m=new T.Mesh(new T.BoxGeometry(w,h,d),core);m.position.set(x,y,0);rig.add(m);}
+box3(3.6,.45,.5,0,1.2);box3(3.6,.45,.5,0,-1.2);box3(.45,2,.45,-1.35,0);box3(.45,2,.45,1.35,0);
+var tor=new T.TorusGeometry(.38,.05,12,24),pm=new T.MeshStandardMaterial({color:0x00f2fe,emissive:0x00f2fe,emissiveIntensity:.3,metalness:.8,roughness:.2}),sm=new T.MeshStandardMaterial({color:0xf59e0b,emissive:0xf59e0b,emissiveIntensity:.3,metalness:.8,roughness:.2});
+function coil(x,n,m){for(var i=0;i<n;i++){var t=new T.Mesh(tor,m);t.rotation.x=Math.PI/2;t.position.set(x,-.8+1.6/n*i,0);rig.add(t);}}
+coil(-1.35,8,pm);coil(1.35,4,sm);
+var P=[new T.Vector3(-1.35,1.2,0),new T.Vector3(1.35,1.2,0),new T.Vector3(1.35,-1.2,0),new T.Vector3(-1.35,-1.2,0)],dg=new T.SphereGeometry(.05,8,8),dm=new T.MeshBasicMaterial({color:0x7dd3fc}),ps=[];
+for(var i=0;i<40;i++){var m=new T.Mesh(dg,dm);rig.add(m);ps.push({m:m,p:i/40});}
+function size(){var w=box.clientWidth,h=box.clientHeight;if(!w||!h)return;r.setSize(w,h,false);cam.aspect=w/h;cam.updateProjectionMatrix();draw();}
+function place(){ps.forEach(function(q){var t=q.p*4,k=Math.floor(t)%4;q.m.position.lerpVectors(P[k],P[(k+1)%4],t-Math.floor(t));});}
+function draw(){place();r.render(sc,cam);}
+var vis=true,drag=false,lx=0,ly=0;rig.rotation.y=-.5;
+new IntersectionObserver(function(e){vis=e[0].isIntersecting;}).observe(box);
+cv.addEventListener('pointerdown',function(e){drag=true;lx=e.clientX;ly=e.clientY;cv.setPointerCapture(e.pointerId);});
+cv.addEventListener('pointermove',function(e){if(!drag)return;rig.rotation.y+=(e.clientX-lx)*.01;rig.rotation.x=Math.max(-.6,Math.min(.6,rig.rotation.x+(e.clientY-ly)*.006));lx=e.clientX;ly=e.clientY;if(still)draw();});
+['pointerup','pointercancel'].forEach(function(n){cv.addEventListener(n,function(){drag=false;});});
+new ResizeObserver(size).observe(box);
+cv.classList.remove('hidden');document.getElementById('hero').style.display='none';size();
+if(still)return;
+(function loop(t){requestAnimationFrame(loop);if(!vis||document.hidden)return;
+if(!drag)rig.rotation.y+=.004;
+ps.forEach(function(q){q.p=(q.p+.0035)%1;});
+pm.emissiveIntensity=sm.emissiveIntensity=.35+.25*Math.sin(t/300);
+draw();})(0);
+}catch(e){/* keep SVG fallback */}}
+addEventListener('load',function(){var s=document.createElement('script');s.src='vendor/three.min.js';s.onload=start;document.head.appendChild(s);});
+})();
+</script>
+</body>
+</html>
