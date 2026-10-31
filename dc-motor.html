@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>DC Motor Cut-Section Visualizer</title>
+
+    <!-- Tailwind CSS CDN -->
+    <meta name="theme-color" content="#060911">
+    <meta name="description" content="Explore the construction of a DC motor in 3D: yoke, poles, armature, commutator and brushes, with the working principle and formula for each part.">
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="preload" href="vendor/fonts/inter-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="css/tailwind.css">
+    <link rel="stylesheet" href="css/app.css">
+    <link rel="stylesheet" href="vendor/fa/fa.css">
+    <link rel="stylesheet" href="vendor/katex/katex.min.css">
+    <script src="vendor/three.min.js"></script>
+    <script src="vendor/OrbitControls.js"></script>
+    <script src="vendor/gsap.min.js"></script>
+    <script src="vendor/katex/katex.min.js"></script>
+
+    <style>
+        * {
+            -webkit-tap-highlight-color: transparent;
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #060911;
+            color: #f3f4f6;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Compact 3D Viewport styling */
+        .viewport-container {
+            width: 100%;
+            height: 34vh;
+            min-height: 240px;
+            max-height: 300px;
+            position: relative;
+            background: radial-gradient(circle at 50% 50%, #111827 0%, #060911 90%);
+            border-bottom: 1px solid rgba(0, 242, 254, 0.2);
+            flex-shrink: 0;
+        }
+
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.88);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+        }
+
+        .custom-scroll::-webkit-scrollbar {
+            width: 5px;
+            height: 5px;
+        }
+        .custom-scroll::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.6);
+        }
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: #00f2fe;
+            border-radius: 4px;
+        }
+
+        .part-pill {
+            transition: all 0.2s ease-in-out;
+        }
+        .part-pill.active {
+            background: linear-gradient(135deg, #00f2fe 0%, #0284c7 100%);
+            color: #060911;
+            font-weight: 700;
+            box-shadow: 0 0 12px rgba(0, 242, 254, 0.4);
+            border-color: #00f2fe;
+        }
+
+        .katex-display {
+            margin: 0.15em 0 !important;
+            overflow-x: auto;
+            overflow-y: hidden;
+        }
+
+        input[type=range] {
+            -webkit-appearance: none;
+            background: transparent;
+        }
+        input[type=range]:focus {
+            outline: none;
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 5px;
+            cursor: pointer;
+            background: #1e293b;
+            border-radius: 4px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+        input[type=range]::-webkit-slider-thumb {
+            height: 16px;
+            width: 16px;
+            border-radius: 50%;
+            background: #00f2fe;
+            cursor: pointer;
+            -webkit-appearance: none;
+            margin-top: -5.5px;
+            box-shadow: 0 0 8px #00f2fe;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 1. MINIMALIST TOP HEADER -->
+    <header class="h-11 bg-gray-950 border-b border-gray-800 px-4 flex items-center justify-between z-30 shrink-0">
+        <div class="flex items-center space-x-2 min-w-0">
+            <div class="w-6 h-6 rounded-md bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center text-gray-950 shadow-md">
+                <i class="fa-solid fa-gears text-xs"></i>
+            </div>
+            <h1 class="text-xs sm:text-sm font-bold text-white tracking-wide uppercase truncate">DC Motor Construction & Cut-Section Visualizer</h1>
+        </div>
+
+        <button id="btn-reset-view" class="p-1 px-2.5 rounded-lg text-xs font-semibold bg-gray-900 hover:bg-gray-800 text-gray-300 border border-gray-700 transition flex items-center gap-1">
+            <i class="fa-solid fa-rotate-left text-cyan-400 text-[10px]"></i>
+            <span class="text-[10px] font-mono">RESET</span>
+        </button>
+    </header>
+
+    <!-- 2. COMPACT 3D ANIMATION VIEWPORT -->
+    <div class="viewport-container overflow-hidden z-20">
+        <canvas id="motor-canvas" class="w-full h-full cursor-grab active:cursor-grabbing"></canvas>
+
+        <!-- Selected Part Badge -->
+        <div class="absolute top-2.5 left-2.5 glass-panel px-2.5 py-1 rounded-lg border border-cyan-500/30 flex items-center gap-2 pointer-events-none z-10">
+            <span id="part-dot" class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+            <div>
+                <div class="text-[7px] font-mono text-gray-400 uppercase tracking-widest">Active Component</div>
+                <div id="active-part-title" class="text-[11px] font-bold text-cyan-300 font-mono">HORIZONTAL DC MOTOR ASSEMBLY</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. SIMPLIFIED CONTROLS BAR (BELOW VIEWPORT) -->
+    <section class="bg-gray-900 border-b border-gray-800 py-2 px-4 z-20 shrink-0">
+        <div class="max-w-2xl mx-auto flex items-center justify-between gap-3">
+            
+            <!-- Rotor Rotation Toggle Button -->
+            <button id="btn-rotate" class="py-1 px-3 bg-amber-500/20 border border-amber-500/50 rounded-lg font-bold text-xs text-amber-300 hover:bg-amber-500/30 transition flex items-center gap-2 shrink-0">
+                <i class="fa-solid fa-rotate text-xs"></i> Rotor: <span id="rotate-status">RUNNING</span>
+            </button>
+
+            <!-- RPM Speed Control Slider -->
+            <div class="flex-1 max-w-xs flex items-center gap-2 bg-gray-950 px-3 py-1 rounded-lg border border-gray-800">
+                <span class="text-gray-400 font-mono text-[10px] uppercase shrink-0">RPM Speed:</span>
+                <input id="rpm-slider" type="range" min="0" max="300" value="80" class="w-full">
+                <span id="rpm-val" class="text-xs font-mono text-amber-400 font-bold min-w-[30px] text-right">80</span>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- 4. LOWER EDUCATIONAL CONTENT SECTION -->
+    <main class="flex-1 overflow-y-auto custom-scroll bg-gray-950 p-3.5 space-y-3">
+
+        <!-- COMPONENT SELECTION PILLS -->
+        <div class="space-y-1">
+            <div class="text-[10px] font-mono text-gray-400 uppercase tracking-wider flex items-center justify-between">
+                <span>Select Component Cut-Section</span>
+                <span class="text-cyan-400 text-[9px]"><i class="fa-solid fa-hand-pointer mr-1"></i>Tap to Inspect</span>
+            </div>
+            
+            <div class="flex items-center space-x-2 overflow-x-auto pb-1 custom-scroll">
+                <button class="part-pill active px-3 py-1 rounded-lg text-xs font-medium bg-gray-900 text-gray-300 border border-gray-800 shrink-0" data-part="all">
+                    <i class="fa-solid fa-cubes mr-1"></i> Full Motor
+                </button>
+                <button class="part-pill px-3 py-1 rounded-lg text-xs font-medium bg-gray-900 text-gray-300 border border-gray-800 shrink-0" data-part="yoke">
+                    Yoke & Frame
+                </button>
+                <button class="part-pill px-3 py-1 rounded-lg text-xs font-medium bg-gray-900 text-gray-300 border border-gray-800 shrink-0" data-part="poles">
+                    Field Poles & Shoes
+                </button>
+                <button class="part-pill px-3 py-1 rounded-lg text-xs font-medium bg-gray-900 text-gray-300 border border-gray-800 shrink-0" data-part="interpoles">
+                    Interpoles
+                </button>
+                <button class="part-pill px-3 py-1 rounded-lg text-xs font-medium bg-gray-900 text-gray-300 border border-gray-800 shrink-0" data-part="fieldCoils">
+                    Field Windings
+                </button>
+                <button class="part-pill px-3 py-1 rounded-lg text-xs font-medium bg-gray-900 text-gray-300 border border-gray-800 shrink-0" data-part="armatureCore">
+                    Armature Core
+                </button>
+                <button class="part-pill px-3 py-1 rounded-lg text-xs font-medium bg-gray-900 text-gray-300 border border-gray-800 shrink-0" data-part="armatureCoils">
+                    Armature Coils
+                </button>
+                <button class="part-pill px-3 py-1 rounded-lg text-xs font-medium bg-gray-900 text-gray-300 border border-gray-800 shrink-0" data-part="commutator">
+                    Commutator
+                </button>
+                <button class="part-pill px-3 py-1 rounded-lg text-xs font-medium bg-gray-900 text-gray-300 border border-gray-800 shrink-0" data-part="brushes">
+                    Carbon Brushes
+                </button>
+                <button class="part-pill px-3 py-1 rounded-lg text-xs font-medium bg-gray-900 text-gray-300 border border-gray-800 shrink-0" data-part="shaft">
+                    Shaft & Bearings
+                </button>
+            </div>
+        </div>
+
+        <!-- TECHNICAL DETAILS CARD -->
+        <div id="details-card" class="glass-panel p-3.5 rounded-xl border border-gray-800 space-y-3">
+            <div class="flex items-center justify-between border-b border-gray-800 pb-2.5">
+                <div class="flex items-center space-x-2.5">
+                    <div id="part-icon-box" class="w-8 h-8 rounded-lg bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center text-cyan-400">
+                        <i class="fa-solid fa-gears text-xs"></i>
+                    </div>
+                    <div>
+                        <h2 id="card-part-name" class="text-xs font-bold text-white uppercase tracking-wider">Horizontal DC Motor Assembly</h2>
+                        <div id="card-material" class="text-[9px] font-mono text-cyan-400">Cast Steel Frame, Silicon Steel Core, Copper & Carbon Brushes</div>
+                    </div>
+                </div>
+                <span id="card-badge" class="text-[8px] font-mono text-emerald-400 bg-emerald-400/10 px-2 py-0.5 rounded border border-emerald-400/20">Industrial Machine</span>
+            </div>
+
+            <!-- Function -->
+            <div>
+                <h3 class="text-[9px] font-mono text-gray-400 uppercase tracking-widest mb-0.5">Component Function</h3>
+                <p id="card-function" class="text-xs text-gray-300 leading-relaxed">
+                    Integrated electromechanical machine converting direct current (DC) electrical power into continuous mechanical shaft rotation.
+                </p>
+            </div>
+
+            <!-- Working Principle & Purpose -->
+            <div class="bg-gray-900/70 p-2.5 rounded-lg border border-gray-800">
+                <h3 class="text-[9px] font-mono text-amber-400 uppercase tracking-widest mb-0.5 flex items-center gap-1">
+                    <i class="fa-solid fa-bolt text-[10px]"></i> Working Principle & Purpose
+                </h3>
+                <p id="card-working" class="text-xs text-gray-300 leading-relaxed">
+                    Operates on Lorentz Force ($F = B \cdot I_a \cdot L$). Stationary field poles produce magnetic flux ($\Phi$). Current-carrying armature conductors cut this flux, producing continuous mechanical torque ($T$).
+                </p>
+            </div>
+
+            <!-- KaTeX Formatted Equations -->
+            <div class="bg-gray-950 p-2.5 rounded-lg border border-cyan-500/20 space-y-0.5">
+                <div class="text-[9px] font-mono text-cyan-400 uppercase flex items-center justify-between">
+                    <span>Governing Formula</span>
+                    <span class="text-[8px] text-gray-500">KaTeX Rendered</span>
+                </div>
+                <div id="card-formula" class="text-xs text-center text-cyan-300 py-0.5"></div>
+            </div>
+        </div>
+
+        <a href="index.html#library" class="block bg-gray-900/70 rounded-xl p-3 border border-cyan-500/40 hover:border-cyan-300 transition">
+            <div class="flex items-center justify-between gap-3"><div><div class="text-sm font-bold text-white">Explore more components</div><div class="text-[11px] text-gray-400 mt-0.5">Transformers, calculators and more in the VoltVerse library.</div></div><i class="fa-solid fa-layer-group text-cyan-400"></i></div></a>
+        <div class="pb-4"></div>
+    </main>
+
+    <nav class="app-nav" aria-label="Main"><a href="index.html" class="nav-tab"><i class="fa-solid fa-house"></i><span>Home</span></a><a href="dc-motor.html" class="nav-tab" aria-current="page"><i class="fa-solid fa-gears"></i><span>DC Motor</span></a><a href="index.html#library" class="nav-tab"><i class="fa-solid fa-layer-group"></i><span>Library</span></a></nav>
+
+    <!-- 3D ENGINE & LOGIC SCRIPT -->
+    <script>
+        // Engineering Data
+        const partsDatabase = {
+            all: {
+                name: "Horizontal DC Motor Assembly",
+                material: "Cast Steel Yoke, Laminated Silicon Steel Core, Electrolytic Copper & Carbon",
+                badge: "Industrial Machine",
+                icon: "fa-gears",
+                function: "Integrated electromechanical machine converting direct current (DC) electrical energy into continuous mechanical rotational torque.",
+                working: "Based on Fleming's Left-Hand Rule. Stator field poles generate magnetic flux (Φ) while armature conductors carry armature current (Ia), producing driving torque (T).",
+                formula: "E_b = \\frac{\\Phi Z N P}{60 A} \\quad \\text{and} \\quad T = 0.159 \\cdot \\Phi Z I_a \\left(\\frac{P}{A}\\right)"
+            },
+            yoke: {
+                name: "Landscape Cylindrical Yoke & Frame",
+                material: "Heavy-Duty Cast Steel Horizontal Shell with End Cover Plates",
+                badge: "Stator Frame",
+                icon: "fa-shield-halved",
+                function: "Encloses internal motor components horizontally, provides rigid mechanical support, houses end bearings, and acts as a magnetic return path.",
+                working: "Carries half of the main pole magnetic flux (Φ/2) with low magnetic reluctance. Heavy mounting feet anchor the motor onto foundation bases.",
+                formula: "\\Phi_{\\text{yoke}} = \\frac{\\Phi}{2} \\quad \\text{and} \\quad B_{\\text{yoke}} = \\frac{\\Phi}{2 A_y}"
+            },
+            poles: {
+                name: "Main Field Poles & Curved Shoes",
+                material: "Laminated Sheet Steel Riveted Together",
+                badge: "Main Stator Flux",
+                icon: "fa-magnet",
+                function: "Bolted to the inner horizontal yoke surface to support field coils and spread magnetic flux evenly over the armature air gap.",
+                working: "Curved pole shoes reduce magnetic reluctance across the air gap, establishing uniform radial magnetic flux density (Bg).",
+                formula: "B_g = \\frac{\\Phi}{A_{\\text{shoe}}} \\quad \\text{(Radial Air-Gap Flux Density)}"
+            },
+            interpoles: {
+                name: "Interpoles (Commutating Poles)",
+                material: "Solid Steel / Laminations with Heavy Copper Ribbon",
+                badge: "Spark Suppression",
+                icon: "fa-wand-magic-sparkles",
+                function: "Auxiliary narrow poles positioned on the magnetic neutral axis (MNA) between main poles.",
+                working: "Connected in series with the armature to induce a commutating voltage ($e_c$) that cancels reactance voltage ($L \\cdot di/dt$), preventing brush sparking.",
+                formula: "e_c = L \\cdot \\frac{2 I_a}{T_c} \\quad \\text{(Reactance Voltage Cancellation)}"
+            },
+            fieldCoils: {
+                name: "Field Windings (Stator Coils)",
+                material: "Super-Enameled Electrolytic Copper Magnet Wire",
+                badge: "Excitation Coils",
+                icon: "fa-bolt",
+                function: "Formed coils fitted over main field pole bodies to produce primary magnetic flux when energized.",
+                working: "Carries field current (If) to generate main magnetic field flux (Φ). Connected in shunt, series, or compound motor configurations.",
+                formula: "\\text{AT}_{\\text{pole}} = I_f \\cdot N_f \\quad \\text{(Ampere-Turns per Pole)}"
+            },
+            armatureCore: {
+                name: "Slotted Armature Core",
+                material: "Laminated High-Grade Silicon Steel (0.35mm thick)",
+                badge: "Rotor Core",
+                icon: "fa-compact-disc",
+                function: "Cylindrical rotor body keyed to shaft featuring axial slots for windings and radial cooling ducts.",
+                working: "Holds copper armature conductors while providing a low-reluctance magnetic path. Insulated steel laminations minimize eddy current losses ($P_e$).",
+                formula: "P_e = k_e \\cdot f^2 \\cdot B_m^2 \\cdot t^2 \\cdot V"
+            },
+            armatureCoils: {
+                name: "Armature Windings (Rotor Conductors)",
+                material: "Insulated Heavy Copper Wire / Bars",
+                badge: "Torque Conductors",
+                icon: "fa-scroll",
+                function: "Insulated copper conductors arranged in core slots and connected to form Lap or Wave winding circuits.",
+                working: "Carries armature current (Ia) perpendicular to field flux (Φ). Experiences Lorentz magnetic force ($F = B I_a L$) driving continuous shaft rotation.",
+                formula: "E_b = \\frac{\\Phi Z N P}{60 A} \\quad \\text{and} \\quad F = B \\cdot I_a \\cdot L"
+            },
+            commutator: {
+                name: "Copper Commutator Segments",
+                material: "Hard-Drawn Wedge-Shaped Copper Segments with Mica Insulation",
+                badge: "Mechanical Rectifier",
+                icon: "fa-circle-notch",
+                function: "Cylindrical split-ring assembly insulated by mica strips, connected to armature coil ends.",
+                working: "Reverses current direction in armature coils as they cross the magnetic neutral axis, maintaining continuous unidirectional electromagnetic torque.",
+                formula: "T = 0.159 \\cdot \\Phi \\cdot Z \\cdot I_a \\cdot \\left(\\frac{P}{A}\\right)"
+            },
+            brushes: {
+                name: "Carbon Brushes & Holder Gear",
+                material: "Electro-Graphite Blocks, Brass Box Holders & Copper Pigtails",
+                badge: "Sliding Contact",
+                icon: "fa-grip-lines-vertical",
+                function: "Spring-loaded carbon blocks held in stationary brush boxes, riding on the rotating commutator.",
+                working: "Provides low-friction electrical current transfer between external power supply terminals and the rotating armature commutator.",
+                formula: "V_{\\text{brush drop}} \\approx 1.0 - 2.0 \\text{ V (Total Contact Drop)}"
+            },
+            shaft: {
+                name: "Keyed Steel Shaft & Bearings",
+                material: "Forged High-Tensile Steel Shaft & Precision Ball Bearings",
+                badge: "Drive Shaft",
+                icon: "fa-dharmachakra",
+                function: "Central horizontal shaft supporting armature core, commutator, and transmitting output torque to mechanical loads.",
+                working: "Transmits output mechanical shaft power ($P_{\\text{mech}} = T \\cdot \\omega$) to driven external machinery while supported by end-cap bearings.",
+                formula: "P_{\\text{mech}} = T \\cdot \\omega = T \\cdot \\left(\\frac{2\\pi N}{60}\\right)"
+            }
+        };
+
+        // THREE.JS Engine Variables
+        let scene, camera, renderer, controls;
+        let motorGroup, rotorGroup, yokeGroup, polesGroup, interpolesGroup, fieldCoilsGroup;
+        let armatureCoreGroup, armatureCoilsGroup, commutatorGroup, brushesGroup, shaftGroup;
+        let partMeshes = {};
+        
+        let activePartKey = "all";
+        let isRotorRotating = true;
+        let rpmSpeed = 80;
+        let raycaster = new THREE.Raycaster();
+        let mouse = new THREE.Vector2();
+
+        function init3D() {
+            gsap.defaults({ overwrite: "auto" });
+            const container = document.querySelector('.viewport-container');
+            const canvas = document.getElementById('motor-canvas');
+
+            // 1. Scene Setup
+            scene = new THREE.Scene();
+            scene.fog = new THREE.FogExp2(0x060911, 0.025);
+
+            // 2. Camera Setup (Positioned for Horizontal Motor View)
+            camera = new THREE.PerspectiveCamera(38, container.clientWidth / container.clientHeight, 0.1, 100);
+            camera.position.set(5.5, 3.2, 6.5);
+
+            // 3. Renderer
+            renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true });
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.shadowMap.enabled = false;
+
+            // 4. Orbit Controls
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            controls.minDistance = 2.0;
+            controls.maxDistance = 14.0;
+
+            // 5. Lighting Setup
+            const ambientLight = new THREE.AmbientLight(0xffffff, 1.4);
+            scene.add(ambientLight);
+
+            const keyLight = new THREE.DirectionalLight(0xffffff, 2.2);
+            keyLight.position.set(6, 10, 8);
+            keyLight.castShadow = false;
+            scene.add(keyLight);
+
+            const cyanRim = new THREE.DirectionalLight(0x00f2fe, 1.6);
+            cyanRim.position.set(-8, 3, -6);
+            scene.add(cyanRim);
+
+            // 6. Build Horizontal Geometry
+            buildHorizontalDCMotor();
+
+            // 7. Event Listeners
+            canvas.addEventListener('pointerdown', onCanvasPointerDown);
+            window.addEventListener('resize', onWindowResize);
+
+            // 8. Start Animation Loop
+            animateLoop();
+        }
+
+        function buildHorizontalDCMotor() {
+            motorGroup = new THREE.Group();
+            rotorGroup = new THREE.Group();
+            scene.add(motorGroup);
+            motorGroup.add(rotorGroup);
+
+            // Materials Palette
+            const castIronMat = new THREE.MeshStandardMaterial({ color: 0x334155, metalness: 0.8, roughness: 0.3, side: THREE.DoubleSide });
+            const steelMat = new THREE.MeshStandardMaterial({ color: 0x94a3b8, metalness: 0.9, roughness: 0.2 });
+            const darkSteelMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, metalness: 0.85, roughness: 0.4 });
+            const copperCoilMat = new THREE.MeshStandardMaterial({ color: 0xd97706, metalness: 0.7, roughness: 0.3 });
+            const copperCommMat = new THREE.MeshStandardMaterial({ color: 0xf59e0b, metalness: 0.9, roughness: 0.15 });
+            const cyanCoilMat = new THREE.MeshStandardMaterial({ color: 0x00f2fe, metalness: 0.8, roughness: 0.25 });
+            const carbonBrushMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.95, metalness: 0.1 });
+            const brassHolderMat = new THREE.MeshStandardMaterial({ color: 0xeab308, metalness: 0.85, roughness: 0.25 });
+
+            // ==========================================
+            // A. HORIZONTAL LANDSCAPE CYLINDRICAL YOKE & FEET
+            // ==========================================
+            yokeGroup = new THREE.Group();
+
+            // Horizontal Cylindrical Shell (240 Deg Solid, 120 Deg Top/Front Cutaway)
+            const yokeGeo = new THREE.CylinderGeometry(2.35, 2.35, 3.8, 36, 1, true, Math.PI * 0.33, Math.PI * 1.33);
+            const yokeMesh = new THREE.Mesh(yokeGeo, castIronMat);
+            yokeMesh.rotation.z = Math.PI / 2; // Orient horizontally along X-axis
+            yokeMesh.userData = { partName: 'yoke' };
+            yokeGroup.add(yokeMesh);
+
+            // End Flange Rings
+            const ringGeo = new THREE.TorusGeometry(2.37, 0.08, 12, 36);
+            const r1 = new THREE.Mesh(ringGeo, castIronMat); r1.position.x = 1.88;
+            const r2 = new THREE.Mesh(ringGeo, castIronMat); r2.position.x = -1.88;
+            r1.userData = r2.userData = { partName: 'yoke' };
+            yokeGroup.add(r1); yokeGroup.add(r2);
+
+            // Heavy Base Mounting Feet (Horizontal Base)
+            const feetGeo = new THREE.BoxGeometry(3.6, 0.26, 4.8);
+            const feetMesh = new THREE.Mesh(feetGeo, castIronMat);
+            feetMesh.position.y = -2.48;
+            feetMesh.userData = { partName: 'yoke' };
+            yokeGroup.add(feetMesh);
+
+            // Top Lifting Eyebolt
+            const eyeRing = new THREE.Mesh(new THREE.TorusGeometry(0.28, 0.07, 12, 24), steelMat);
+            eyeRing.position.set(0, 2.7, 0);
+            eyeRing.userData = { partName: 'yoke' };
+            const eyeStem = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 0.3, 12), steelMat);
+            eyeStem.position.set(0, 2.42, 0);
+            eyeStem.userData = { partName: 'yoke' };
+            yokeGroup.add(eyeRing); yokeGroup.add(eyeStem);
+
+            // End Cover Shields
+            const endCoverGeo = new THREE.CylinderGeometry(2.35, 2.35, 0.28, 32, 1, false, Math.PI * 0.33, Math.PI * 1.33);
+            const endCoverRear = new THREE.Mesh(endCoverGeo, castIronMat);
+            endCoverRear.rotation.z = Math.PI / 2;
+            endCoverRear.position.x = 1.95;
+            endCoverRear.userData = { partName: 'yoke' };
+            yokeGroup.add(endCoverRear);
+
+            motorGroup.add(yokeGroup);
+            partMeshes.yoke = yokeGroup;
+
+            // ==========================================
+            // B. MAIN FIELD POLES & FIELD WINDINGS (4 Poles)
+            // ==========================================
+            polesGroup = new THREE.Group();
+            fieldCoilsGroup = new THREE.Group();
+
+            for (let i = 0; i < 4; i++) {
+                const angle = (Math.PI / 2) * i;
+                const poleHolder = new THREE.Group();
+                poleHolder.rotation.x = angle; // Oriented along horizontal X axis
+
+                // Main Pole Body
+                const poleBody = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.65, 0.76), steelMat);
+                poleBody.position.y = 1.88;
+                poleBody.userData = { partName: 'poles' };
+                poleHolder.add(poleBody);
+
+                // Curved Pole Shoe
+                const shoeGeo = new THREE.CylinderGeometry(1.54, 1.54, 2.4, 16, 1, true, -Math.PI / 5, (2 * Math.PI) / 5);
+                const shoeMesh = new THREE.Mesh(shoeGeo, steelMat);
+                shoeMesh.rotation.z = Math.PI / 2;
+                shoeMesh.position.y = 1.50;
+                shoeMesh.userData = { partName: 'poles' };
+                poleHolder.add(shoeMesh);
+
+                polesGroup.add(poleHolder);
+
+                // Copper Field Coils
+                const coilHolder = new THREE.Group();
+                coilHolder.rotation.x = angle;
+                const coilMesh = new THREE.Mesh(new THREE.BoxGeometry(2.0, 0.42, 1.05), copperCoilMat);
+                coilMesh.position.y = 1.88;
+                coilMesh.userData = { partName: 'fieldCoils' };
+                coilHolder.add(coilMesh);
+                fieldCoilsGroup.add(coilHolder);
+            }
+
+            motorGroup.add(polesGroup);
+            motorGroup.add(fieldCoilsGroup);
+            partMeshes.poles = polesGroup;
+            partMeshes.fieldCoils = fieldCoilsGroup;
+
+            // ==========================================
+            // C. INTERPOLES (COMMUTATING POLES - 4 Poles)
+            // ==========================================
+            interpolesGroup = new THREE.Group();
+            for (let i = 0; i < 4; i++) {
+                const angle = (Math.PI / 2) * i + Math.PI / 4;
+                const interHolder = new THREE.Group();
+                interHolder.rotation.x = angle;
+
+                const interCore = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.3, 0.34), darkSteelMat);
+                interCore.position.y = 1.98;
+                interCore.userData = { partName: 'interpoles' };
+                interHolder.add(interCore);
+
+                const interWinding = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.24, 0.56), copperCoilMat);
+                interWinding.position.y = 1.98;
+                interWinding.userData = { partName: 'interpoles' };
+                interHolder.add(interWinding);
+
+                interpolesGroup.add(interHolder);
+            }
+            motorGroup.add(interpolesGroup);
+            partMeshes.interpoles = interpolesGroup;
+
+            // ==========================================
+            // D. SHAFT & BEARINGS (Horizontal Drive Axis)
+            // ==========================================
+            shaftGroup = new THREE.Group();
+            const shaftMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.32, 0.32, 5.8, 24), steelMat);
+            shaftMesh.rotation.z = Math.PI / 2;
+            shaftMesh.userData = { partName: 'shaft' };
+            shaftGroup.add(shaftMesh);
+
+            // Shaft Keyway
+            const keyway = new THREE.Mesh(new THREE.BoxGeometry(0.85, 0.08, 0.08), darkSteelMat);
+            keyway.position.set(2.3, 0.32, 0);
+            keyway.userData = { partName: 'shaft' };
+            shaftGroup.add(keyway);
+
+            // Ball Bearings
+            const bearingMat = new THREE.MeshStandardMaterial({ color: 0x475569, metalness: 0.95, roughness: 0.15 });
+            const b1 = new THREE.Mesh(new THREE.TorusGeometry(0.56, 0.14, 14, 24), bearingMat);
+            b1.position.x = -2.45; b1.rotation.y = Math.PI / 2;
+            b1.userData = { partName: 'shaft' };
+            const b2 = b1.clone();
+            b2.position.x = 2.45;
+            b2.userData = { partName: 'shaft' };
+            shaftGroup.add(b1); shaftGroup.add(b2);
+
+            rotorGroup.add(shaftGroup);
+            partMeshes.shaft = shaftGroup;
+
+            // ==========================================
+            // E. ARMATURE CORE & SLOTS
+            // ==========================================
+            armatureCoreGroup = new THREE.Group();
+            const armCoreMat = new THREE.MeshStandardMaterial({ color: 0x0284c7, metalness: 0.8, roughness: 0.2 });
+            const mainCore = new THREE.Mesh(new THREE.CylinderGeometry(1.38, 1.38, 2.4, 32), armCoreMat);
+            mainCore.rotation.z = Math.PI / 2;
+            mainCore.userData = { partName: 'armatureCore' };
+            armatureCoreGroup.add(mainCore);
+
+            // Armature Slots
+            const slotMat = new THREE.MeshStandardMaterial({ color: 0x091428 });
+            for (let s = 0; s < 16; s++) {
+                const slotAngle = ((2 * Math.PI) / 16) * s;
+                const slotStrip = new THREE.Mesh(new THREE.BoxGeometry(2.42, 0.12, 0.14), slotMat);
+                slotStrip.position.set(0, Math.cos(slotAngle) * 1.35, Math.sin(slotAngle) * 1.35);
+                slotStrip.userData = { partName: 'armatureCore' };
+                armatureCoreGroup.add(slotStrip);
+            }
+
+            rotorGroup.add(armatureCoreGroup);
+            partMeshes.armatureCore = armatureCoreGroup;
+
+            // ==========================================
+            // F. ARMATURE COILS (Cyan Helix Conductors)
+            // ==========================================
+            armatureCoilsGroup = new THREE.Group();
+            for (let w = 0; w < 16; w++) {
+                const angle = ((2 * Math.PI) / 16) * w;
+                
+                const conductor = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.07, 2.5, 12), cyanCoilMat);
+                conductor.rotation.z = Math.PI / 2;
+                conductor.position.set(0, Math.cos(angle) * 1.34, Math.sin(angle) * 1.34);
+                conductor.userData = { partName: 'armatureCoils' };
+                armatureCoilsGroup.add(conductor);
+
+                const loopFront = new THREE.Mesh(new THREE.TorusGeometry(0.24, 0.065, 10, 16, Math.PI), cyanCoilMat);
+                loopFront.position.set(1.28, Math.cos(angle) * 1.18, Math.sin(angle) * 1.18);
+                loopFront.rotation.y = Math.PI / 2;
+                loopFront.userData = { partName: 'armatureCoils' };
+                armatureCoilsGroup.add(loopFront);
+
+                const loopRear = loopFront.clone();
+                loopRear.position.x = -1.28;
+                loopRear.userData = { partName: 'armatureCoils' };
+                armatureCoilsGroup.add(loopRear);
+            }
+
+            rotorGroup.add(armatureCoilsGroup);
+            partMeshes.armatureCoils = armatureCoilsGroup;
+
+            // ==========================================
+            // G. COMMUTATOR SEGMENTS
+            // ==========================================
+            commutatorGroup = new THREE.Group();
+            
+            const commCore = new THREE.Mesh(new THREE.CylinderGeometry(0.8, 0.8, 0.95, 32), copperCommMat);
+            commCore.rotation.z = Math.PI / 2;
+            commCore.position.x = -1.62;
+            commCore.userData = { partName: 'commutator' };
+            commutatorGroup.add(commCore);
+
+            const riserMesh = new THREE.Mesh(new THREE.CylinderGeometry(1.06, 0.8, 0.2), copperCommMat);
+            riserMesh.rotation.z = Math.PI / 2;
+            riserMesh.position.x = -1.05;
+            riserMesh.userData = { partName: 'commutator' };
+            commutatorGroup.add(riserMesh);
+
+            rotorGroup.add(commutatorGroup);
+            partMeshes.commutator = commutatorGroup;
+
+            // ==========================================
+            // H. CARBON BRUSHES & HOLDER GEAR
+            // ==========================================
+            brushesGroup = new THREE.Group();
+
+            const rockerRing = new THREE.Mesh(new THREE.TorusGeometry(1.2, 0.07, 12, 24), darkSteelMat);
+            rockerRing.position.x = -1.62;
+            rockerRing.rotation.y = Math.PI / 2;
+            rockerRing.userData = { partName: 'brushes' };
+            brushesGroup.add(rockerRing);
+
+            const brushPos = [
+                { x: -1.62, y: 1.0, z: 0, rot: 0 },
+                { x: -1.62, y: -1.0, z: 0, rot: Math.PI },
+                { x: -1.62, y: 0, z: 1.0, rot: Math.PI / 2 },
+                { x: -1.62, y: 0, z: -1.0, rot: -Math.PI / 2 }
+            ];
+
+            brushPos.forEach(p => {
+                const bHolderGroup = new THREE.Group();
+                bHolderGroup.position.set(p.x, p.y, p.z);
+                bHolderGroup.rotation.x = p.rot;
+
+                const boxHolder = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.44, 0.4), brassHolderMat);
+                boxHolder.userData = { partName: 'brushes' };
+                bHolderGroup.add(boxHolder);
+
+                const brushBlock = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.55, 0.32), carbonBrushMat);
+                brushBlock.position.y = -0.15;
+                brushBlock.userData = { partName: 'brushes' };
+                bHolderGroup.add(brushBlock);
+
+                brushesGroup.add(bHolderGroup);
+            });
+
+            motorGroup.add(brushesGroup);
+            partMeshes.brushes = brushesGroup;
+        }
+
+        // Camera Focus & Component Isolation
+        function focusOnPart(partKey) {
+            activePartKey = partKey;
+            const info = partsDatabase[partKey] || partsDatabase.all;
+
+            // Update Details Card Text
+            document.getElementById('active-part-title').textContent = info.name.toUpperCase();
+            document.getElementById('card-part-name').textContent = info.name;
+            document.getElementById('card-material').textContent = info.material;
+            document.getElementById('card-badge').textContent = info.badge;
+            document.getElementById('card-function').textContent = info.function;
+            document.getElementById('card-working').textContent = info.working;
+
+            // Render KaTeX Math Equations
+            try {
+                katex.render(info.formula, document.getElementById('card-formula'), { displayMode: true });
+            } catch(e) {}
+
+            // Update Active Selection Pill
+            document.querySelectorAll('.part-pill').forEach(pill => {
+                pill.classList.toggle('active', pill.dataset.part === partKey);
+            });
+
+            // Camera Target Vector Configuration
+            const cameraTargets = {
+                all: { pos: { x: 5.5, y: 3.2, z: 6.5 }, target: { x: 0, y: 0, z: 0 } },
+                yoke: { pos: { x: 3.8, y: 3.8, z: 4.8 }, target: { x: 0, y: 0, z: 0 } },
+                poles: { pos: { x: 2.4, y: 2.6, z: 3.2 }, target: { x: 0.6, y: 0, z: 0 } },
+                interpoles: { pos: { x: 2.2, y: 2.2, z: 3.0 }, target: { x: 0.4, y: 0, z: 0 } },
+                fieldCoils: { pos: { x: 2.6, y: 2.8, z: 3.0 }, target: { x: 1.0, y: 0, z: 0 } },
+                armatureCore: { pos: { x: 1.8, y: 2.2, z: 3.4 }, target: { x: 0, y: 0, z: 0 } },
+                armatureCoils: { pos: { x: 1.6, y: 2.0, z: 3.0 }, target: { x: 0.2, y: 0, z: 0 } },
+                commutator: { pos: { x: -1.2, y: 1.8, z: 2.8 }, target: { x: -1.62, y: 0, z: 0 } },
+                brushes: { pos: { x: -1.62, y: 2.6, z: 2.4 }, target: { x: -1.62, y: 0.4, z: 0 } },
+                shaft: { pos: { x: 0, y: 2.4, z: 4.8 }, target: { x: 0, y: 0, z: 0 } }
+            };
+
+            const t = cameraTargets[partKey] || cameraTargets.all;
+
+            controls.enabled = false;
+            gsap.to(camera.position, {
+                x: t.pos.x, y: t.pos.y, z: t.pos.z,
+                duration: 1.0,
+                ease: "power2.out",
+                onUpdate: () => controls.update(),
+                onComplete: () => { controls.enabled = true; }
+            });
+
+            gsap.to(controls.target, {
+                x: t.target.x, y: t.target.y, z: t.target.z,
+                duration: 1.0,
+                ease: "power2.out"
+            });
+
+            // Adjust Group Mesh Opacity for Isolation
+            Object.keys(partMeshes).forEach(key => {
+                const group = partMeshes[key];
+                const isSelected = (partKey === 'all' || partKey === key);
+
+                group.traverse((child) => {
+                    if (child.isMesh && child.material) {
+                        child.material.transparent = true;
+                        gsap.to(child.material, {
+                            opacity: isSelected ? 1.0 : 0.15,
+                            duration: 0.4
+                        });
+                    }
+                });
+            });
+        }
+
+        // Raycaster Selection on 3D Canvas
+        function onCanvasPointerDown(event) {
+            const rect = renderer.domElement.getBoundingClientRect();
+            mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+            mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(motorGroup.children, true);
+
+            if (intersects.length > 0) {
+                const hit = intersects.find(i => i.object.visible && i.object.material.opacity > 0.3 && i.object.userData.partName);
+                if (hit) {
+                    focusOnPart(hit.object.userData.partName);
+                }
+            }
+        }
+
+        // Animation Loop
+        function animateLoop() {
+            requestAnimationFrame(animateLoop);
+            controls.update();
+
+            if (isRotorRotating && rotorGroup) {
+                const speedRad = (rpmSpeed * Math.PI * 2) / (60 * 60);
+                rotorGroup.rotation.x += speedRad; // Rotate rotor around horizontal axis
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        function onWindowResize() {
+            const container = document.querySelector('.viewport-container');
+            if (!container) return;
+            camera.aspect = container.clientWidth / container.clientHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(container.clientWidth, container.clientHeight);
+        }
+
+        function attachUIListeners() {
+            document.querySelectorAll('.part-pill').forEach(btn => {
+                btn.addEventListener('click', () => focusOnPart(btn.dataset.part));
+            });
+
+            document.getElementById('btn-rotate').addEventListener('click', () => {
+                isRotorRotating = !isRotorRotating;
+                document.getElementById('rotate-status').textContent = isRotorRotating ? "RUNNING" : "STOPPED";
+            });
+
+            document.getElementById('rpm-slider').addEventListener('input', (e) => {
+                rpmSpeed = parseInt(e.target.value);
+                document.getElementById('rpm-val').textContent = rpmSpeed;
+            });
+
+            document.getElementById('btn-reset-view').addEventListener('click', () => {
+                focusOnPart('all');
+            });
+        }
+
+        // Give every part its own materials so fading one part never affects another
+        function isolateMaterials() {
+            Object.values(partMeshes).forEach(group => {
+                const seen = new Map();
+                group.traverse(o => {
+                    if (!o.isMesh) return;
+                    if (!seen.has(o.material)) seen.set(o.material, o.material.clone());
+                    o.material = seen.get(o.material);
+                });
+            });
+        }
+
+        window.onload = function() {
+            init3D();
+            isolateMaterials();
+            attachUIListeners();
+            focusOnPart('all');
+        };
+    </script>
+</body>
+</html>
