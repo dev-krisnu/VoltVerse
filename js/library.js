@@ -13,7 +13,9 @@ window.VOLTVERSE_LIBRARY = [
     blurb: 'Turn electrical energy into motion. See exactly what sits inside the casing.',
     tools: [
       { title: 'DC Motor Cut-Section Visualizer', href: 'dc-motor.html', tag: '3D model', icon: 'fa-gears',
-        desc: 'Yoke, poles, armature, commutator and brushes in 3D, with a spinning rotor and the working principle of each part.' }
+        desc: 'Yoke, poles, armature, commutator and brushes in 3D, with a spinning rotor and the working principle of each part.' },
+      { title: 'DC Motor Types Comparison', href: 'dc-motor-types.html', tag: '3D + circuits', icon: 'fa-diagram-project',
+        desc: 'Series, shunt and compound motors side by side: 3D cutaway, circuit schematic, equations, characteristics and uses.' }
     ] },
   { id: 'soon', title: 'Coming next', soon: true,
     blurb: 'The library keeps growing. Planned families:',
