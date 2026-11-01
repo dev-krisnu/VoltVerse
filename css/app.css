@@ -1,7 +1,7 @@
 @font-face{font-family:"Inter";font-style:normal;font-weight:100 900;font-display:swap;src:url(../vendor/fonts/inter-latin-wght-normal.woff2) format("woff2");unicode-range:U+0000-00FF,U+2000-206F,U+2212}
 @font-face{font-family:"Inter";font-style:normal;font-weight:100 900;font-display:swap;src:url(../vendor/fonts/inter-greek-wght-normal.woff2) format("woff2");unicode-range:U+0370-03FF}
 @font-face{font-family:"JetBrains Mono";font-style:normal;font-weight:100 800;font-display:swap;src:url(../vendor/fonts/jetbrains-mono-latin-wght-normal.woff2) format("woff2");unicode-range:U+0000-00FF,U+2000-206F,U+2212}
-.app-nav{flex-shrink:0;display:flex;justify-content:center;gap:4px;padding:6px 8px calc(6px + env(safe-area-inset-bottom,0px));background:rgba(3,7,18,.96);border-top:1px solid rgba(255,255,255,.08);z-index:30}
+.app-nav{flex-shrink:0;display:flex;justify-content:center;gap:4px;padding:6px 8px calc(6px + env(safe-area-inset-bottom,0px));background:#030712;border-top:1px solid rgba(255,255,255,.08);z-index:30}
 .nav-tab{flex:1;max-width:180px;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 4px;border-radius:10px;font-size:11px;font-weight:600;color:#94a3b8;text-decoration:none}
 .nav-tab i{font-size:15px}
 .nav-tab[aria-current="page"]{color:#00f2fe;background:rgba(0,242,254,.1)}

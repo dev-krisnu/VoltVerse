@@ -12,7 +12,7 @@
     <link rel="preload" href="vendor/fonts/inter-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="css/tailwind.css">
     <link rel="stylesheet" href="css/app.css">
-    <link rel="stylesheet" href="vendor/fa/fa.css">
+    <link rel="stylesheet" href="css/fa/fa.css">
     <link rel="stylesheet" href="vendor/katex/katex.min.css">
     <script src="vendor/three.min.js"></script>
     <script src="vendor/OrbitControls.js"></script>
@@ -121,7 +121,7 @@
             box-shadow: 0 0 8px #00f2fe;
         }
     </style>
-<style>body{min-height:100vh;min-height:100dvh;padding-bottom:calc(68px + env(safe-area-inset-bottom,0px))}.app-nav{position:fixed;left:0;right:0;bottom:0}</style>
+<style>body{min-height:100vh;min-height:100dvh;padding-bottom:calc(68px + env(safe-area-inset-bottom,0px))}.app-nav{position:fixed;left:0;right:0;bottom:0}nav .custom-scroll{scrollbar-width:none}nav .custom-scroll::-webkit-scrollbar{display:none}</style>
 </head>
 <body class="custom-scroll">
 
@@ -394,13 +394,13 @@
             series: {
                 name: "DC Series Motor",
                 subtitle: "Field Winding Connected in Series with Armature",
-                origin: "Named 'Series' because the field winding (S₁–S₂) is connected directly in series with the armature (A₁–A₂). The entire line current (Iₗ) flows through both windings.",
-                construction: "Field coils are constructed with very thick copper wire (low resistance R_se) and relatively few turns to handle full line current without overheating.",
+                origin: "Named 'Series' because the field winding ($S_1\\text{--}S_2$) is connected directly in series with the armature ($A_1\\text{--}A_2$). The entire line current ($I_L$) flows through both windings.",
+                construction: "Field coils are constructed with very thick copper wire (low resistance $R_{se}$) and relatively few turns to handle full line current without overheating.",
                 eqCurrent: "I_L = I_{se} = I_a",
                 eqVoltage: "V = E_b + I_a(R_a + R_{se}) + V_{\\text{brush}}",
                 eqPower: "V \\cdot I_a = E_b \\cdot I_a + I_a^2(R_a + R_{se})",
-                torqueChar: "Before magnetic saturation, flux Φ ∝ Ia, so Torque T ∝ Ia². Produces extremely high starting torque, ideal for heavy inertial loads.",
-                speedChar: "Speed N ∝ Eb / Φ. As load decreases (Ia → 0), flux Φ vanishes, causing speed N to rise dangerously high. NEVER run without load!",
+                torqueChar: "Before magnetic saturation, flux $\\Phi \\propto I_a$, so Torque $T \\propto I_a^2$. Produces extremely high starting torque, ideal for heavy inertial loads.",
+                speedChar: "Speed $N \\propto E_b / \\Phi$. As load decreases ($I_a \\to 0$), flux $\\Phi$ vanishes, causing speed N to rise dangerously high. NEVER run without load!",
                 apps: [
                     { name: "Electric Traction & Trains", desc: "Provides heavy torque required to accelerate heavy railway trains from standstill." },
                     { name: "Cranes & Overhead Hoists", desc: "Handles rapid lifting of heavy structural loads with high starting torque capability." },
@@ -410,13 +410,13 @@
             shunt: {
                 name: "DC Shunt Motor",
                 subtitle: "Field Winding Connected in Parallel (Shunt) Across Supply",
-                origin: "Named 'Shunt' (parallel) because the field winding (F₁–F₂) is connected directly across the supply terminals in parallel with the armature circuit (A₁–A₂).",
-                construction: "Field coils are made with fine insulated copper wire having many turns, yielding high electrical resistance (R_sh) to draw a small, constant field current.",
+                origin: "Named 'Shunt' (parallel) because the field winding ($F_1\\text{--}F_2$) is connected directly across the supply terminals in parallel with the armature circuit ($A_1\\text{--}A_2$).",
+                construction: "Field coils are made with fine insulated copper wire having many turns, yielding high electrical resistance ($R_{sh}$) to draw a small, constant field current.",
                 eqCurrent: "I_L = I_a + I_{sh} \\quad \\text{where} \\quad I_{sh} = \\frac{V}{R_{sh}}",
                 eqVoltage: "V = E_b + I_a R_a + V_{\\text{brush}}",
                 eqPower: "V \\cdot I_L = E_b \\cdot I_a + I_a^2 R_a + V \\cdot I_{sh}",
-                torqueChar: "Since field current Ish is constant, magnetic flux Φ is nearly constant. Thus, Torque T ∝ Ia (Linear torque relationship).",
-                speedChar: "Speed N ∝ (V - Ia Ra) / Φ. Excellent speed regulation; speed drops only slightly (2-5%) from no-load to full-load.",
+                torqueChar: "Since field current $I_{sh}$ is constant, magnetic flux $\\Phi$ is nearly constant. Thus, Torque $T \\propto I_a$ (Linear torque relationship).",
+                speedChar: "Speed $N \\propto (V - I_a R_a) / \\Phi$. Excellent speed regulation; speed drops only slightly (2-5%) from no-load to full-load.",
                 apps: [
                     { name: "Lathe Machines & CNC Tools", desc: "Requires constant rotational speed under varying cutting force conditions." },
                     { name: "Centrifugal Pumps & Blowers", desc: "Maintains smooth, steady fluid circulation speed." },
@@ -426,12 +426,12 @@
             shortCompound: {
                 name: "DC Short-Shunt Compound Motor",
                 subtitle: "Shunt Field Across Armature Only; Series Field in Supply Line",
-                origin: "Combines both Series (S₁–S₂) and Shunt (F₁–F₂) field coils. 'Short-Shunt' means the shunt field is connected directly across the armature terminals only.",
+                origin: "Combines both Series ($S_1\\text{--}S_2$) and Shunt ($F_1\\text{--}F_2$) field coils. 'Short-Shunt' means the shunt field is connected directly across the armature terminals only.",
                 construction: "Contains two sets of field windings per pole: a thick-wire series coil carrying line current and a fine-wire shunt coil carrying branch field current.",
                 eqCurrent: "I_{se} = I_L, \\quad I_{sh} = \\frac{V - I_L R_{se}}{R_{sh}}, \\quad I_a = I_L - I_{sh}",
                 eqVoltage: "V = E_b + I_a R_a + I_L R_{se} + V_{\\text{brush}}",
                 eqPower: "P_{\\text{in}} = V \\cdot I_L = E_b I_a + I_a^2 R_a + I_L^2 R_{se} + V I_{sh}",
-                torqueChar: "Combines high starting torque of series field with speed stability of shunt field. Cumulative flux Φ_total = Φ_sh + Φ_se.",
+                torqueChar: "Combines high starting torque of series field with speed stability of shunt field. Cumulative flux $\\Phi_{total} = \\Phi_{sh} + \\Phi_{se}$.",
                 speedChar: "Speed drops moderately under heavy loads, providing a protective drooping speed characteristic without runaway risk.",
                 apps: [
                     { name: "Heavy Punch Presses", desc: "Stores energy in a flywheel during light load and delivers high torque during punching." },
@@ -442,12 +442,12 @@
             longCompound: {
                 name: "DC Long-Shunt Compound Motor",
                 subtitle: "Shunt Field Connected Across Combination of Armature and Series Field",
-                origin: "Named 'Long-Shunt' because the shunt field (F₁–F₂) spans across BOTH the armature (A₁–A₂) and the series field (S₁–S₂) in one long parallel branch.",
+                origin: "Named 'Long-Shunt' because the shunt field ($F_1\\text{--}F_2$) spans across BOTH the armature ($A_1\\text{--}A_2$) and the series field ($S_1\\text{--}S_2$) in one long parallel branch.",
                 construction: "Houses series coils (thick wire) and shunt coils (fine wire). Long-shunt layout ensures the shunt field receives full busbar terminal voltage V.",
                 eqCurrent: "I_{sh} = \\frac{V}{R_{sh}}, \\quad I_a = I_{se} = I_L - I_{sh}",
                 eqVoltage: "V = E_b + I_a(R_a + R_{se}) + V_{\\text{brush}}",
                 eqPower: "P_{\\text{in}} = V \\cdot I_L = E_b I_a + I_a^2(R_a + R_{se}) + V I_{sh}",
-                torqueChar: "High starting torque due to series field contribution during high starting armature current Ia.",
+                torqueChar: "High starting torque due to series field contribution during high starting armature current $I_a$.",
                 speedChar: "Prevents runaway at no-load because the shunt field provides continuous magnetic flux even if line current drops.",
                 apps: [
                     { name: "Steel Rolling Mills", desc: "Handles sudden severe load impacts as steel billets enter heavy rollers." },
@@ -464,6 +464,13 @@
 
         // Three.js Engine Variables
         let scene, camera, renderer, controls;
+        let userMoved = false;
+        function homePos() {
+            const box = document.getElementById('motor-canvas').parentElement;
+            const a = (box.clientWidth || 1) / (box.clientHeight || 1);
+            const v = new THREE.Vector3(5.2, 3.2, 6.2);
+            return v.normalize().multiplyScalar(Math.max(8.7, 10.4 / a)); // pull back on narrow (phone) panels so the motor fits
+        }
         let motorGroup, rotorGroup, seriesCoilsGroup, shuntCoilsGroup;
 
         // Init 3D Visualizer
@@ -476,6 +483,7 @@
 
             camera = new THREE.PerspectiveCamera(38, container.clientWidth / container.clientHeight, 0.1, 100);
             camera.position.set(5.2, 3.2, 6.2);
+            camera.position.copy(homePos());
 
             renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true });
             renderer.setSize(container.clientWidth, container.clientHeight, false);
@@ -485,7 +493,8 @@
             controls.enableDamping = true;
             controls.dampingFactor = 0.05;
             controls.minDistance = 2.5;
-            controls.maxDistance = 12.0;
+            controls.maxDistance = 18.0;
+            controls.addEventListener('start', () => { userMoved = true; });
 
             // Lights
             scene.add(new THREE.AmbientLight(0xffffff, 1.4));
@@ -612,7 +621,7 @@
             const container = document.getElementById('schematic-container');
 
             let svgHTML = `
-            <svg viewBox="0 0 500 320" class="w-full h-full max-h-[340px]">
+            <svg viewBox="0 0 500 320" fill="none" class="w-full h-full max-h-[340px]">
                 <defs>
                     <linearGradient id="wireGrad" x1="0%" y1="0%" x2="100%" y2="0%">
                         <stop offset="0%" stop-color="#00f2fe"/>
@@ -640,19 +649,19 @@
                     <text x="-8" y="6" fill="#00f2fe" font-size="16" font-family="sans-serif" font-weight="bold">A</text>
                     
                     <!-- Carbon Brushes -->
-                    <rect x="-38" y="-8" width="6" height="16" fill="#f59e0b" rx="1"/>
-                    <rect x="32" y="-8" width="6" height="16" fill="#f59e0b" rx="1"/>
+                    <rect x="-8" y="-38" width="16" height="6" fill="#f59e0b" rx="1"/>
+                    <rect x="-8" y="32" width="16" height="6" fill="#f59e0b" rx="1"/>
 
                     <!-- Terminal Labels -->
-                    <text x="-35" y="-18" fill="#f59e0b" font-size="10" font-family="monospace">A1</text>
-                    <text x="22" y="-18" fill="#f59e0b" font-size="10" font-family="monospace">A2</text>
+                    <text x="14" y="-34" fill="#f59e0b" font-size="10" font-family="monospace">A1</text>
+                    <text x="14" y="46" fill="#f59e0b" font-size="10" font-family="monospace">A2</text>
                 </g>
             `;
 
             if (currentType === 'series') {
                 svgHTML += `
                     <!-- Main Line Wire -->
-                    <path d="M 50 60 L 180 60" stroke="#334155" stroke-width="4"/>
+                    <path d="M 50 60 L 180 60" stroke="#475569" stroke-width="4"/>
                     <path d="M 50 60 L 180 60" stroke="#00f2fe" stroke-width="2" class="current-flow-line"/>
 
                     <!-- Series Field Coil (S1 - S2) -->
@@ -663,26 +672,26 @@
                         <text x="115" y="20" fill="#d97706" font-size="10" font-family="monospace">S2</text>
                     </g>
 
-                    <path d="M 300 60 L 380 60 L 380 128" stroke="#334155" stroke-width="4"/>
-                    <path d="M 300 60 L 380 60 L 380 128" stroke="#00f2fe" stroke-width="2" class="current-flow-line"/>
+                    <path d="M 300 60 L 380 60 L 380 122" stroke="#475569" stroke-width="4"/>
+                    <path d="M 300 60 L 380 60 L 380 122" stroke="#00f2fe" stroke-width="2" class="current-flow-line"/>
 
-                    <path d="M 380 192 L 380 260 L 50 260" stroke="#334155" stroke-width="4"/>
-                    <path d="M 380 192 L 380 260 L 50 260" stroke="#00f2fe" stroke-width="2" class="current-flow-line-reverse"/>
+                    <path d="M 380 198 L 380 260 L 50 260" stroke="#475569" stroke-width="4"/>
+                    <path d="M 380 198 L 380 260 L 50 260" stroke="#00f2fe" stroke-width="2" class="current-flow-line"/>
 
                     <!-- Current Vectors -->
-                    <text x="100" y="50" fill="#00f2fe" font-size="11" font-family="monospace" font-weight="bold">IL = Ise = Ia →</text>
+                    <text x="60" y="84" fill="#00f2fe" font-size="11" font-family="monospace" font-weight="bold">IL = Ise = Ia →</text>
                 `;
             } else if (currentType === 'shunt') {
                 svgHTML += `
                     <!-- Main Lines -->
-                    <path d="M 50 60 L 220 60 L 380 60 L 380 128" stroke="#334155" stroke-width="4"/>
-                    <path d="M 50 60 L 220 60 L 380 60 L 380 128" stroke="#00f2fe" stroke-width="2" class="current-flow-line"/>
+                    <path d="M 50 60 L 220 60 L 380 60 L 380 122" stroke="#475569" stroke-width="4"/>
+                    <path d="M 50 60 L 220 60 L 380 60 L 380 122" stroke="#00f2fe" stroke-width="2" class="current-flow-line"/>
 
-                    <path d="M 380 192 L 380 260 L 50 260" stroke="#334155" stroke-width="4"/>
-                    <path d="M 380 192 L 380 260 L 50 260" stroke="#00f2fe" stroke-width="2" class="current-flow-line-reverse"/>
+                    <path d="M 380 198 L 380 260 L 50 260" stroke="#475569" stroke-width="4"/>
+                    <path d="M 380 198 L 380 260 L 50 260" stroke="#00f2fe" stroke-width="2" class="current-flow-line"/>
 
                     <!-- Shunt Field Coil Branch (F1 - F2) -->
-                    <path d="M 220 60 L 220 110" stroke="#334155" stroke-width="3"/>
+                    <path d="M 220 60 L 220 110" stroke="#475569" stroke-width="3"/>
                     <path d="M 220 60 L 220 110" stroke="#00f2fe" stroke-width="2" class="current-flow-line"/>
 
                     <g transform="translate(220, 110)">
@@ -690,21 +699,21 @@
                         <text x="-105" y="50" fill="#0284c7" font-size="11" font-family="monospace" font-weight="bold">Shunt Field (F1-F2)</text>
                     </g>
 
-                    <path d="M 220 206 L 220 260" stroke="#334155" stroke-width="3"/>
+                    <path d="M 220 206 L 220 260" stroke="#475569" stroke-width="3"/>
                     <path d="M 220 206 L 220 260" stroke="#00f2fe" stroke-width="2" class="current-flow-line"/>
 
                     <circle cx="220" cy="60" r="4" fill="#00f2fe"/>
                     <circle cx="220" cy="260" r="4" fill="#00f2fe"/>
 
                     <!-- Current Vectors -->
-                    <text x="110" y="50" fill="#00f2fe" font-size="11" font-family="monospace" font-weight="bold">IL →</text>
+                    <text x="80" y="84" fill="#00f2fe" font-size="11" font-family="monospace" font-weight="bold">IL →</text>
                     <text x="230" y="90" fill="#0284c7" font-size="10" font-family="monospace">Ish ↓</text>
-                    <text x="325" y="50" fill="#00f2fe" font-size="10" font-family="monospace">Ia →</text>
+                    <text x="315" y="84" fill="#00f2fe" font-size="10" font-family="monospace">Ia →</text>
                 `;
             } else if (currentType === 'shortCompound') {
                 svgHTML += `
                     <!-- Line to Series Coil -->
-                    <path d="M 50 60 L 120 60" stroke="#334155" stroke-width="4"/>
+                    <path d="M 50 60 L 120 60" stroke="#475569" stroke-width="4"/>
                     <path d="M 50 60 L 120 60" stroke="#00f2fe" stroke-width="2" class="current-flow-line"/>
 
                     <!-- Series Coil in Main Line -->
@@ -713,11 +722,11 @@
                         <text x="5" y="-18" fill="#d97706" font-size="10" font-family="monospace" font-weight="bold">S1-S2</text>
                     </g>
 
-                    <path d="M 192 60 L 260 60 L 380 60 L 380 128" stroke="#334155" stroke-width="4"/>
-                    <path d="M 192 60 L 260 60 L 380 60 L 380 128" stroke="#00f2fe" stroke-width="2" class="current-flow-line"/>
+                    <path d="M 192 60 L 260 60 L 380 60 L 380 122" stroke="#475569" stroke-width="4"/>
+                    <path d="M 192 60 L 260 60 L 380 60 L 380 122" stroke="#00f2fe" stroke-width="2" class="current-flow-line"/>
 
                     <!-- Shunt Field Branch across Armature Only -->
-                    <path d="M 260 60 L 260 110" stroke="#334155" stroke-width="3"/>
+                    <path d="M 260 60 L 260 110" stroke="#475569" stroke-width="3"/>
                     <path d="M 260 60 L 260 110" stroke="#00f2fe" stroke-width="2" class="current-flow-line"/>
 
                     <g transform="translate(260, 110)">
@@ -725,32 +734,32 @@
                         <text x="15" y="50" fill="#0284c7" font-size="10" font-family="monospace">F1-F2</text>
                     </g>
 
-                    <path d="M 260 206 L 260 260" stroke="#334155" stroke-width="3"/>
+                    <path d="M 260 206 L 260 260" stroke="#475569" stroke-width="3"/>
                     <path d="M 260 206 L 260 260" stroke="#00f2fe" stroke-width="2" class="current-flow-line"/>
-                    <path d="M 380 192 L 380 260 L 50 260" stroke="#334155" stroke-width="4"/>
-                    <path d="M 380 192 L 380 260 L 50 260" stroke="#00f2fe" stroke-width="2" class="current-flow-line-reverse"/>
+                    <path d="M 380 198 L 380 260 L 50 260" stroke="#475569" stroke-width="4"/>
+                    <path d="M 380 198 L 380 260 L 50 260" stroke="#00f2fe" stroke-width="2" class="current-flow-line"/>
 
                     <circle cx="260" cy="60" r="4" fill="#00f2fe"/>
                     <circle cx="260" cy="260" r="4" fill="#00f2fe"/>
 
-                    <text x="75" y="50" fill="#00f2fe" font-size="10" font-family="monospace">IL=Ise →</text>
+                    <text x="52" y="84" fill="#00f2fe" font-size="10" font-family="monospace">IL=Ise →</text>
                     <text x="270" y="90" fill="#0284c7" font-size="10" font-family="monospace">Ish ↓</text>
-                    <text x="325" y="50" fill="#00f2fe" font-size="10" font-family="monospace">Ia →</text>
+                    <text x="315" y="84" fill="#00f2fe" font-size="10" font-family="monospace">Ia →</text>
                 `;
             } else if (currentType === 'longCompound') {
                 svgHTML += `
                     <!-- Shunt Field Branch at Source -->
-                    <path d="M 50 60 L 140 60 L 240 60" stroke="#334155" stroke-width="4"/>
+                    <path d="M 50 60 L 140 60 L 240 60" stroke="#475569" stroke-width="4"/>
                     <path d="M 50 60 L 140 60 L 240 60" stroke="#00f2fe" stroke-width="2" class="current-flow-line"/>
 
-                    <path d="M 140 60 L 140 110" stroke="#334155" stroke-width="3"/>
+                    <path d="M 140 60 L 140 110" stroke="#475569" stroke-width="3"/>
                     <path d="M 140 60 L 140 110" stroke="#00f2fe" stroke-width="2" class="current-flow-line"/>
 
                     <g transform="translate(140, 110)">
                         <path d="M 0 0 Q 18 12 0 24 Q 18 36 0 48 Q 18 60 0 72 Q 18 84 0 96" fill="none" stroke="#0284c7" stroke-width="3"/>
                         <text x="-55" y="50" fill="#0284c7" font-size="10" font-family="monospace">F1-F2</text>
                     </g>
-                    <path d="M 140 206 L 140 260" stroke="#334155" stroke-width="3"/>
+                    <path d="M 140 206 L 140 260" stroke="#475569" stroke-width="3"/>
                     <path d="M 140 206 L 140 260" stroke="#00f2fe" stroke-width="2" class="current-flow-line"/>
 
                     <!-- Series Coil in Armature Arm -->
@@ -759,18 +768,18 @@
                         <text x="5" y="-18" fill="#d97706" font-size="10" font-family="monospace" font-weight="bold">S1-S2</text>
                     </g>
 
-                    <path d="M 312 60 L 380 60 L 380 128" stroke="#334155" stroke-width="4"/>
-                    <path d="M 312 60 L 380 60 L 380 128" stroke="#00f2fe" stroke-width="2" class="current-flow-line"/>
+                    <path d="M 312 60 L 380 60 L 380 122" stroke="#475569" stroke-width="4"/>
+                    <path d="M 312 60 L 380 60 L 380 122" stroke="#00f2fe" stroke-width="2" class="current-flow-line"/>
 
-                    <path d="M 380 192 L 380 260 L 50 260" stroke="#334155" stroke-width="4"/>
-                    <path d="M 380 192 L 380 260 L 50 260" stroke="#00f2fe" stroke-width="2" class="current-flow-line-reverse"/>
+                    <path d="M 380 198 L 380 260 L 50 260" stroke="#475569" stroke-width="4"/>
+                    <path d="M 380 198 L 380 260 L 50 260" stroke="#00f2fe" stroke-width="2" class="current-flow-line"/>
 
                     <circle cx="140" cy="60" r="4" fill="#00f2fe"/>
                     <circle cx="140" cy="260" r="4" fill="#00f2fe"/>
 
-                    <text x="80" y="50" fill="#00f2fe" font-size="10" font-family="monospace">IL →</text>
-                    <text x="150" y="90" fill="#0284c7" font-size="10" font-family="monospace">Ish ↓</text>
-                    <text x="180" y="50" fill="#d97706" font-size="10" font-family="monospace">Ise=Ia →</text>
+                    <text x="52" y="84" fill="#00f2fe" font-size="10" font-family="monospace">IL →</text>
+                    <text x="150" y="102" fill="#0284c7" font-size="10" font-family="monospace">Ish ↓</text>
+                    <text x="182" y="80" fill="#d97706" font-size="10" font-family="monospace">Ise=Ia →</text>
                 `;
             }
 
@@ -799,6 +808,7 @@
 
             document.getElementById('char-torque').textContent = data.torqueChar;
             document.getElementById('char-speed').textContent = data.speedChar;
+            ['theory-origin', 'theory-construction', 'char-torque', 'char-speed'].forEach(id => renderMathIn(document.getElementById(id)));
 
             // Applications List
             const appList = document.getElementById('app-list');
@@ -846,7 +856,8 @@
 
             document.getElementById('btn-reset-cam').addEventListener('click', () => {
                 if (camera && controls) {
-                    gsap.to(camera.position, { x: 5.2, y: 3.2, z: 6.2, duration: 1.0, overwrite: 'auto' });
+                    const h = homePos(); userMoved = false;
+                    gsap.to(camera.position, { x: h.x, y: h.y, z: h.z, duration: 1.0, overwrite: 'auto' });
                     gsap.to(controls.target, { x: 0, y: 0, z: 0, duration: 1.0, overwrite: 'auto', onUpdate: () => controls.update() });
                 }
             });
@@ -857,11 +868,12 @@
                 camera.aspect = vpBox.clientWidth / vpBox.clientHeight;
                 camera.updateProjectionMatrix();
                 renderer.setSize(vpBox.clientWidth, vpBox.clientHeight, false);
+                if (!userMoved) camera.position.copy(homePos());
             }).observe(vpBox);
         }
 
-        function renderStaticMath() {
-            const w = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT), list = [];
+        function renderMathIn(root) {
+            const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT), list = [];
             while (w.nextNode()) { const n = w.currentNode; if (n.nodeValue.indexOf('$') > -1 && !/^(SCRIPT|STYLE)$/.test(n.parentNode.nodeName)) list.push(n); }
             list.forEach(n => {
                 const parts = n.nodeValue.split(/\$([^$]+)\$/);
@@ -878,7 +890,7 @@
         }
 
         window.onload = function () {
-            renderStaticMath();
+            renderMathIn(document.body);
             try { init3D(); } catch (e) {
                 console.error('3D view unavailable:', e);
                 document.getElementById('motor-canvas').parentElement.insertAdjacentHTML('beforeend', '<div class="absolute inset-0 flex items-center justify-center p-4 text-center text-xs text-gray-400">The 3D view needs WebGL, which is not available on this device. The schematic and theory below still work.</div>');

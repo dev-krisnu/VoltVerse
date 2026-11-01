@@ -1,4 +1,4 @@
-@font-face{font-family:"FA";font-style:normal;font-weight:900;font-display:swap;src:url(webfonts/fa-solid-900.woff2) format("woff2")}
+@font-face{font-family:"FA";font-style:normal;font-weight:900;font-display:swap;src:url(fa-solid-900.woff2) format("woff2")}
 .fa-solid{font-family:"FA";font-weight:900;font-style:normal;font-variant:normal;text-rendering:auto;line-height:1;display:inline-block;-webkit-font-smoothing:antialiased}
 .fa-solid::before{display:inline-block}
 @keyframes fa-spin-k{to{transform:rotate(360deg)}}
