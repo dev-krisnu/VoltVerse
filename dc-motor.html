@@ -447,11 +447,18 @@
             yokeGroup.add(yokeMesh);
 
             // End Flange Rings
-            const ringGeo = new THREE.TorusGeometry(2.37, 0.08, 12, 36);
-            const r1 = new THREE.Mesh(ringGeo, castIronMat); r1.position.x = 1.88;
-            const r2 = new THREE.Mesh(ringGeo, castIronMat); r2.position.x = -1.88;
-            r1.userData = r2.userData = { partName: 'yoke' };
-            yokeGroup.add(r1); yokeGroup.add(r2);
+            // Flange rings follow the same 240-degree arc as the yoke shell (no floating rings across the cutaway)
+            const ringGeo = new THREE.TorusGeometry(2.37, 0.08, 12, 48, Math.PI * 1.33);
+            [1.88, -1.88].forEach(x => {
+                const holder = new THREE.Group();
+                holder.position.x = x;
+                holder.rotation.y = Math.PI / 2;
+                const ring = new THREE.Mesh(ringGeo, castIronMat);
+                ring.rotation.z = -Math.PI * 0.66;
+                ring.userData = { partName: 'yoke' };
+                holder.add(ring);
+                yokeGroup.add(holder);
+            });
 
             // Heavy Base Mounting Feet (Horizontal Base)
             const feetGeo = new THREE.BoxGeometry(3.6, 0.26, 4.8);
@@ -470,15 +477,17 @@
             yokeGroup.add(eyeRing); yokeGroup.add(eyeStem);
 
             // End Cover Shields
-            const endCoverGeo = new THREE.CylinderGeometry(2.35, 2.35, 0.28, 32, 1, false, Math.PI * 0.33, Math.PI * 1.33);
+            const endCoverGeo = new THREE.CylinderGeometry(2.35, 2.35, 0.16, 32, 1, false, Math.PI * 0.33, Math.PI * 1.33);
             const endCoverRear = new THREE.Mesh(endCoverGeo, castIronMat);
             endCoverRear.rotation.z = Math.PI / 2;
-            endCoverRear.position.x = 1.95;
+            endCoverRear.position.x = 1.98; // starts exactly where the yoke ends (no overlapping faces)
             endCoverRear.userData = { partName: 'yoke' };
             yokeGroup.add(endCoverRear);
 
             motorGroup.add(yokeGroup);
             partMeshes.yoke = yokeGroup;
+
+            const shoeMat = new THREE.MeshStandardMaterial({ color: 0x94a3b8, metalness: 0.9, roughness: 0.2, side: THREE.DoubleSide });
 
             // ==========================================
             // B. MAIN FIELD POLES & FIELD WINDINGS (4 Poles)
@@ -498,10 +507,10 @@
                 poleHolder.add(poleBody);
 
                 // Curved Pole Shoe
-                const shoeGeo = new THREE.CylinderGeometry(1.54, 1.54, 2.4, 16, 1, true, -Math.PI / 5, (2 * Math.PI) / 5);
-                const shoeMesh = new THREE.Mesh(shoeGeo, steelMat);
+                // Concentric arc around the armature, centred on this pole's direction (+Y in the holder frame)
+                const shoeGeo = new THREE.CylinderGeometry(1.54, 1.54, 2.4, 20, 1, true, Math.PI / 3, Math.PI / 3);
+                const shoeMesh = new THREE.Mesh(shoeGeo, shoeMat);
                 shoeMesh.rotation.z = Math.PI / 2;
-                shoeMesh.position.y = 1.50;
                 shoeMesh.userData = { partName: 'poles' };
                 poleHolder.add(shoeMesh);
 
