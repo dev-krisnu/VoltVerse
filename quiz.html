@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Electrical Engineering Diploma Quiz Laboratory</title>
+    <!-- Tailwind CSS -->
+    <meta name="theme-color" content="#020617">
+    <meta name="description" content="Test your knowledge: a 10-question electrical engineering quiz drawn from a bank of 50 diploma-level questions, with explanations.">
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="preload" href="vendor/fonts/inter-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="css/tailwind.css">
+    <link rel="stylesheet" href="css/app.css">
+    <link rel="stylesheet" href="css/fa/fa.css">
+    <script src="vendor/confetti.browser.js"></script>
+    <style>
+        * { touch-action: manipulation; }
+        body {
+            font-family: 'Inter', sans-serif;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .code-font { font-family: 'JetBrains Mono', monospace; }
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.6); }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        
+        .glass-card {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .glass-btn {
+            background: rgba(30, 41, 59, 0.75);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .glass-btn:not(:disabled):active, .glass-btn:not(:disabled):hover {
+            background: rgba(51, 65, 85, 0.9);
+            border-color: rgba(56, 189, 248, 0.5);
+            transform: translateY(-1px);
+        }
+
+        .touch-target { min-height: 48px; }
+
+        /* Bot Floating Animation */
+        @keyframes botFloat {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-8px) rotate(1deg); }
+        }
+        .animate-bot-float {
+            animation: botFloat 3s ease-in-out infinite;
+        }
+
+        /* Bot Run Animation for High Score */
+        @keyframes botJoyRun {
+            0% { transform: translateX(-120px) translateY(0) scaleX(1); }
+            45% { transform: translateX(120px) translateY(-15px) scaleX(1); }
+            50% { transform: translateX(120px) translateY(0) scaleX(-1); }
+            95% { transform: translateX(-120px) translateY(-15px) scaleX(-1); }
+            100% { transform: translateX(-120px) translateY(0) scaleX(1); }
+        }
+        .animate-bot-run {
+            animation: botJoyRun 2.5s ease-in-out infinite;
+        }
+
+        /* Speech Bubble Pulse */
+        @keyframes bubblePulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+        .animate-bubble {
+            animation: bubblePulse 2s ease-in-out infinite;
+        }
+    </style>
+<style>body{padding-bottom:calc(76px + env(safe-area-inset-bottom,0px))}.app-nav{position:fixed;left:0;right:0;bottom:0}</style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between overflow-x-hidden">
+
+    <!-- TOP HEADER -->
+    <header class="w-full bg-slate-900/90 border-b border-slate-800 px-4 py-3 sticky top-0 z-30 backdrop-blur-md">
+        <div class="max-w-3xl mx-auto flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="p-2 bg-sky-500/20 text-sky-400 rounded-xl border border-sky-500/30 flex items-center justify-center">
+                    <i class="fa-solid fa-graduation-cap text-lg"></i>
+                </div>
+                <div>
+                    <h1 class="text-sm sm:text-base font-bold tracking-wide text-white flex items-center gap-2">
+                        Diploma EE Quiz Master
+                        <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-sky-500/20 text-sky-400 border border-sky-500/30">10 per round</span>
+                    </h1>
+                    <p class="text-[11px] text-slate-400">Electrical Engineering Fundamentals & Numerical Practice</p>
+                </div>
+            </div>
+
+            <!-- Header Assistant Anchor & Score Tracker -->
+            <div class="flex items-center gap-3">
+                <!-- Mini Header Bot -->
+                <div id="header-bot-container" class="hidden flex items-center gap-2 bg-slate-800/80 px-2.5 py-1 rounded-full border border-slate-700">
+                    <div class="w-7 h-7">
+                        <svg viewBox="0 0 100 100" class="w-full h-full">
+                            <rect x="25" y="30" width="50" height="40" rx="10" fill="#0284c7" stroke="#38bdf8" stroke-width="3"/>
+                            <circle cx="40" cy="48" r="5" fill="#f8fafc"/>
+                            <circle cx="60" cy="48" r="5" fill="#f8fafc"/>
+                            <circle cx="40" cy="48" r="2" fill="#0f172a"/>
+                            <circle cx="60" cy="48" r="2" fill="#0f172a"/>
+                            <path d="M 42 60 Q 50 66 58 60" fill="none" stroke="#f8fafc" stroke-width="2.5" stroke-linecap="round"/>
+                            <line x1="50" y1="30" x2="50" y2="15" stroke="#38bdf8" stroke-width="3"/>
+                            <circle cx="50" cy="12" r="4" fill="#38bdf8"/>
+                        </svg>
+                    </div>
+                    <span id="header-bot-msg" class="text-xs text-sky-300 font-medium hidden sm:inline">Bot Active</span>
+                </div>
+
+                <div class="glass-card px-3 py-1.5 rounded-xl border border-sky-500/30 flex items-center gap-2">
+                    <i class="fa-solid fa-trophy text-amber-400 text-xs"></i>
+                    <span id="live-score-text" class="text-xs font-bold code-font text-sky-400">0 / 10</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN APP CONTAINER -->
+    <main class="w-full max-w-3xl mx-auto flex-1 flex flex-col justify-center p-3 sm:p-5 my-auto">
+
+        <!-- STAGE 1: INTRO / MASCOT WELCOME SCREEN -->
+        <section id="intro-stage" class="w-full glass-card p-6 rounded-3xl text-center space-y-6 border border-sky-500/20 shadow-2xl relative overflow-hidden">
+            <!-- Background Glow -->
+            <div class="absolute -top-24 -left-24 w-48 h-48 bg-sky-500/20 rounded-full blur-3xl pointer-events-none"></div>
+            <div class="absolute -bottom-24 -right-24 w-48 h-48 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+            <!-- Central SVG Mascot Bot -->
+            <div class="space-y-1 relative"><h2 class="text-xl sm:text-2xl font-extrabold tracking-tight text-white">Want to test your knowledge?</h2><p class="text-xs text-slate-400">Pick up a round, answer 10 questions and read the explanations.</p></div>
+            <div id="intro-bot-wrapper" class="relative w-36 h-36 mx-auto animate-bot-float">
+                <svg id="mascot-svg-intro" viewBox="0 0 200 200" class="w-full h-full drop-shadow-[0_10px_20px_rgba(56,189,248,0.3)]">
+                    <!-- Antenna -->
+                    <line x1="100" y1="50" x2="100" y2="20" stroke="#38bdf8" stroke-width="6" stroke-linecap="round"/>
+                    <circle cx="100" cy="16" r="8" fill="#38bdf8" class="animate-pulse"/>
+                    <!-- Head -->
+                    <rect x="50" y="50" width="100" height="85" rx="20" fill="#0284c7" stroke="#38bdf8" stroke-width="5"/>
+                    <!-- Screen Face -->
+                    <rect x="62" y="62" width="76" height="52" rx="12" fill="#0f172a"/>
+                    <!-- Eyes (Joyful) -->
+                    <circle cx="82" cy="85" r="9" fill="#f8fafc"/>
+                    <circle cx="118" cy="85" r="9" fill="#f8fafc"/>
+                    <circle cx="83" cy="85" r="4" fill="#0284c7"/>
+                    <circle cx="117" cy="85" r="4" fill="#0284c7"/>
+                    <!-- Cheeks -->
+                    <circle cx="70" cy="98" r="5" fill="#f43f5e" opacity="0.6"/>
+                    <circle cx="130" cy="98" r="5" fill="#f43f5e" opacity="0.6"/>
+                    <!-- Happy Smile -->
+                    <path d="M 82 100 Q 100 115 118 100" fill="none" stroke="#f8fafc" stroke-width="4.5" stroke-linecap="round"/>
+                    <!-- Body / Shoulders -->
+                    <path d="M 65 135 Q 100 148 135 135 L 145 170 Q 100 185 55 170 Z" fill="#0369a1" stroke="#38bdf8" stroke-width="4"/>
+                    <circle cx="100" cy="155" r="6" fill="#38bdf8"/>
+                </svg>
+            </div>
+
+            <!-- Greeting Speech Bubble -->
+            <div class="relative bg-slate-900/90 border border-sky-500/40 p-4 rounded-2xl max-w-md mx-auto shadow-lg animate-bubble">
+                <p class="text-sm sm:text-base font-medium text-slate-200">"Hello future engineer! Want to test your knowledge? Take a quick 10-question round and see how much you remember."</p>
+            </div>
+
+            <div class="space-y-3 pt-2 max-w-md mx-auto">
+                <button id="btn-start-game" class="w-full glass-btn py-3.5 px-6 rounded-2xl text-base font-bold text-white bg-sky-600 hover:bg-sky-500 border border-sky-400/50 shadow-lg shadow-sky-500/20 touch-target flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-play"></i> Start Quiz Game
+                </button>
+                <div class="text-[11px] text-slate-400 flex items-center justify-center gap-4">
+                    <span><i class="fa-solid fa-shuffle text-sky-400 mr-1"></i> 50 Questions, No Repeats</span>
+                    <span><i class="fa-solid fa-bolt text-amber-400 mr-1"></i> Diploma Level EE</span>
+                </div>
+                <p id="bank-progress" class="text-[11px] text-slate-400"></p>
+                <button id="btn-reset-bank" type="button" class="hidden text-[11px] text-sky-400 underline">Start the bank again</button>
+            </div>
+        </section>
+
+        <!-- STAGE 2: ACTIVE QUIZ STAGE -->
+        <section id="quiz-stage" class="hidden w-full space-y-4">
+            
+            <!-- Progress Bar Card -->
+            <div class="glass-card p-3 rounded-2xl flex items-center justify-between border border-slate-800">
+                <div class="flex items-center gap-2 text-xs font-semibold text-slate-300">
+                    <span id="topic-badge" class="px-2.5 py-1 rounded-lg bg-sky-500/20 text-sky-400 border border-sky-500/30 text-[11px] uppercase tracking-wide">
+                        Transformers
+                    </span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span id="question-progress-num" class="text-xs font-bold code-font text-slate-300">Q 1 of 10</span>
+                    <div class="w-24 bg-slate-800 h-2 rounded-full overflow-hidden border border-slate-700">
+                        <div id="progress-bar-fill" class="bg-sky-400 h-full w-0 transition-all duration-300"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Question & Options Card -->
+            <div class="glass-card p-5 sm:p-6 rounded-3xl space-y-5 border border-sky-500/20 shadow-xl">
+                <!-- Question Text -->
+                <div class="space-y-2">
+                    <h2 id="question-text" class="text-sm sm:text-base md:text-lg font-semibold text-white leading-relaxed">
+                        Loading question...
+                    </h2>
+                </div>
+
+                <!-- 4 Options Container -->
+                <div id="options-container" class="grid grid-cols-1 gap-2.5 pt-1">
+                    <!-- Rendered dynamically -->
+                </div>
+
+                <!-- Explanation Box (Appears after answer selection) -->
+                <div id="explanation-box" class="hidden p-3.5 rounded-2xl bg-slate-900/90 border border-slate-800 text-xs leading-relaxed text-slate-300 space-y-1">
+                    <div class="font-bold text-sky-400 flex items-center gap-1.5">
+                        <i class="fa-solid fa-circle-info"></i> Concept Explanation:
+                    </div>
+                    <p id="explanation-text"></p>
+                </div>
+            </div>
+
+            <!-- Quiz Navigation Action Footer -->
+            <div class="flex justify-between items-center pt-1">
+                <div id="bot-hint-bubble" class="text-xs text-slate-400 flex items-center gap-2 bg-slate-900/80 px-3 py-2 rounded-xl border border-slate-800">
+                    <i class="fa-solid fa-robot text-sky-400"></i>
+                    <span id="bot-hint-text">Select an option to proceed!</span>
+                </div>
+
+                <button id="btn-next-question" disabled class="glass-btn px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold text-white bg-slate-800 border border-slate-700 opacity-50 cursor-not-allowed touch-target flex items-center gap-2">
+                    <span>Next Question</span>
+                    <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+        </section>
+
+        <!-- STAGE 3: RESULT SCOREBOARD & BOT EVALUATION SCREEN -->
+        <section id="result-stage" class="hidden w-full glass-card p-6 rounded-3xl text-center space-y-6 border border-sky-500/20 shadow-2xl relative overflow-hidden">
+            
+            <!-- Result Bot Mascot -->
+            <div id="result-bot-wrapper" class="relative w-32 h-32 mx-auto">
+                <svg id="mascot-svg-result" viewBox="0 0 200 200" class="w-full h-full drop-shadow-[0_10px_20px_rgba(56,189,248,0.3)]">
+                    <!-- Dynamic rendering in JS depending on score -->
+                </svg>
+            </div>
+
+            <!-- Dynamic Result Speech Bubble -->
+            <div id="result-speech-box" class="relative bg-slate-900/90 border p-4 rounded-2xl max-w-md mx-auto shadow-lg">
+                <h3 id="result-eval-title" class="text-base font-bold text-white mb-1">Evaluating Score...</h3>
+                <p id="result-eval-speech" class="text-xs sm:text-sm text-slate-300">Your final score feedback will display here.</p>
+            </div>
+
+            <!-- Score Cards Grid -->
+            <div class="grid grid-cols-3 gap-2.5 max-w-md mx-auto">
+                <div class="bg-slate-900/80 p-3 rounded-2xl border border-slate-800">
+                    <span class="text-[10px] text-slate-400 uppercase font-semibold block">Total Score</span>
+                    <span id="res-score-num" class="code-font text-lg font-bold text-sky-400">0 / 10</span>
+                </div>
+                <div class="bg-slate-900/80 p-3 rounded-2xl border border-slate-800">
+                    <span class="text-[10px] text-slate-400 uppercase font-semibold block">Percentage</span>
+                    <span id="res-score-pct" class="code-font text-lg font-bold text-emerald-400">0%</span>
+                </div>
+                <div class="bg-slate-900/80 p-3 rounded-2xl border border-slate-800">
+                    <span class="text-[10px] text-slate-400 uppercase font-semibold block">Performance</span>
+                    <span id="res-score-grade" class="code-font text-xs font-bold text-amber-400 mt-1 block">---</span>
+                </div>
+            </div>
+
+            <div id="review-box" class="hidden max-w-md mx-auto space-y-2"></div>
+            <!-- Restart Button -->
+            <div class="pt-2 max-w-md mx-auto">
+                <button id="btn-restart-game" class="w-full glass-btn py-3.5 px-6 rounded-2xl text-sm font-bold text-white bg-sky-600 hover:bg-sky-500 border border-sky-400/50 shadow-lg shadow-sky-500/20 touch-target flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-rotate-right"></i> Next Round (10 New Questions)
+                </button>
+            </div>
+        </section>
+
+    </main>
+    <nav class="app-nav" aria-label="Main"><a href="index.html" class="nav-tab"><i class="fa-solid fa-house"></i><span>Home</span></a><a href="quiz.html" class="nav-tab" aria-current="page"><i class="fa-solid fa-graduation-cap"></i><span>Quiz</span></a><a href="index.html#library" class="nav-tab"><i class="fa-solid fa-layer-group"></i><span>Library</span></a></nav>
+
+    <!-- FOOTER -->
+    <footer class="w-full border-t border-slate-900 bg-slate-950/80 py-3 text-center text-[11px] text-slate-400">
+        <p>Electrical Diploma Interactive Learning Portal &bull; 50-Question Bank</p>
+    </footer>
+
+    <script src="js/quiz-data.js"></script>
+    <script src="js/quiz.js"></script>
+</body>
+</html>

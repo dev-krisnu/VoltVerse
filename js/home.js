@@ -1,6 +1,7 @@
 (function () {
   var A = {
     cyan:  { bd: 'border-cyan-500/30 hover:border-cyan-300', tx: 'text-cyan-300', chip: 'bg-cyan-400/10 text-cyan-300', ic: 'bg-cyan-400/10 text-cyan-300' },
+    sky:   { bd: 'border-sky-500/30 hover:border-sky-300', tx: 'text-sky-300', chip: 'bg-sky-400/10 text-sky-300', ic: 'bg-sky-400/10 text-sky-300' },
     amber: { bd: 'border-amber-500/30 hover:border-amber-300', tx: 'text-amber-300', chip: 'bg-amber-400/10 text-amber-300', ic: 'bg-amber-400/10 text-amber-300' }
   };
   var lib = window.VOLTVERSE_LIBRARY || [], html = '', tools = 0, fams = 0;

@@ -145,8 +145,8 @@
                 </button>
                 <div class="flex items-center gap-2 bg-gray-900 px-3 py-1 rounded-lg border border-gray-800">
                     <span class="text-gray-400 font-mono text-[10px] uppercase">Speed:</span>
-                    <input id="rpm-slider" type="range" min="0" max="300" value="80" class="w-20 sm:w-28">
-                    <span id="rpm-val" class="text-xs font-mono text-amber-400 font-bold min-w-[28px] text-right">80</span>
+                    <input id="rpm-slider" type="range" min="0" max="1500" step="50" value="800" title="Shown in slow motion" class="w-20 sm:w-28">
+                    <span id="rpm-val" class="text-xs font-mono text-amber-400 font-bold min-w-[40px] text-right">800</span>
                 </div>
             </div>
         </div>
@@ -385,7 +385,7 @@
         </div>
     </main>
 
-    <nav class="app-nav" aria-label="Main"><a href="index.html" class="nav-tab"><i class="fa-solid fa-house"></i><span>Home</span></a><a href="dc-motor.html" class="nav-tab"><i class="fa-solid fa-gears"></i><span>Construction</span></a><a href="dc-motor-types.html" class="nav-tab" aria-current="page"><i class="fa-solid fa-diagram-project"></i><span>Types</span></a><a href="index.html#library" class="nav-tab"><i class="fa-solid fa-layer-group"></i><span>Library</span></a></nav>
+    <nav class="app-nav" aria-label="Main"><a href="index.html" class="nav-tab"><i class="fa-solid fa-house"></i><span>Home</span></a><a href="dc-motor.html" class="nav-tab"><i class="fa-solid fa-gears"></i><span>Construction</span></a><a href="dc-motor-types.html" class="nav-tab" aria-current="page"><i class="fa-solid fa-diagram-project"></i><span>Types</span></a><a href="induction-motor.html" class="nav-tab"><i class="fa-solid fa-fan"></i><span>Induction</span></a><a href="index.html#library" class="nav-tab"><i class="fa-solid fa-layer-group"></i><span>Library</span></a></nav>
 
     <!-- 6. APPLICATION JAVASCRIPT LOGIC -->
     <script>
@@ -460,7 +460,7 @@
         // State Management
         let currentType = 'series';
         let isRotorRotating = true;
-        let rpmSpeed = 80;
+        let rpmSpeed = 800; // real RPM; drawn in slow motion (1500 RPM = 2 turns per second)
 
         // Three.js Engine Variables
         let scene, camera, renderer, controls;
@@ -558,6 +558,28 @@
                 motorGroup.add(brush);
             });
 
+            // Pole shoes: curved faces concentric with the armature, one per pole
+            const shoeMat = new THREE.MeshStandardMaterial({ color: 0x94a3b8, metalness: 0.9, roughness: 0.25, side: THREE.DoubleSide });
+            for (let i = 0; i < 4; i++) {
+                const holder = new THREE.Group(); holder.rotation.x = (Math.PI / 2) * i;
+                const shoe = new THREE.Mesh(new THREE.CylinderGeometry(1.46, 1.46, 2.2, 24, 1, true, Math.PI / 3, Math.PI / 3), shoeMat);
+                shoe.rotation.z = Math.PI / 2; holder.add(shoe); motorGroup.add(holder);
+            }
+
+            // Visible rotor features: armature slot windings, commutator bars and a white timing mark on the shaft
+            const slotMat = new THREE.MeshStandardMaterial({ color: 0xb45309, metalness: 0.7, roughness: 0.35 });
+            for (let i = 0; i < 16; i++) {
+                const a = i * Math.PI * 2 / 16, bar = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.14, 0.2), slotMat);
+                bar.position.set(0, 1.4 * Math.cos(a), 1.4 * Math.sin(a)); bar.rotation.x = a; rotorGroup.add(bar);
+            }
+            const segMat = new THREE.MeshStandardMaterial({ color: 0x7c2d12, metalness: 0.5, roughness: 0.5 });
+            for (let i = 0; i < 24; i++) {
+                const a = i * Math.PI * 2 / 24, seg = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.05, 0.1), segMat);
+                seg.position.set(-1.62, 0.8 * Math.cos(a), 0.8 * Math.sin(a)); seg.rotation.x = a; rotorGroup.add(seg);
+            }
+            const mark = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.03, 0.14), new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.5 }));
+            mark.position.set(2.3, 0.325, 0); rotorGroup.add(mark);
+
             // Series Coils Group (Thick)
             seriesCoilsGroup = new THREE.Group();
             // Shunt Coils Group (Fine / Multiple layers)
@@ -577,8 +599,8 @@
                 // Thin Shunt Coil Mesh
                 const shHolder = new THREE.Group();
                 shHolder.rotation.x = angle;
-                const shCoil = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.32, 1.25), copperShuntMat);
-                shCoil.position.y = 2.16;
+                const shCoil = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.26, 0.9), copperShuntMat);
+                shCoil.position.y = 2.14; // corners stay inside the 2.35 yoke wall
                 shHolder.add(shCoil);
                 shuntCoilsGroup.add(shHolder);
             }
@@ -610,7 +632,7 @@
             controls.update();
 
             if (isRotorRotating && rotorGroup) {
-                rotorGroup.rotation.x += (rpmSpeed * Math.PI * 2 / 60) * dt;
+                rotorGroup.rotation.x += (rpmSpeed / 1500) * 2 * Math.PI * 2 * dt;
             }
 
             renderer.render(scene, camera);

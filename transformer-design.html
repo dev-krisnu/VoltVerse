@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transformer Design & Specification Calculator | @diva_kar213</title>
+    <!-- Tailwind CSS -->
+    <meta name="theme-color" content="#030712">
+    <meta name="description" content="Design a single-phase transformer: core area, turns, wire size, weights and the materials required for the voltage, current and power rating.">
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="preload" href="vendor/fonts/inter-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="css/tailwind.css">
+    <link rel="stylesheet" href="css/app.css">
+    <link rel="stylesheet" href="css/fa/fa.css">
+    <link rel="stylesheet" href="vendor/katex/katex.min.css">
+    <script src="vendor/katex/katex.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #070a12;
+            color: #f3f4f6;
+            min-height: 100vh;
+        }
+        .glass-panel-input {
+            background: rgba(245, 158, 11, 0.03);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(245, 158, 11, 0.25);
+        }
+        .glass-panel-output {
+            background: rgba(16, 185, 129, 0.03);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(16, 185, 129, 0.25);
+        }
+        .glass-card {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .custom-scroll::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .custom-scroll::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.6);
+        }
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: #10b981;
+            border-radius: 4px;
+        }
+        input[type=number], select {
+            background: #0f172a;
+            border: 1px solid #334155;
+            color: #fbbf24;
+            font-family: 'JetBrains Mono', monospace;
+            transition: all 0.2s ease;
+        }
+        input[type=number]:focus, select:focus {
+            outline: none;
+            border-color: #f59e0b;
+            box-shadow: 0 0 12px rgba(245, 158, 11, 0.3);
+        }
+        .katex-display {
+            margin: 0.2em 0 !important;
+            overflow-x: auto;
+            overflow-y: hidden;
+        }
+    </style>
+<style>body{padding-bottom:calc(76px + env(safe-area-inset-bottom,0px))}.app-nav{position:fixed;left:0;right:0;bottom:0}</style>
+</head>
+<body class="custom-scroll pb-12">
+
+    <!-- HEADER WITH BRANDING & PRESETS -->
+    <header class="bg-gray-950/95 border-b border-gray-800 sticky top-0 z-50 backdrop-blur-md px-4 py-3">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+            
+            <!-- LOGO & AUTHOR BRANDING -->
+            <div class="flex items-center space-x-3.5">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 via-emerald-500 to-cyan-500 p-0.5 shadow-lg shadow-emerald-500/10">
+                    <div class="w-full h-full bg-gray-950 rounded-[10px] flex items-center justify-center text-emerald-400">
+                        <i class="fa-solid fa-bolt text-lg"></i>
+                    </div>
+                </div>
+                <div>
+                    <div class="flex items-center space-x-2">
+                        <h1 class="text-base sm:text-lg font-black text-white tracking-wider uppercase">Transformer Design Calculator</h1>
+                    </div>
+                    <p class="text-xs text-gray-400 font-mono">Core, turns, wire and material estimate</p>
+                </div>
+            </div>
+
+            <!-- QUICK KVA PRESET BUTTONS -->
+            <div class="flex items-center space-x-2 bg-gray-900/90 p-1.5 rounded-xl border border-gray-800 overflow-x-auto max-w-full">
+                <span class="text-[11px] font-mono text-gray-400 px-2 uppercase font-semibold">Presets:</span>
+                <button onclick="setPreset(0.5, 230, 115)" class="px-2.5 py-1 text-xs font-mono font-bold bg-gray-800 hover:bg-amber-500 hover:text-gray-950 text-gray-200 rounded-lg transition-all">0.5 kVA</button>
+                <button onclick="setPreset(1.0, 230, 115)" class="px-2.5 py-1 text-xs font-mono font-bold bg-gray-800 hover:bg-amber-500 hover:text-gray-950 text-gray-200 rounded-lg transition-all">1 kVA</button>
+                <button onclick="setPreset(5.0, 230, 115)" class="px-2.5 py-1 text-xs font-mono font-bold bg-gray-800 hover:bg-amber-500 hover:text-gray-950 text-gray-200 rounded-lg transition-all">5 kVA</button>
+                <button onclick="setPreset(10.0, 415, 230)" class="px-2.5 py-1 text-xs font-mono font-bold bg-gray-800 hover:bg-amber-500 hover:text-gray-950 text-gray-200 rounded-lg transition-all">10 kVA</button>
+                <button onclick="setPreset(25.0, 415, 230)" class="px-2.5 py-1 text-xs font-mono font-bold bg-gray-800 hover:bg-amber-500 hover:text-gray-950 text-gray-200 rounded-lg transition-all">25 kVA</button>
+            </div>
+
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 py-6 space-y-6">
+
+        <!-- DUAL COLUMN LAYOUT -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+            <!-- LEFT COLUMN: INPUT PARAMETERS (AMBER ACCENT THEME) -->
+            <div class="lg:col-span-4 space-y-5">
+                <div class="glass-panel-input p-5 rounded-2xl space-y-4">
+                    
+                    <!-- INPUT SECTION HEADER -->
+                    <div class="flex items-center justify-between border-b border-amber-500/30 pb-3">
+                        <div class="flex items-center space-x-2.5">
+                            <div class="w-8 h-8 rounded-lg bg-amber-500/20 border border-amber-500/50 flex items-center justify-center text-amber-400">
+                                <i class="fa-solid fa-sliders"></i>
+                            </div>
+                            <div>
+                                <h2 class="text-xs font-bold text-amber-400 uppercase tracking-widest font-mono">Input Section</h2>
+                                <p class="text-sm font-extrabold text-white">DESIGN INPUT PARAMETERS</p>
+                            </div>
+                        </div>
+                        <span class="text-[10px] font-mono font-bold bg-amber-500/20 text-amber-400 border border-amber-500/40 px-2.5 py-1 rounded-full uppercase tracking-wider">
+                            <i class="fa-solid fa-pen-to-square mr-1"></i>Editable
+                        </span>
+                    </div>
+
+                    <!-- INPUT FORM -->
+                    <form id="calc-form" class="space-y-3.5 text-xs" onsubmit="event.preventDefault();">
+                        
+                        <!-- KVA RATING -->
+                        <div>
+                            <label class="block font-mono text-amber-200/90 font-semibold mb-1">Transformer Capacity (kVA)</label>
+                            <div class="relative">
+                                <input type="number" id="inp-kva" step="0.1" min="0.05" max="500" value="5.0" class="w-full px-3.5 py-2.5 rounded-xl font-bold text-sm">
+                                <span class="absolute right-3.5 top-2.5 text-amber-500/70 font-mono font-bold">kVA</span>
+                            </div>
+                        </div>
+
+                        <!-- VOLTAGES V1 & V2 -->
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block font-mono text-amber-200/90 font-semibold mb-1">Primary V₁ (V)</label>
+                                <input type="number" id="inp-v1" step="any" min="1" value="230" class="w-full px-3 py-2 rounded-xl font-bold">
+                            </div>
+                            <div>
+                                <label class="block font-mono text-amber-200/90 font-semibold mb-1">Secondary V₂ (V)</label>
+                                <input type="number" id="inp-v2" step="any" min="1" value="115" class="w-full px-3 py-2 rounded-xl font-bold">
+                            </div>
+                        </div>
+
+                        <!-- FREQUENCY & FLUX DENSITY -->
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block font-mono text-amber-200/90 font-semibold mb-1">Frequency (Hz)</label>
+                                <select id="inp-freq" class="w-full px-3 py-2 rounded-xl font-bold">
+                                    <option value="50" selected>50 Hz</option>
+                                    <option value="60">60 Hz</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block font-mono text-amber-200/90 font-semibold mb-1">Flux Density B<sub>max</sub> (T)</label>
+                                <input type="number" id="inp-bmax" step="0.05" min="0.5" max="1.8" value="1.20" class="w-full px-3 py-2 rounded-xl font-bold">
+                            </div>
+                        </div>
+
+                        <!-- CURRENT DENSITY & STACKING FACTOR -->
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block font-mono text-amber-200/90 font-semibold mb-1">Current Density J (A/mm²)</label>
+                                <input type="number" id="inp-j" step="0.1" min="1.0" max="5.0" value="2.5" class="w-full px-3 py-2 rounded-xl font-bold">
+                            </div>
+                            <div>
+                                <label class="block font-mono text-amber-200/90 font-semibold mb-1">Stacking Factor K<sub>s</sub></label>
+                                <input type="number" id="inp-ks" step="0.01" min="0.75" max="0.98" value="0.90" class="w-full px-3 py-2 rounded-xl font-bold">
+                            </div>
+                        </div>
+
+                        <!-- DESIGN CONSTANT K -->
+                        <div>
+                            <label class="block font-mono text-amber-200/90 font-semibold mb-1">Core Constant (K)</label>
+                            <input type="number" id="inp-kconst" step="0.01" min="0.8" max="1.5" value="1.15" class="w-full px-3 py-2 rounded-xl font-bold">
+                            <span class="text-[10px] text-gray-400 font-mono mt-1 block">A_i = K x sqrt(VA). Typically 1.15 - 1.25 for a shell type steel core</span>
+                        </div>
+
+                    </form>
+
+                </div>
+
+                <!-- QUICK STATS CARDS -->
+                <div class="grid grid-cols-2 gap-3 font-mono">
+                    <div class="glass-card p-3.5 rounded-xl border-l-4 border-l-amber-500">
+                        <span class="text-[10px] text-gray-400 uppercase block font-semibold">Primary Current (I₁)</span>
+                        <span id="stat-i1" class="text-base font-bold text-amber-400">-- A</span>
+                    </div>
+                    <div class="glass-card p-3.5 rounded-xl border-l-4 border-l-amber-500">
+                        <span class="text-[10px] text-gray-400 uppercase block font-semibold">Secondary Current (I₂)</span>
+                        <span id="stat-i2" class="text-base font-bold text-amber-400">-- A</span>
+                    </div>
+                    <div class="glass-card p-3.5 rounded-xl border-l-4 border-l-amber-500">
+                        <span class="text-[10px] text-gray-400 uppercase block font-semibold">EMF Per Turn (Eₜ)</span>
+                        <span id="stat-et" class="text-base font-bold text-amber-400">-- V/turn</span>
+                    </div>
+                    <div class="glass-card p-3.5 rounded-xl border-l-4 border-l-amber-500">
+                        <span class="text-[10px] text-gray-400 uppercase block font-semibold">Turns Ratio (N₁/N₂)</span>
+                        <span id="stat-ratio" class="text-base font-bold text-amber-400">--</span>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- RIGHT COLUMN: CALCULATED OUTPUTS (EMERALD ACCENT THEME) -->
+            <div class="lg:col-span-8 space-y-5">
+                
+                <div class="glass-panel-output p-5 rounded-2xl space-y-5">
+                    
+                    <!-- OUTPUT SECTION HEADER -->
+                    <div class="flex items-center justify-between border-b border-emerald-500/30 pb-3">
+                        <div class="flex items-center space-x-2.5">
+                            <div class="w-8 h-8 rounded-lg bg-emerald-500/20 border border-emerald-500/50 flex items-center justify-center text-emerald-400">
+                                <i class="fa-solid fa-microchip"></i>
+                            </div>
+                            <div>
+                                <h2 class="text-xs font-bold text-emerald-400 uppercase tracking-widest font-mono">Output Section</h2>
+                                <p class="text-sm font-extrabold text-white">CALCULATED DESIGN OUTPUTS</p>
+                            </div>
+                        </div>
+                        <span class="text-[10px] font-mono font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 px-2.5 py-1 rounded-full uppercase tracking-wider flex items-center space-x-1.5">
+                            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                            <span>Auto-Computed</span>
+                        </span>
+                    </div>
+
+                    <!-- SUB-PANELS GRID -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        
+                        <!-- SUB-PANEL A: CORE & MAGNETIC PARAMETERS -->
+                        <div class="glass-card p-4 rounded-xl space-y-3">
+                            <div class="flex items-center space-x-2 text-emerald-400 border-b border-gray-800 pb-2">
+                                <i class="fa-solid fa-cube text-xs"></i>
+                                <h3 class="text-xs font-bold uppercase tracking-wider font-mono">a. Core & Magnetic Parameters</h3>
+                            </div>
+                            <div class="space-y-2 text-xs font-mono">
+                                <div class="flex justify-between items-center py-1 border-b border-gray-800/60">
+                                    <span class="text-gray-400">Net Core Area (A<sub>i</sub>):</span>
+                                    <span id="res-ai" class="font-bold text-emerald-400">-- cm²</span>
+                                </div>
+                                <div class="flex justify-between items-center py-1 border-b border-gray-800/60">
+                                    <span class="text-gray-400">Gross Core Area (A<sub>g</sub>):</span>
+                                    <span id="res-ag" class="font-bold text-white">-- cm²</span>
+                                </div>
+                                <div class="flex justify-between items-center py-1 border-b border-gray-800/60">
+                                    <span class="text-gray-400">Tongue Width (Center Limb):</span>
+                                    <span id="res-tongue" class="font-bold text-cyan-400">-- mm</span>
+                                </div>
+                                <div class="flex justify-between items-center py-1 border-b border-gray-800/60">
+                                    <span class="text-gray-400">Core Stack Depth:</span>
+                                    <span id="res-stack" class="font-bold text-amber-400">-- mm</span>
+                                </div>
+                                <div class="flex justify-between items-center py-1">
+                                    <span class="text-gray-400">EMF Per Turn (E<sub>t</sub>):</span>
+                                    <span id="res-et" class="font-bold text-emerald-400">-- V</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- SUB-PANEL D: 2D SCALED SVG CORE VISUALIZER -->
+                        <div class="glass-card p-4 rounded-xl flex flex-col justify-between">
+                            <div class="flex items-center justify-between border-b border-gray-800 pb-2">
+                                <div class="flex items-center space-x-2 text-emerald-400">
+                                    <i class="fa-solid fa-layer-group text-xs"></i>
+                                    <h3 class="text-xs font-bold uppercase tracking-wider font-mono">d. Dynamic EI Core Visualizer</h3>
+                                </div>
+                                <span class="text-[9px] font-mono text-gray-500">Cross-Section</span>
+                            </div>
+                            <div id="svg-container" class="w-full h-[140px] flex items-center justify-center my-1">
+                                <!-- Dynamic SVG loaded via JavaScript -->
+                            </div>
+                            <p class="text-[10px] text-gray-400 font-mono text-center">Center Limb Tongue Housing Primary (Red) & Secondary (Blue)</p>
+                        </div>
+
+                    </div>
+
+                    <!-- SUB-PANEL B: WINDING SPECS & SWG WIRE SELECTION TABLE -->
+                    <div class="glass-card p-4 rounded-xl space-y-3">
+                        <div class="flex items-center justify-between border-b border-gray-800 pb-2">
+                            <div class="flex items-center space-x-2 text-emerald-400">
+                                <i class="fa-solid fa-cable-car text-xs"></i>
+                                <h3 class="text-xs font-bold uppercase tracking-wider font-mono">b. Winding Specs & SWG Wire Selection</h3>
+                            </div>
+                            <span class="text-[10px] font-mono text-cyan-400">Standard Wire Gauge (SWG 10 - 36)</span>
+                        </div>
+
+                        <div class="overflow-x-auto custom-scroll">
+                            <table class="w-full text-left text-xs font-mono border-collapse">
+                                <thead>
+                                    <tr class="bg-gray-950 text-gray-400 text-[10px] uppercase border-b border-gray-800">
+                                        <th class="p-2.5">Winding</th>
+                                        <th class="p-2.5">Turns (N)</th>
+                                        <th class="p-2.5">Current (A)</th>
+                                        <th class="p-2.5">Req. Area (mm²)</th>
+                                        <th class="p-2.5">Selected SWG</th>
+                                        <th class="p-2.5">Bare Dia (mm)</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-800/60 text-gray-200">
+                                    <tr class="hover:bg-gray-900/40">
+                                        <td class="p-2.5 font-bold text-amber-400">Primary (V₁)</td>
+                                        <td id="tbl-n1" class="p-2.5 font-bold text-white">--</td>
+                                        <td id="tbl-i1" class="p-2.5">--</td>
+                                        <td id="tbl-a1" class="p-2.5">--</td>
+                                        <td id="tbl-swg1" class="p-2.5 font-bold text-emerald-400">--</td>
+                                        <td id="tbl-dia1" class="p-2.5">--</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-900/40">
+                                        <td class="p-2.5 font-bold text-cyan-400">Secondary (V₂)</td>
+                                        <td id="tbl-n2" class="p-2.5 font-bold text-white">--</td>
+                                        <td id="tbl-i2" class="p-2.5">--</td>
+                                        <td id="tbl-a2" class="p-2.5">--</td>
+                                        <td id="tbl-swg2" class="p-2.5 font-bold text-emerald-400">--</td>
+                                        <td id="tbl-dia2" class="p-2.5">--</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- SUB-PANEL C: BILL OF MATERIALS (BOM) & WEIGHT ANALYSIS -->
+                    <div class="glass-card p-4 rounded-xl space-y-3">
+                        <div class="flex items-center justify-between border-b border-gray-800 pb-2">
+                            <div class="flex items-center space-x-2 text-emerald-400">
+                                <i class="fa-solid fa-clipboard-list text-xs"></i>
+                                <h3 class="text-xs font-bold uppercase tracking-wider font-mono">c. Bill of Materials (BOM) & Weights</h3>
+                            </div>
+                            <span class="text-[10px] font-mono text-purple-400">Material Costing Baseline</span>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 font-mono">
+                            <div class="bg-gray-950 p-3 rounded-lg border border-gray-800">
+                                <span class="text-[10px] text-gray-400 uppercase block">Core Steel Weight</span>
+                                <span id="bom-core-wt" class="text-sm font-bold text-emerald-400">-- kg</span>
+                                <span class="text-[9px] text-gray-500 block">Silicon Steel Lamination</span>
+                            </div>
+                            <div class="bg-gray-950 p-3 rounded-lg border border-gray-800">
+                                <span class="text-[10px] text-gray-400 uppercase block">Primary Copper Wt.</span>
+                                <span id="bom-cu1-wt" class="text-sm font-bold text-amber-400">-- kg</span>
+                                <span class="text-[9px] text-gray-500 block">Enamelled Copper Wire</span>
+                            </div>
+                            <div class="bg-gray-950 p-3 rounded-lg border border-gray-800">
+                                <span class="text-[10px] text-gray-400 uppercase block">Secondary Copper Wt.</span>
+                                <span id="bom-cu2-wt" class="text-sm font-bold text-cyan-400">-- kg</span>
+                                <span class="text-[9px] text-gray-500 block">Enamelled Copper Wire</span>
+                            </div>
+                            <div class="bg-gray-950 p-3 rounded-lg border border-gray-800">
+                                <span class="text-[10px] text-gray-400 uppercase block">Total Copper Mass</span>
+                                <span id="bom-tot-cu" class="text-sm font-bold text-purple-400">-- kg</span>
+                                <span class="text-[9px] text-gray-500 block">Primary + Secondary</span>
+                            </div>
+                        </div>
+
+                        <div class="bg-gray-950/70 p-3 rounded-lg border border-gray-800 text-xs font-mono text-gray-400 space-y-1">
+                            <div>• <span class="text-gray-300 font-semibold">Recommended Bobbin Window:</span> <span id="bom-bobbin" class="text-emerald-400">--</span></div>
+                            <div>• <span class="text-gray-300 font-semibold">Insulation Layer:</span> Class B Craft / Mylar Insulation Film (0.13 mm)</div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- MATERIALS REQUIRED: voltage, current, power -->
+                <div class="glass-card p-5 rounded-2xl space-y-3">
+                    <div class="flex items-center justify-between border-b border-gray-800 pb-2">
+                        <div class="flex items-center space-x-2 text-emerald-400"><i class="fa-solid fa-clipboard-list text-xs"></i><h3 class="text-xs font-bold uppercase tracking-wider font-mono">e. Materials Required for this Rating</h3></div>
+                        <span class="text-[10px] font-mono text-purple-400">Voltage, Current, Power</span>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs font-mono"><div class="bg-gray-950 p-3.5 rounded-xl border border-gray-800 space-y-1"><div class="flex items-center gap-2 text-amber-400 pb-1"><i class="fa-solid fa-layer-group text-xs"></i><h4 class="text-[11px] font-bold uppercase tracking-wider font-mono">By power: core</h4></div><div class="flex justify-between gap-3 py-1 border-b border-gray-800/60"><span class="text-gray-400">Rated power</span><span id="mat-p-va" class="font-bold text-right text-amber-400">--</span></div><div class="flex justify-between gap-3 py-1 border-b border-gray-800/60"><span class="text-gray-400">Real power @ 0.8 pf</span><span id="mat-p-kw" class="font-bold text-right text-white">--</span></div><div class="flex justify-between gap-3 py-1 border-b border-gray-800/60"><span class="text-gray-400">Core steel</span><span id="mat-core-mat" class="font-bold text-right text-emerald-400">--</span></div><div class="flex justify-between gap-3 py-1 border-b border-gray-800/60"><span class="text-gray-400">Sheet thickness</span><span id="mat-lam-t" class="font-bold text-right text-white">--</span></div><div class="flex justify-between gap-3 py-1 border-b border-gray-800/60"><span class="text-gray-400">Laminations needed</span><span id="mat-lam-n" class="font-bold text-right text-white">--</span></div><div class="flex justify-between gap-3 py-1 border-b border-gray-800/60"><span class="text-gray-400">Core size (tongue x stack)</span><span id="mat-core-size" class="font-bold text-right text-white">--</span></div><div class="flex justify-between gap-3 py-1 border-b border-gray-800/60"><span class="text-gray-400">Core steel weight</span><span id="mat-core-wt" class="font-bold text-right text-emerald-400">--</span></div><div class="flex justify-between gap-3 py-1 border-b border-gray-800/60"><span class="text-gray-400">Window area (one)</span><span id="mat-win" class="font-bold text-right text-white">--</span></div><p class="text-[10px] text-gray-500 pt-1">Core size follows the VA rating.</p></div><div class="bg-gray-950 p-3.5 rounded-xl border border-gray-800 space-y-1"><div class="flex items-center gap-2 text-cyan-400 pb-1"><i class="fa-solid fa-bolt text-xs"></i><h4 class="text-[11px] font-bold uppercase tracking-wider font-mono">By voltage: insulation</h4></div><div class="flex justify-between gap-3 py-1 border-b border-gray-800/60"><span class="text-gray-400">Primary voltage</span><span id="mat-v1" class="font-bold text-right text-amber-400">--</span></div><div class="flex justify-between gap-3 py-1 border-b border-gray-800/60"><span class="text-gray-400">Secondary voltage</span><span id="mat-v2" class="font-bold text-right text-cyan-400">--</span></div><div class="flex justify-between gap-3 py-1 border-b border-gray-800/60"><span class="text-gray-400">Test voltage, primary</span><span id="mat-t1" class="font-bold text-right text-white">--</span></div><div class="flex justify-between gap-3 py-1 border-b border-gray-800/60"><span class="text-gray-400">Test voltage, secondary</span><span id="mat-t2" class="font-bold text-right text-white">--</span></div><div class="flex justify-between gap-3 py-1 border-b border-gray-800/60"><span class="text-gray-400">Layer paper, primary</span><span id="mat-l1" class="font-bold text-right text-white">--</span></div><div class="flex justify-between gap-3 py-1 border-b border-gray-800/60"><span class="text-gray-400">Layer paper, secondary</span><span id="mat-l2" class="font-bold text-right text-white">--</span></div><div class="flex justify-between gap-3 py-1 border-b border-gray-800/60"><span class="text-gray-400">Winding barrier</span><span id="mat-barrier" class="font-bold text-right text-white">--</span></div><div class="flex justify-between gap-3 py-1 border-b border-gray-800/60"><span class="text-gray-400">Wire insulation</span><span id="mat-enamel" class="font-bold text-right text-white">--</span></div><p class="text-[10px] text-gray-500 pt-1">Higher voltage needs thicker insulation.</p></div><div class="bg-gray-950 p-3.5 rounded-xl border border-gray-800 space-y-1"><div class="flex items-center gap-2 text-emerald-400 pb-1"><i class="fa-solid fa-cable-car text-xs"></i><h4 class="text-[11px] font-bold uppercase tracking-wider font-mono">By current: conductors</h4></div><div class="flex justify-between gap-3 py-1 border-b border-gray-800/60"><span class="text-gray-400">Primary current</span><span id="mat-i1" class="font-bold text-right text-amber-400">--</span></div><div class="flex justify-between gap-3 py-1 border-b border-gray-800/60"><span class="text-gray-400">Primary conductor</span><span id="mat-c1" class="font-bold text-right text-emerald-400">--</span></div><div class="flex justify-between gap-3 py-1 border-b border-gray-800/60"><span class="text-gray-400">Primary wire length</span><span id="mat-len1" class="font-bold text-right text-white">--</span></div><div class="flex justify-between gap-3 py-1 border-b border-gray-800/60"><span class="text-gray-400">Primary copper</span><span id="mat-w1" class="font-bold text-right text-white">--</span></div><div class="flex justify-between gap-3 py-1 border-b border-gray-800/60"><span class="text-gray-400">Secondary current</span><span id="mat-i2" class="font-bold text-right text-cyan-400">--</span></div><div class="flex justify-between gap-3 py-1 border-b border-gray-800/60"><span class="text-gray-400">Secondary conductor</span><span id="mat-c2" class="font-bold text-right text-emerald-400">--</span></div><div class="flex justify-between gap-3 py-1 border-b border-gray-800/60"><span class="text-gray-400">Secondary wire length</span><span id="mat-len2" class="font-bold text-right text-white">--</span></div><div class="flex justify-between gap-3 py-1 border-b border-gray-800/60"><span class="text-gray-400">Secondary copper</span><span id="mat-w2" class="font-bold text-right text-white">--</span></div><div class="flex justify-between gap-3 py-1 border-b border-gray-800/60"><span class="text-gray-400">Supply cable (in)</span><span id="mat-cab1" class="font-bold text-right text-white">--</span></div><div class="flex justify-between gap-3 py-1 border-b border-gray-800/60"><span class="text-gray-400">Load cable (out)</span><span id="mat-cab2" class="font-bold text-right text-white">--</span></div><p class="text-[10px] text-gray-500 pt-1">Cable sizes are typical PVC copper ratings.</p></div></div>
+                    <div class="bg-gray-950/70 p-3 rounded-lg border border-gray-800 text-xs font-mono space-y-1">
+                        <div class="flex justify-between gap-3"><span class="text-gray-400">Window fill (copper / window)</span><span id="mat-fill" class="font-bold">--</span></div>
+                        <p id="mat-fill-note" class="text-[11px] text-gray-400">--</p>
+                    </div>
+                </div>
+                <!-- KATEX FORMULAS SECTION -->
+                <div class="glass-card p-5 rounded-2xl space-y-3">
+                    <div class="flex items-center space-x-2 border-b border-gray-800 pb-2 text-cyan-400">
+                        <i class="fa-solid fa-square-root-variable text-xs"></i>
+                        <h3 class="text-xs font-bold uppercase tracking-wider font-mono">Governing Formulas (KaTeX Rendered)</h3>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                        <div class="bg-gray-950 p-3 rounded-xl border border-gray-800">
+                            <span class="text-[10px] font-mono text-gray-400 block uppercase mb-1">1. Net Core Area (A<sub>i</sub>):</span>
+                            <div id="math-ai" class="text-emerald-400"></div>
+                        </div>
+                        <div class="bg-gray-950 p-3 rounded-xl border border-gray-800">
+                            <span class="text-[10px] font-mono text-gray-400 block uppercase mb-1">2. EMF Per Turn (E<sub>t</sub>):</span>
+                            <div id="math-et" class="text-emerald-400"></div>
+                        </div>
+                        <div class="bg-gray-950 p-3 rounded-xl border border-gray-800">
+                            <span class="text-[10px] font-mono text-gray-400 block uppercase mb-1">3. Primary Turns (N₁):</span>
+                            <div id="math-n1" class="text-emerald-400"></div>
+                        </div>
+                        <div class="bg-gray-950 p-3 rounded-xl border border-gray-800">
+                            <span class="text-[10px] font-mono text-gray-400 block uppercase mb-1">4. Secondary Turns (N₂ with 5% drop):</span>
+                            <div id="math-n2" class="text-emerald-400"></div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+            <a href="quiz.html" class="block glass-card p-4 rounded-2xl border border-cyan-500/40 hover:border-cyan-300 transition">
+            <div class="flex items-center justify-between gap-3"><div><div class="text-sm font-bold text-white">Test your knowledge</div><div class="text-[11px] text-gray-400 mt-0.5">Take a 10-question quiz on transformers, motors and more.</div></div><i class="fa-solid fa-graduation-cap text-cyan-400"></i></div></a>
+    </main>
+    <nav class="app-nav" aria-label="Main"><a href="index.html" class="nav-tab"><i class="fa-solid fa-house"></i><span>Home</span></a><a href="transformer-explorer.html" class="nav-tab"><i class="fa-solid fa-cube"></i><span>Explorer</span></a><a href="transformer-calculator.html" class="nav-tab"><i class="fa-solid fa-calculator"></i><span>Calculator</span></a><a href="transformer-design.html" class="nav-tab" aria-current="page"><i class="fa-solid fa-ruler-combined"></i><span>Design</span></a><a href="index.html#library" class="nav-tab"><i class="fa-solid fa-layer-group"></i><span>Library</span></a></nav>
+
+    <!-- FOOTER WITH AUTHOR BRANDING -->
+    <footer class="max-w-7xl mx-auto px-4 mt-8 text-center text-xs font-mono text-gray-500 border-t border-gray-900 pt-6 pb-4"><p>Values are standard textbook design estimates for a single-phase shell-type core. Check them against the relevant standards before building.</p></footer>
+
+    <!-- JAVASCRIPT LOGIC ENGINE -->
+    <script>
+        // Standard Wire Gauge (SWG) reference: [SWG number, bare diameter mm, area mm2, weight kg per 1000 m]
+        const swgTable = [
+            { swg: 10, dia: 3.251, area: 8.300, wt: 73.9 },
+            { swg: 11, dia: 2.946, area: 6.817, wt: 60.7 },
+            { swg: 12, dia: 2.642, area: 5.482, wt: 48.8 },
+            { swg: 13, dia: 2.337, area: 4.290, wt: 38.2 },
+            { swg: 14, dia: 2.032, area: 3.243, wt: 28.9 },
+            { swg: 15, dia: 1.829, area: 2.627, wt: 23.4 },
+            { swg: 16, dia: 1.626, area: 2.076, wt: 18.5 },
+            { swg: 17, dia: 1.422, area: 1.589, wt: 14.1 },
+            { swg: 18, dia: 1.219, area: 1.167, wt: 10.4 },
+            { swg: 19, dia: 1.016, area: 0.8107, wt: 7.22 },
+            { swg: 20, dia: 0.914, area: 0.6567, wt: 5.85 },
+            { swg: 21, dia: 0.813, area: 0.5189, wt: 4.62 },
+            { swg: 22, dia: 0.711, area: 0.3973, wt: 3.54 },
+            { swg: 23, dia: 0.610, area: 0.2922, wt: 2.60 },
+            { swg: 24, dia: 0.559, area: 0.2452, wt: 2.18 },
+            { swg: 25, dia: 0.508, area: 0.2027, wt: 1.80 },
+            { swg: 26, dia: 0.457, area: 0.1642, wt: 1.46 },
+            { swg: 27, dia: 0.417, area: 0.1364, wt: 1.21 },
+            { swg: 28, dia: 0.376, area: 0.1110, wt: 0.988 },
+            { swg: 29, dia: 0.345, area: 0.0935, wt: 0.832 },
+            { swg: 30, dia: 0.315, area: 0.0779, wt: 0.694 },
+            { swg: 31, dia: 0.295, area: 0.0683, wt: 0.608 },
+            { swg: 32, dia: 0.274, area: 0.0590, wt: 0.525 },
+            { swg: 33, dia: 0.254, area: 0.0507, wt: 0.451 },
+            { swg: 34, dia: 0.234, area: 0.0430, wt: 0.383 },
+            { swg: 35, dia: 0.213, area: 0.0356, wt: 0.317 },
+            { swg: 36, dia: 0.193, area: 0.0293, wt: 0.261 }
+        ];
+
+        const CU_KG_PER_MM2_KM = 8.9; // copper: 8.9 kg per 1000 m for each mm2
+        const CABLES = [[1.5, 15], [2.5, 21], [4, 28], [6, 36], [10, 50], [16, 68], [25, 89], [35, 111], [50, 134], [70, 171], [95, 207]]; // mm2, A (typical PVC copper)
+
+        // Thinnest conductor that still carries the required area; parallel strands or strip when SWG 10 is not enough
+        function conductor(area) {
+            for (let i = swgTable.length - 1; i >= 0; i--) {
+                if (swgTable[i].area >= area) return { label: 'SWG ' + swgTable[i].swg, dia: swgTable[i].dia + ' mm', area: swgTable[i].area, kg: swgTable[i].wt };
+            }
+            const base = swgTable[0], n = Math.ceil(area / base.area);
+            if (n <= 4) return { label: n + ' x SWG 10 in parallel', dia: base.dia + ' mm each', area: n * base.area, kg: n * base.wt };
+            const w = Math.ceil(area / 2 * 2) / 2;
+            return { label: 'Copper strip ' + w + ' x 2 mm', dia: 'strip', area: w * 2, kg: w * 2 * CU_KG_PER_MM2_KM };
+        }
+        function cableFor(amps) {
+            for (const c of CABLES) if (c[1] >= amps) return c[0] + ' mm2 copper';
+            return 'Above 95 mm2: use busbar';
+        }
+        function setText(id, t) { const e = document.getElementById(id); if (e) e.textContent = t; }
+
+        function setPreset(kva, v1, v2) {
+            document.getElementById('inp-kva').value = kva;
+            document.getElementById('inp-v1').value = v1;
+            document.getElementById('inp-v2').value = v2;
+            calculateTransformer();
+        }
+
+        function calculateTransformer() {
+            const num = (id, def) => { const v = parseFloat(document.getElementById(id).value); return isFinite(v) && v > 0 ? v : def; };
+            const kva = num('inp-kva', 0.1), v1 = num('inp-v1', 230), v2 = num('inp-v2', 115), freq = num('inp-freq', 50);
+            const bmax = num('inp-bmax', 1.2), j = num('inp-j', 2.5), ks = Math.min(num('inp-ks', 0.9), 1), kConst = num('inp-kconst', 1.15);
+            const va = kva * 1000;
+
+            // 1. Core: net area Ai = K x sqrt(VA) in cm2, gross area = Ai / Ks, square stack
+            const ai_cm2 = kConst * Math.sqrt(va);
+            const ag_cm2 = ai_cm2 / ks;
+            const tongue_mm = Math.sqrt(ag_cm2) * 10, stack_mm = tongue_mm;
+
+            // 2. EMF per turn and turns (5% allowance on the secondary)
+            const et = 4.44 * freq * bmax * ai_cm2 * 1e-4;
+            const n1 = Math.max(1, Math.round(v1 / et)), n2 = Math.max(1, Math.round(1.05 * v2 / et));
+            const ratio = (n1 / n2).toFixed(2);
+
+            // 3. Currents and conductors
+            const i1 = va / v1, i2 = va / v2;
+            const req_a1 = i1 / j, req_a2 = i2 / j;
+            const c1 = conductor(req_a1), c2 = conductor(req_a2);
+
+            // 4. Weights
+            const lmt_m = (4 * tongue_mm * 1.15) / 1000;
+            const len1 = n1 * lmt_m, len2 = n2 * lmt_m;
+            const cu1 = len1 * c1.kg / 1000, cu2 = len2 * c2.kg / 1000, cuTot = cu1 + cu2;
+            // EI lamination: 3a x 2.5a with two 0.5a x 1.5a windows leaves 6a^2 of steel
+            const a_cm = tongue_mm / 10, s_cm = stack_mm / 10;
+            const coreWt = 6 * a_cm * a_cm * s_cm * ks * 7.65 / 1000;
+
+            // 5. Window check: copper needed vs one window (0.75 a^2)
+            const win_mm2 = 0.75 * tongue_mm * tongue_mm;
+            const cuNeeded = n1 * req_a1 + n2 * req_a2;
+            const fill = cuNeeded / win_mm2;
+
+            // ---- stat badges
+            setText('stat-i1', i1.toFixed(2) + ' A'); setText('stat-i2', i2.toFixed(2) + ' A');
+            setText('stat-et', et.toFixed(3) + ' V'); setText('stat-ratio', ratio);
+            // ---- panel A
+            setText('res-ai', ai_cm2.toFixed(2) + ' cm\u00b2'); setText('res-ag', ag_cm2.toFixed(2) + ' cm\u00b2');
+            setText('res-tongue', tongue_mm.toFixed(1) + ' mm'); setText('res-stack', stack_mm.toFixed(1) + ' mm'); setText('res-et', et.toFixed(3) + ' V');
+            // ---- panel B
+            setText('tbl-n1', n1); setText('tbl-i1', i1.toFixed(2) + ' A'); setText('tbl-a1', req_a1.toFixed(3) + ' mm\u00b2'); setText('tbl-swg1', c1.label); setText('tbl-dia1', c1.dia);
+            setText('tbl-n2', n2); setText('tbl-i2', i2.toFixed(2) + ' A'); setText('tbl-a2', req_a2.toFixed(3) + ' mm\u00b2'); setText('tbl-swg2', c2.label); setText('tbl-dia2', c2.dia);
+            // ---- panel C (BOM)
+            setText('bom-core-wt', coreWt.toFixed(2) + ' kg'); setText('bom-cu1-wt', cu1.toFixed(2) + ' kg'); setText('bom-cu2-wt', cu2.toFixed(2) + ' kg'); setText('bom-tot-cu', cuTot.toFixed(2) + ' kg');
+            setText('bom-bobbin', tongue_mm.toFixed(0) + ' mm x ' + stack_mm.toFixed(0) + ' mm core size');
+            // ---- panel E (materials)
+            const t = kva >= 1 ? 0.35 : 0.5, paper = v => v <= 250 ? '0.08 mm kraft paper' : v <= 650 ? '0.13 mm kraft / Mylar' : '0.25 mm Mylar';
+            const test = v => Math.max(2 * v + 1000, 2000) + ' V';
+            setText('mat-p-va', kva.toFixed(kva < 10 ? 2 : 1) + ' kVA'); setText('mat-p-kw', (kva * 0.8).toFixed(2) + ' kW');
+            setText('mat-core-mat', 'CRGO silicon steel'); setText('mat-lam-t', t + ' mm');
+            setText('mat-lam-n', Math.round(stack_mm * ks / t) + ' sheets'); setText('mat-core-size', tongue_mm.toFixed(0) + ' x ' + stack_mm.toFixed(0) + ' mm');
+            setText('mat-core-wt', coreWt.toFixed(1) + ' kg'); setText('mat-win', win_mm2.toFixed(0) + ' mm\u00b2');
+            setText('mat-v1', v1 + ' V'); setText('mat-v2', v2 + ' V'); setText('mat-t1', test(v1)); setText('mat-t2', test(v2));
+            setText('mat-l1', paper(v1)); setText('mat-l2', paper(v2)); setText('mat-barrier', '0.5 mm pressboard'); setText('mat-enamel', 'Class B enamel (130 \u00b0C)');
+            setText('mat-i1', i1.toFixed(2) + ' A'); setText('mat-c1', c1.label); setText('mat-len1', len1.toFixed(0) + ' m'); setText('mat-w1', cu1.toFixed(2) + ' kg');
+            setText('mat-i2', i2.toFixed(2) + ' A'); setText('mat-c2', c2.label); setText('mat-len2', len2.toFixed(0) + ' m'); setText('mat-w2', cu2.toFixed(2) + ' kg');
+            setText('mat-cab1', cableFor(i1)); setText('mat-cab2', cableFor(i2));
+            const fe = document.getElementById('mat-fill'), fn = document.getElementById('mat-fill-note');
+            fe.textContent = (fill * 100).toFixed(0) + ' %';
+            const cls = fill <= 0.30 ? ['text-emerald-400', 'Fits: a window space factor up to about 0.30 is normal for low-voltage coils.'] : fill <= 0.40 ? ['text-amber-400', 'Tight: the coils may not fit once insulation is added. Consider a larger core or a higher current density.'] : ['text-rose-400', 'Does not fit: use a larger core, a higher current density or a higher flux density.'];
+            fe.className = 'font-bold ' + cls[0]; fn.textContent = cls[1];
+
+            renderSVGCore(tongue_mm);
+            renderKaTeXMath(va, kConst, ai_cm2, et, v1, v2, n1, n2);
+        }
+
+        // SVG Core Render Function
+        function renderSVGCore(side_mm) {
+            const container = document.getElementById('svg-container');
+            const scale = Math.min(1.8, Math.max(0.6, 35 / side_mm));
+
+            const svgHTML = `
+                <svg viewBox="0 0 320 150" class="w-full h-full">
+                    <g transform="translate(160, 75) scale(${scale})">
+                        <!-- EI Core Outer Lamination Frame -->
+                        <rect x="-80" y="-55" width="160" height="110" fill="#1e293b" stroke="#10b981" stroke-width="2.5" rx="4"/>
+                        <!-- Left & Right Core Windows -->
+                        <rect x="-55" y="-35" width="30" height="70" fill="#070a12" stroke="#334155" stroke-width="1.5"/>
+                        <rect x="25" y="-35" width="30" height="70" fill="#070a12" stroke="#334155" stroke-width="1.5"/>
+
+                        <!-- Center Limb Tongue -->
+                        <rect x="-25" y="-35" width="50" height="70" fill="#334155" stroke="#64748b" stroke-width="2"/>
+
+                        <!-- Bobbin Frame -->
+                        <rect x="-23" y="-33" width="46" height="66" fill="none" stroke="#f59e0b" stroke-width="1.5" rx="2"/>
+
+                        <!-- Primary Winding (Red) -->
+                        <rect x="-20" y="-30" width="10" height="60" fill="#ef4444" opacity="0.85" rx="1"/>
+                        <rect x="10" y="-30" width="10" height="60" fill="#ef4444" opacity="0.85" rx="1"/>
+
+                        <!-- Secondary Winding (Blue) -->
+                        <rect x="-9" y="-30" width="8" height="60" fill="#3b82f6" opacity="0.85" rx="1"/>
+                        <rect x="1" y="-30" width="8" height="60" fill="#3b82f6" opacity="0.85" rx="1"/>
+                    </g>
+                    <!-- Legend -->
+                    <circle cx="20" cy="18" r="4" fill="#ef4444"/>
+                    <text x="30" y="21" fill="#94a3b8" font-size="10" font-family="monospace">Primary Winding (N₁)</text>
+
+                    <circle cx="20" cy="34" r="4" fill="#3b82f6"/>
+                    <text x="30" y="37" fill="#94a3b8" font-size="10" font-family="monospace">Secondary Winding (N₂)</text>
+                </svg>
+            `;
+            container.innerHTML = svgHTML;
+        }
+
+        
+        function renderKaTeXMath(va, k, ai, et, v1, v2, n1, n2) {
+            const put = (id, tex) => { try { katex.render(tex, document.getElementById(id)); } catch (e) { document.getElementById(id).textContent = tex; } };
+            put('math-ai', `A_i = ${k} \\times \\sqrt{${va.toFixed(0)}} = ${ai.toFixed(2)} \\text{ cm}^2`);
+            put('math-et', `E_t = 4.44 \\times f \\times B_{\\text{max}} \\times A_i = ${et.toFixed(3)} \\text{ V/turn}`);
+            put('math-n1', `N_1 = \\frac{${v1}}{${et.toFixed(3)}} = ${n1} \\text{ turns}`);
+            put('math-n2', `N_2 = 1.05 \\times \\frac{${v2}}{${et.toFixed(3)}} = ${n2} \\text{ turns}`);
+        }
+
+        window.addEventListener('DOMContentLoaded', function () {
+            ['inp-kva', 'inp-v1', 'inp-v2', 'inp-freq', 'inp-bmax', 'inp-j', 'inp-ks', 'inp-kconst'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) { el.addEventListener('input', calculateTransformer); el.addEventListener('change', calculateTransformer); }
+            });
+            calculateTransformer();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>3D Three-Phase Induction Motor Visualizer</title>
+    <!-- Tailwind CSS -->
+    <meta name="theme-color" content="#020617">
+    <meta name="description" content="Interactive 3D three-phase induction motor: squirrel cage and slip ring constructions, half cut section, exploded view and rotating magnetic field.">
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="preload" href="vendor/fonts/inter-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="css/tailwind.css">
+    <link rel="stylesheet" href="css/app.css">
+    <link rel="stylesheet" href="css/fa/fa.css">
+    <script src="vendor/three.min.js"></script>
+    <script src="vendor/OrbitControls.js"></script>
+    <style>
+        * {
+            touch-action: manipulation;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .code-font {
+            font-family: 'JetBrains Mono', monospace;
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.6);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+        /* Glassmorphism effects */
+        .glass-card {
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .glass-btn {
+            background: rgba(30, 41, 59, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            transition: all 0.2s ease;
+        }
+        .glass-btn:active, .glass-btn:hover {
+            background: rgba(51, 65, 85, 0.9);
+            border-color: rgba(56, 189, 248, 0.5);
+        }
+        .glass-btn.active {
+            background: rgba(2, 132, 199, 0.45);
+            border-color: #38bdf8;
+            box-shadow: 0 0 12px rgba(56, 189, 248, 0.3);
+            color: #ffffff;
+        }
+        /* Min Touch Target Sizes */
+        .touch-target {
+            min-height: 44px;
+        }
+        /* Canvas Container */
+        #canvas-container {
+            touch-action: none; /* Allows orbit controls inside canvas without scrolling page */
+        }
+    </style>
+<style>body{min-height:100vh;min-height:100dvh;padding-bottom:calc(68px + env(safe-area-inset-bottom,0px))}.app-nav{position:fixed;left:0;right:0;bottom:0}</style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col overflow-x-hidden">
+
+    <!-- 1. TOP HEADER / TITLE SECTION -->
+    <header class="w-full bg-slate-900/90 border-b border-slate-800 px-4 py-3 sticky top-0 z-30 backdrop-blur-md">
+        <div class="max-w-4xl mx-auto flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="p-2.5 bg-sky-500/20 text-sky-400 rounded-xl border border-sky-500/30 flex items-center justify-center">
+                    <i class="fa-solid fa-bolt text-lg"></i>
+                </div>
+                <div>
+                    <h1 class="text-sm sm:text-base font-bold tracking-wide text-white flex items-center gap-2">
+                        3D Induction Motor
+                        <span class="text-[10px] sm:text-xs font-semibold px-2 py-0.5 rounded-full bg-sky-500/20 text-sky-400 border border-sky-500/30">3-Phase</span>
+                    </h1>
+                    <p class="text-[11px] text-slate-400">Interactive Visualizer & Detailed Cut-Sections</p>
+                </div>
+            </div>
+
+            <button id="btn-reset-cam" class="glass-btn px-3 py-2 rounded-xl text-xs font-medium text-slate-300 flex items-center gap-1.5 touch-target">
+                <i class="fa-solid fa-rotate-right"></i>
+                <span class="hidden sm:inline">Reset View</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- MAIN VERTICAL STACKED CONTENT CONTAINER -->
+    <main class="w-full max-w-4xl mx-auto flex-1 flex flex-col p-2 sm:p-4 gap-3">
+
+        <!-- 2. 3D VISUALIZER CANVAS SECTION -->
+        <section class="w-full relative bg-slate-900/60 rounded-2xl border border-slate-800 shadow-2xl overflow-hidden flex flex-col">
+            <!-- Top Floating Canvas Controls Overlay -->
+            <div class="absolute top-3 left-3 right-3 z-10 flex items-center justify-between pointer-events-none">
+                <!-- Hover/Touch Label -->
+                <div id="part-tooltip" class="pointer-events-auto glass-card px-3 py-1.5 rounded-lg text-xs font-medium text-sky-300 border border-sky-500/40 shadow-lg">
+                    <i class="fa-solid fa-hand-pointer text-sky-400 mr-1.5"></i>
+                    <span id="tooltip-text">Tap component to inspect</span>
+                </div>
+                
+                <!-- Quick RMF Badge -->
+                <div id="rmf-status-badge" class="glass-card px-2.5 py-1 rounded-lg text-[11px] font-semibold text-purple-300 border border-purple-500/40 flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full bg-purple-400 animate-pulse"></span> RMF Active
+                </div>
+            </div>
+
+            <!-- 3D Canvas Box (Height fixed to 55vh on mobile for clear visibility) -->
+            <div id="canvas-container" class="w-full h-[56vh] sm:h-[60vh] min-h-[320px] max-h-[560px] cursor-grab active:cursor-grabbing"></div>
+
+            <!-- Bottom Floating Canvas Controls Overlay -->
+            <div class="p-2.5 bg-slate-900/90 border-t border-slate-800 flex items-center justify-between gap-2">
+                <!-- View Mode Controls -->
+                <div class="flex items-center space-x-1.5">
+                    <button id="btn-view-full" class="glass-btn active px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 touch-target">
+                        <i class="fa-solid fa-cube text-sky-400"></i> Full View
+                    </button>
+                    <button id="btn-view-cut" class="glass-btn px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 touch-target">
+                        <i class="fa-solid fa-boxes-packing text-amber-400"></i> Half Cut
+                    </button>
+                </div>
+
+                <!-- Run / Pause Button -->
+                <button id="btn-toggle-motor" class="glass-btn px-3.5 py-2 rounded-xl text-xs font-semibold text-emerald-400 flex items-center gap-1.5 touch-target">
+                    <i id="motor-status-icon" class="fa-solid fa-pause"></i>
+                    <span id="motor-status-text" class="hidden sm:inline">PAUSE</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- 3. BELOW-CANVAS SCROLLABLE CONTROLS & DETAILED SPECIFICATIONS SECTION -->
+        <section class="w-full space-y-4 pb-8">
+            
+            <!-- A. MOTOR TOPOLOGY SELECTION CARD -->
+            <div class="glass-card p-4 rounded-2xl space-y-3">
+                <span class="text-xs font-semibold text-slate-300 block uppercase tracking-wider flex items-center gap-2">
+                    <i class="fa-solid fa-sliders text-sky-400"></i> Select Motor Topology
+                </span>
+                <div class="grid grid-cols-2 gap-2">
+                    <button id="btn-squirrel" class="glass-btn active p-3 rounded-xl text-xs font-semibold flex flex-col items-center justify-center gap-1.5 touch-target text-center">
+                        <i class="fa-solid fa-dharmachakra text-sky-400 text-base"></i>
+                        <span>Squirrel Cage</span>
+                    </button>
+                    <button id="btn-slipring" class="glass-btn p-3 rounded-xl text-xs font-semibold flex flex-col items-center justify-center gap-1.5 touch-target text-center">
+                        <i class="fa-solid fa-ring text-amber-400 text-base"></i>
+                        <span>Slip Ring (Wound)</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- B. DYNAMIC SIMULATION PARAMETERS (SLIDERS) -->
+            <div class="glass-card p-4 rounded-2xl space-y-4">
+                <span class="text-xs font-semibold text-slate-300 block uppercase tracking-wider flex items-center gap-2">
+                    <i class="fa-solid fa-gauge-high text-sky-400"></i> Simulation Controls
+                </span>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Rotation Speed Slider -->
+                    <div class="bg-slate-900/60 p-3.5 rounded-xl border border-slate-800 space-y-2">
+                        <div class="flex justify-between items-center text-xs">
+                            <span class="text-slate-300 font-medium flex items-center gap-1.5">
+                                <i class="fa-solid fa-rotate text-emerald-400"></i> Rotor Speed (RPM)
+                            </span>
+                            <span id="speed-display" class="code-font text-sky-400 font-bold">1450 RPM</span>
+                        </div>
+                        <input type="range" id="slider-rpm" min="0" max="1500" step="50" value="1450" class="w-full h-2.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-sky-400 touch-target">
+                        <p id="slip-info" class="code-font text-[11px] text-slate-400"></p>
+                        <p class="text-[10px] text-slate-500 leading-snug">Shown in slow motion (about 1/25 of real speed). Synchronous speed is 1500 RPM (4 poles, 50 Hz); the field turns once per second here, the rotor lags by the slip.</p>
+                    </div>
+
+                    <!-- Exploded View Slider -->
+                    <div class="bg-slate-900/60 p-3.5 rounded-xl border border-slate-800 space-y-2">
+                        <div class="flex justify-between items-center text-xs">
+                            <span class="text-slate-300 font-medium flex items-center gap-1.5">
+                                <i class="fa-solid fa-arrows-split-up-and-left text-amber-400"></i> Exploded View
+                            </span>
+                            <span id="explode-slider-val" class="code-font text-amber-400 font-bold">0%</span>
+                        </div>
+                        <input type="range" id="slider-explode" min="0" max="100" value="0" class="w-full h-2.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-amber-400 touch-target">
+                    </div>
+                </div>
+
+                <!-- RMF Flux Toggle -->
+                <div class="bg-slate-900/60 p-3.5 rounded-xl border border-slate-800 flex items-center justify-between">
+                    <label for="toggle-rmf" class="text-xs text-slate-300 cursor-pointer flex items-center gap-2 font-medium">
+                        <i class="fa-solid fa-wave-square text-purple-400 text-sm"></i> Show Rotating Field (RMF) Lines
+                    </label>
+                    <input type="checkbox" id="toggle-rmf" class="w-5 h-5 rounded bg-slate-800 border-slate-700 text-sky-500 focus:ring-sky-500 cursor-pointer" checked>
+                </div>
+            </div>
+
+            <!-- C. COMPONENT SELECTOR BUTTONS -->
+            <div class="glass-card p-4 rounded-2xl space-y-3">
+                <span class="text-xs font-semibold text-slate-300 block uppercase tracking-wider flex items-center gap-2">
+                    <i class="fa-solid fa-layer-group text-sky-400"></i> Select Component to Inspect
+                </span>
+                <div id="component-list" class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    <!-- Populated dynamically via JS -->
+                </div>
+            </div>
+
+            <!-- D. COMPONENT DETAILED SPECIFICATION CARD -->
+            <div id="details-panel" class="glass-card p-4 sm:p-5 rounded-2xl space-y-4">
+                <!-- Header -->
+                <div class="flex items-center gap-3 pb-3 border-b border-slate-800">
+                    <div id="part-icon" class="p-2.5 bg-sky-500/20 text-sky-400 rounded-xl border border-sky-500/30 flex items-center justify-center">
+                        <i class="fa-solid fa-bolt text-xl"></i>
+                    </div>
+                    <div>
+                        <span id="part-category" class="text-[10px] font-bold tracking-wider uppercase text-sky-400 code-font">STATOR ASSEMBLY</span>
+                        <h2 id="part-title" class="text-base sm:text-lg font-bold text-white tracking-wide">Stator Core & Windings</h2>
+                    </div>
+                </div>
+
+                <!-- Functional Description -->
+                <div>
+                    <h3 class="text-slate-400 font-semibold mb-1 text-[11px] uppercase tracking-wider">Functional Overview</h3>
+                    <p id="part-description" class="leading-relaxed text-xs text-slate-200 bg-slate-900/60 p-3 rounded-xl border border-slate-800/80">
+                        Outer stationary housing and laminated silicon steel core. Provides mechanical support, houses the 3-phase windings, and creates a low-reluctance path for magnetic flux.
+                    </p>
+                </div>
+
+                <!-- Specs Grid -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <div class="bg-slate-900/60 p-3 rounded-xl border border-slate-800">
+                        <span class="text-[10px] text-slate-400 block font-medium">CONSTRUCTION MATERIAL</span>
+                        <span id="part-material" class="font-semibold text-xs text-slate-200 block mt-0.5">Cast Iron / Die-cast Aluminum</span>
+                    </div>
+                    <div class="bg-slate-900/60 p-3 rounded-xl border border-slate-800">
+                        <span class="text-[10px] text-slate-400 block font-medium">KEY SPECIFICATION</span>
+                        <span id="part-spec" class="font-semibold text-xs text-slate-200 block mt-0.5">Silicon Steel Laminations (0.5mm)</span>
+                    </div>
+                </div>
+
+                <!-- Engineering Features -->
+                <div>
+                    <h3 class="text-slate-400 font-semibold mb-1.5 text-[11px] uppercase tracking-wider">Engineering Features</h3>
+                    <ul id="part-features" class="space-y-1.5 list-disc list-inside text-xs text-slate-300 pl-1">
+                        <li>External cooling fins maximize heat dissipation surface area.</li>
+                        <li>Laminations reduce eddy current power losses significantly.</li>
+                        <li>Holds 3-phase distributed windings spaced 120° electrical degrees apart.</li>
+                    </ul>
+                </div>
+
+                <!-- Comparison Box -->
+                <div id="part-comparison-box" class="p-3 bg-sky-950/40 border border-sky-800/40 rounded-xl text-sky-200">
+                    <div class="font-semibold text-xs flex items-center gap-1.5 mb-1 text-sky-300">
+                        <i class="fa-solid fa-circle-info"></i> Topology Comparison
+                    </div>
+                    <p id="part-comparison-text" class="text-xs leading-relaxed text-sky-100/90">
+                        Stator remains fundamentally identical for both Squirrel Cage and Wound Rotor induction motors.
+                    </p>
+                </div>
+            </div>
+
+        </section>
+        <a href="quiz.html" class="block glass-card rounded-2xl p-4 border border-sky-500/40 hover:border-sky-300 transition mb-2">
+            <div class="flex items-center justify-between gap-3"><div><div class="text-sm font-bold text-white">Test your knowledge</div><div class="text-[11px] text-slate-400 mt-0.5">Take a 10-question quiz on motors, transformers and more.</div></div><i class="fa-solid fa-graduation-cap text-sky-400"></i></div></a>
+    </main>
+
+    <nav class="app-nav" aria-label="Main"><a href="index.html" class="nav-tab"><i class="fa-solid fa-house"></i><span>Home</span></a><a href="dc-motor.html" class="nav-tab"><i class="fa-solid fa-gears"></i><span>Construction</span></a><a href="dc-motor-types.html" class="nav-tab"><i class="fa-solid fa-diagram-project"></i><span>Types</span></a><a href="induction-motor.html" class="nav-tab" aria-current="page"><i class="fa-solid fa-fan"></i><span>Induction</span></a><a href="index.html#library" class="nav-tab"><i class="fa-solid fa-layer-group"></i><span>Library</span></a></nav>
+    <script src="js/induction-model.js"></script>
+    <script src="js/induction-app.js"></script>
+</body>
+</html>
