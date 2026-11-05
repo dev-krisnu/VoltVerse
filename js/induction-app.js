@@ -46,7 +46,7 @@
     fan: { name: 'Cooling Fan & Cowl', category: 'COOLING SYSTEM', icon: 'fa-fan', material: 'Plastic or aluminium fan, sheet steel cowl', spec: 'TEFC: totally enclosed, fan cooled',
       description: 'A fan on the non-drive end of the shaft blows outside air along the fins of the frame. The grilled cowl protects the fan and guides the air. The inside of the motor stays sealed from dust and water.',
       features: ['Fan speed follows the rotor speed, so cooling falls if the motor runs slowly.', 'The cowl grille keeps fingers away from the blades.', 'Dirty fins or a blocked grille make the motor run hot.'],
-      comparison: 'Shown on the squirrel cage motor. The slip ring motor here uses an open brush-gear guard instead.' },
+      comparison: 'Both constructions have the fan. On the slip ring motor the shaft passes through the cowl and the slip rings sit beyond it, inside an open guard.' },
     terminal_box: { name: 'Terminal Box', category: 'ELECTRICAL CONNECTION', icon: 'fa-plug', material: 'Cast iron or aluminium', spec: '6 terminals: U1 V1 W1 / W2 U2 V2',
       description: 'A box on top of the frame where the supply cable meets the stator leads. Brass links join the terminals for star or delta connection.',
       features: ['Three links in a row give delta, a single bar across three gives star.', 'A gland seals the cable entry.', 'An earth terminal is provided for safety.'],
@@ -60,10 +60,10 @@
 
   function homePos() {
     var box = $('canvas-container'), a = (box.clientWidth || 1) / (box.clientHeight || 1);
-    var d = Math.max(9.2, 8.6 / a + 1.4 + state.explode * 4);
+    var d = Math.max(9.2, 8.6 / a + 1.4 + state.explode * (state.type === 'slip' ? 7 : 4));
     return new THREE.Vector3(0.42, 0.28, 0.86).normalize().multiplyScalar(d);
   }
-  function homeTarget() { return new THREE.Vector3(-0.3 + state.explode * 0.5, 0.1, 0); }
+  function homeTarget() { return new THREE.Vector3(-0.3 + (state.type === 'slip' ? 0.5 : 0) + state.explode * 0.5, 0.1, 0); }
 
   function init() {
     var box = $('canvas-container');
@@ -99,7 +99,7 @@
   }
 
   function partKeys() {
-    return ['stator_core', 'stator_winding', 'frame', 'end_cover', 'bearings', 'shaft'].concat(state.type === 'cage' ? ['rotor_cage', 'fan'] : ['rotor_wound', 'slip_rings', 'brush_gear'], ['terminal_box']);
+    return ['stator_core', 'stator_winding', 'frame', 'end_cover', 'bearings', 'shaft'].concat(state.type === 'cage' ? ['rotor_cage', 'fan'] : ['rotor_wound', 'fan', 'slip_rings', 'brush_gear'], ['terminal_box']);
   }
 
   function select(key) {
@@ -135,7 +135,7 @@
 
   function bind() {
     $('btn-squirrel').addEventListener('click', function () { state.type = 'cage'; setBtn('btn-squirrel', 'btn-slipring', true); if (state.sel === 'rotor_wound' || state.sel === 'slip_rings' || state.sel === 'brush_gear') state.sel = 'rotor_cage'; rebuild(); populateList(); select(state.sel); });
-    $('btn-slipring').addEventListener('click', function () { state.type = 'slip'; setBtn('btn-slipring', 'btn-squirrel', true); if (state.sel === 'rotor_cage' || state.sel === 'fan') state.sel = 'rotor_wound'; rebuild(); populateList(); select(state.sel); });
+    $('btn-slipring').addEventListener('click', function () { state.type = 'slip'; setBtn('btn-slipring', 'btn-squirrel', true); if (state.sel === 'rotor_cage') state.sel = 'rotor_wound'; rebuild(); populateList(); select(state.sel); });
     $('btn-view-full').addEventListener('click', function () { state.cut = false; setBtn('btn-view-full', 'btn-view-cut', true); rebuild(); });
     $('btn-view-cut').addEventListener('click', function () { state.cut = true; setBtn('btn-view-cut', 'btn-view-full', true); rebuild(); });
     $('btn-reset-cam').addEventListener('click', function () { userMoved = false; camGoal.copy(homePos()); target.copy(homeTarget()); flying = true; });

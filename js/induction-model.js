@@ -182,7 +182,7 @@
     });
 
     // ---------- shaft (rotating) with key and white timing mark ----------
-    var shaft = new T.Group(), sEnd = slip ? 2.8 : 2.0;
+    var shaft = new T.Group(), sEnd = slip ? 3.75 : 2.0;
     shaft.add(revolve([[0, -2.95], [0.2, -2.95], [0.2, -2.35], [0.26, -2.35], [0.26, -0.9], [0.34, -0.9], [0.34, 0.9], [0.26, 0.9], [0.26, sEnd], [0, sEnd]], M(0xaab4c3, 0.95, 0.18), 40, true));
     shaft.add(box(0.5, 0.05, 0.07, M(0x9a7b2f, 0.8, 0.3), -2.62, 0.215, 0));
     shaft.add(box(0.14, 0.012, 0.07, M(0xffffff, 0.1, 0.5), -1.95, 0.262, 0));
@@ -223,8 +223,8 @@
     })();
     add(slip ? 'rotor_wound' : 'rotor_cage', rotor, { spin: true });
 
-    // ---------- cooling fan + cowl (cage motor) ----------
-    if (!slip) {
+    // ---------- cooling fan + cowl (both constructions) ----------
+    {
       var fan = new T.Group(), fm = M(0x6d5ccf, 0.2, 0.35, { emissive: 0x20164a, emissiveIntensity: 0.3 }), k2;
       fan.add(cylX(0.3, 0.2, M(0x4c3fb0, 0.4, 0.4), 1.82, 0, 0, 24));
       fan.add(revolve([[0.3, 1.78], [0.98, 1.78], [0.98, 1.82], [0.3, 1.82]], fm, 48, true));
@@ -239,12 +239,13 @@
       [0.3, 0.55, 0.8].forEach(function (r) { cowl.add(ring(r, 0.014, 2.17, gm)); });
       for (kk = 0; kk < 16; kk++) { var ts = kk * TAU / 16; if (!inHalf(ts)) continue; var sp = box(0.012, 0.66, 0.025, gm, 2.17, 0, 0), q = P(2.17, 0.6, ts); sp.position.copy(q); sp.rotation.x = ts - Math.PI / 2; cowl.add(sp); }
       add('fan', cowl, { dx: 3.2 });
-    } else {
-      // ---------- slip rings (rotating) and brush gear (static) ----------
-      var rings = new T.Group(), bz = M(0xd9a441, 0.9, 0.22), ins = M(0x2b2f3a, 0.2, 0.7), ci = [1.9, 2.28, 2.66];
-      rings.add(cylX(0.36, 1.12, ins, 2.28, 0, 0, 36));
+    }
+    if (slip) {
+      // ---------- slip rings (rotating) and brush gear (static), beyond the fan cowl ----------
+      var rings = new T.Group(), bz = M(0xd9a441, 0.9, 0.22), ins = M(0x2b2f3a, 0.2, 0.7), ci = [2.72, 3.08, 3.44];
+      rings.add(cylX(0.36, 1.12, ins, 3.08, 0, 0, 36));
       ci.forEach(function (c) { rings.add(revolve([[0.34, c - 0.1], [0.45, c - 0.1], [0.45, c + 0.1], [0.34, c + 0.1]], bz, 40, true)); });
-      add('slip_rings', rings, { dx: 1.5, spin: true });
+      add('slip_rings', rings, { dx: 5.0, spin: true });
       var gear = new T.Group(), carbon = M(0x15171c, 0.1, 0.8), spr = M(0xcbd5e1, 0.9, 0.3), hold = M(0x8a6f2c, 0.7, 0.4), guard = M(0x7d8aa0, 0.6, 0.4), k3;
       ci.forEach(function (c) {
         [-50, 50].forEach(function (deg) {
@@ -261,10 +262,10 @@
       });
       for (k3 = 0; k3 < 12; k3++) {
         var tg = k3 * TAU / 12; if (!inHalf(tg)) continue;
-        var bar = box(1.44, 0.05, 0.05, guard, 2.18, 0, 0), pg = P(2.18, 1.07, tg); bar.position.copy(pg); bar.rotation.x = tg - Math.PI / 2; gear.add(bar);
+        var bar = box(1.5, 0.05, 0.05, guard, 3.05, 0, 0), pg = P(3.05, 1.07, tg); bar.position.copy(pg); bar.rotation.x = tg - Math.PI / 2; gear.add(bar);
       }
-      gear.add(ring(1.07, 0.03, 2.9, guard)); gear.add(ring(1.07, 0.03, 2.2, guard)); gear.add(ring(1.07, 0.03, 1.5, guard));
-      add('brush_gear', gear, { dx: 3.2 });
+      gear.add(ring(1.07, 0.03, 3.8, guard)); gear.add(ring(1.07, 0.03, 3.05, guard)); gear.add(ring(1.07, 0.03, 2.3, guard));
+      add('brush_gear', gear, { dx: 6.6 });
     }
 
     // ---------- rotating magnetic field overlay (4-pole, shader) ----------
