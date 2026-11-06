@@ -4,6 +4,7 @@
 @keyframes fa-spin-k{to{transform:rotate(360deg)}}
 .fa-arrow-right::before{content:"\f061"}
 .fa-arrow-right::before{content:"\f061"}
+.fa-arrow-right::before{content:"\f061"}
 .fa-arrow-right-from-bracket::before{content:"\f08b"}
 .fa-arrow-right-to-bracket::before{content:"\f090"}
 .fa-arrows-rotate::before{content:"\f021"}
@@ -15,6 +16,7 @@
 .fa-bars-staggered::before{content:"\f550"}
 .fa-bolt::before{content:"\f0e7"}
 .fa-border-all::before{content:"\f84c"}
+.fa-box-archive::before{content:"\f187"}
 .fa-boxes-packing::before{content:"\e4c7"}
 .fa-cable-car::before{content:"\f7da"}
 .fa-calculator::before{content:"\f1ec"}
@@ -28,6 +30,7 @@
 .fa-circle-xmark::before{content:"\f057"}
 .fa-clipboard-list::before{content:"\f46d"}
 .fa-code::before{content:"\f121"}
+.fa-code-merge::before{content:"\f387"}
 .fa-compact-disc::before{content:"\f51f"}
 .fa-cube::before{content:"\f1b2"}
 .fa-cubes::before{content:"\f1b3"}
@@ -47,6 +50,7 @@
 .fa-house::before{content:"\f015"}
 .fa-industry::before{content:"\f275"}
 .fa-layer-group::before{content:"\f5fd"}
+.fa-lightbulb::before{content:"\f0eb"}
 .fa-link::before{content:"\f0c1"}
 .fa-list-ul::before{content:"\f0ca"}
 .fa-magnet::before{content:"\f076"}

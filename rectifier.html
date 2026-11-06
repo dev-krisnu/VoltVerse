@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Rectifier &amp; Filter Circuit Visualizer | VoltVerse</title>
+    <meta name="theme-color" content="#020617">
+    <meta name="description" content="Half-wave, center-tap and bridge rectifiers with capacitor, inductor, LC and pi filters: circuit schematic with current flow, oscilloscope and calculated ripple, DC voltage and efficiency.">
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="preload" href="vendor/fonts/inter-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="css/tailwind.css">
+    <link rel="stylesheet" href="css/app.css">
+    <link rel="stylesheet" href="css/fa/fa.css">
+    <style>
+        * { touch-action: manipulation; }
+        body {
+            font-family: 'Inter', sans-serif;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .code-font { font-family: 'JetBrains Mono', monospace; }
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.6); }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        .glass-card {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .glass-btn {
+            background: rgba(30, 41, 59, 0.75);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            transition: all 0.2s ease;
+        }
+        .glass-btn:active, .glass-btn:hover {
+            background: rgba(51, 65, 85, 0.9);
+            border-color: rgba(56, 189, 248, 0.5);
+        }
+        .glass-btn.active {
+            background: rgba(2, 132, 199, 0.45);
+            border-color: #38bdf8;
+            box-shadow: 0 0 12px rgba(56, 189, 248, 0.3);
+            color: #ffffff;
+        }
+        .touch-target { min-height: 44px; }
+
+        /* Animated SVG Wires */
+        .wire-path {
+            stroke-dasharray: 8 6;
+            animation: dash 0.8s linear infinite;
+        }
+        .wire-path-reverse {
+            stroke-dasharray: 8 6;
+            animation: dash-rev 0.8s linear infinite;
+        }
+        @keyframes dash {
+            to { stroke-dashoffset: -28; }
+        }
+        @keyframes dash-rev {
+            to { stroke-dashoffset: 28; }
+        }
+        .wire-off {
+            stroke-dasharray: none;
+            animation: none;
+        }
+    </style>
+<style>body{padding-bottom:calc(76px + env(safe-area-inset-bottom,0px))}.app-nav{position:fixed;left:0;right:0;bottom:0}</style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col overflow-x-hidden">
+
+    <!-- 1. TOP HEADER SECTION -->
+    <header class="w-full bg-slate-900/90 border-b border-slate-800 px-4 py-3 sticky top-0 z-30 backdrop-blur-md">
+        <div class="max-w-4xl mx-auto flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="p-2.5 bg-sky-500/20 text-sky-400 rounded-xl border border-sky-500/30 flex items-center justify-center">
+                    <i class="fa-solid fa-microchip text-lg"></i>
+                </div>
+                <div>
+                    <h1 class="text-sm sm:text-base font-bold tracking-wide text-white flex items-center gap-2">
+                        Rectifier & Filter Visualizer
+                        <span id="topology-badge" class="text-[10px] sm:text-xs font-semibold px-2 py-0.5 rounded-full bg-sky-500/20 text-sky-400 border border-sky-500/30">Bridge + C-Filter</span>
+                    </h1>
+                    <p class="text-[11px] text-slate-400">Interactive Circuit Laboratory & Continuous Waveform Analytics</p>
+                </div>
+            </div>
+
+            <button id="btn-power" class="glass-btn px-3 py-2 rounded-xl text-xs font-semibold text-emerald-400 flex items-center gap-1.5 touch-target active">
+                <i id="power-icon" class="fa-solid fa-power-off text-emerald-400"></i>
+                <span id="power-text" class="hidden sm:inline">POWER ON</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- MAIN VERTICAL STACKED CONTENT CONTAINER -->
+    <main class="w-full max-w-4xl mx-auto flex-1 flex flex-col p-2 sm:p-4 gap-3">
+
+        <!-- 2. FIXED UPPER SCHEMATIC CANVAS AREA -->
+        <section class="w-full relative bg-slate-900/80 rounded-2xl border border-slate-800 shadow-2xl overflow-hidden flex flex-col">
+            <!-- Canvas Overlay Controls Header -->
+            <div class="p-3 bg-slate-900/90 border-b border-slate-800/80 flex items-center justify-between z-10">
+                <div class="flex items-center gap-2">
+                    <span class="text-xs font-semibold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                        <i class="fa-solid fa-diagram-project text-sky-400"></i> Circuit Schematic
+                    </span>
+                    <span id="cycle-indicator" class="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                        Positive Half-Cycle (+)
+                    </span>
+                </div>
+
+                <div id="part-tooltip" class="glass-card px-2.5 py-1 rounded-lg text-xs font-medium text-sky-300 border border-sky-500/40 shadow">
+                    <i class="fa-solid fa-hand-pointer text-sky-400 mr-1"></i>
+                    <span id="tooltip-text">Tap component to inspect</span>
+                </div>
+            </div>
+
+            <!-- SVG Circuit Diagram Container -->
+            <div id="schematic-container" class="w-full h-[40vh] sm:h-[46vh] min-h-[290px] max-h-[460px] bg-slate-950 p-2 relative flex items-center justify-center">
+                <svg id="circuit-svg" fill="none" class="w-full h-full max-w-full max-h-full" viewBox="0 0 850 400" preserveAspectRatio="xMidYMid meet">
+                    <!-- Dynamic SVG content rendered here -->
+                </svg>
+            </div>
+
+            <!-- Bottom Schematic Status Bar -->
+            <div class="p-2.5 bg-slate-900/90 border-t border-slate-800 flex items-center justify-between text-xs">
+                <div class="flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" id="status-indicator"></span>
+                    <span class="text-slate-300 font-medium text-[11px] sm:text-xs" id="status-text">Circuit Active: Closed Loop Conduction</span>
+                </div>
+                <div class="text-slate-400 code-font text-[11px]" id="quick-v-readout">V_dc: 0.0V</div>
+            </div>
+        </section>
+
+        <!-- 3. BELOW-CANVAS SCROLLABLE CONTROLS & DATA SECTION -->
+        <section class="w-full space-y-4 pb-8">
+
+            <!-- A. RECTIFIER TOPOLOGY & FILTER SELECTION -->
+            <div class="glass-card p-4 rounded-2xl space-y-3">
+                <span class="text-xs font-semibold text-slate-300 block uppercase tracking-wider flex items-center gap-2">
+                    <i class="fa-solid fa-gears text-sky-400"></i> Circuit Topology Configuration
+                </span>
+
+                <!-- Rectifier Type -->
+                <div class="space-y-1.5">
+                    <label class="text-[11px] text-slate-400 font-medium block">Rectifier Diode Topology</label>
+                    <div class="grid grid-cols-3 gap-2">
+                        <button id="btn-rec-1d" class="glass-btn p-2.5 rounded-xl text-xs font-semibold flex flex-col items-center justify-center gap-1 touch-target">
+                            <i class="fa-solid fa-play text-amber-400"></i>
+                            <span>Half-Wave (1-Diode)</span>
+                        </button>
+                        <button id="btn-rec-2d" class="glass-btn p-2.5 rounded-xl text-xs font-semibold flex flex-col items-center justify-center gap-1 touch-target">
+                            <i class="fa-solid fa-code-merge text-purple-400"></i>
+                            <span>Center-Tap (2-Diode)</span>
+                        </button>
+                        <button id="btn-rec-4d" class="glass-btn active p-2.5 rounded-xl text-xs font-semibold flex flex-col items-center justify-center gap-1 touch-target">
+                            <i class="fa-solid fa-diagram-project text-sky-400"></i>
+                            <span>Bridge (4-Diode)</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Filter Type -->
+                <div class="space-y-1.5 pt-1">
+                    <label class="text-[11px] text-slate-400 font-medium block">Filter Network Topology</label>
+                    <div class="grid grid-cols-5 gap-1.5">
+                        <button id="btn-flt-none" class="glass-btn p-2 rounded-lg text-[11px] font-semibold text-center touch-target">None</button>
+                        <button id="btn-flt-c" class="glass-btn active p-2 rounded-lg text-[11px] font-semibold text-center touch-target">C</button>
+                        <button id="btn-flt-l" class="glass-btn p-2 rounded-lg text-[11px] font-semibold text-center touch-target">L</button>
+                        <button id="btn-flt-lc" class="glass-btn p-2 rounded-lg text-[11px] font-semibold text-center touch-target">L-C</button>
+                        <button id="btn-flt-pi" class="glass-btn p-2 rounded-lg text-[11px] font-semibold text-center touch-target">CLC (π)</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- B. DUAL TRACE DIGITAL OSCILLOSCOPE -->
+            <div class="glass-card p-4 rounded-2xl space-y-3">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-semibold text-slate-300 block uppercase tracking-wider flex items-center gap-2">
+                        <i class="fa-solid fa-chart-line text-emerald-400"></i> Dual-Trace Digital Oscilloscope
+                    </span>
+                    <div class="flex items-center gap-3 text-[10px] font-medium">
+                        <span class="flex items-center gap-1 text-sky-400"><span class="w-2.5 h-0.5 bg-sky-400 rounded"></span> Ch A (AC In)</span>
+                        <span class="flex items-center gap-1 text-amber-400"><span class="w-2.5 h-0.5 bg-amber-400 rounded"></span> Ch B (DC Out)</span>
+                    </div>
+                </div>
+
+                <!-- Oscilloscope Screen -->
+                <div class="relative w-full bg-slate-950 border border-slate-800 rounded-xl overflow-hidden p-1 shadow-inner">
+                    <canvas id="scope-canvas" class="w-full h-44 block"></canvas>
+                </div>
+            </div>
+
+            <!-- C. CIRCUIT PARAMETERS & SLIDERS -->
+            <div class="glass-card p-4 rounded-2xl space-y-4">
+                <span class="text-xs font-semibold text-slate-300 block uppercase tracking-wider flex items-center gap-2">
+                    <i class="fa-solid fa-sliders text-sky-400"></i> Transformer & Passive Parameters
+                </span>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Primary Voltage -->
+                    <div class="bg-slate-900/60 p-3 rounded-xl border border-slate-800 space-y-1.5">
+                        <div class="flex justify-between items-center text-xs">
+                            <span class="text-slate-300 font-medium">Primary AC Voltage (V<sub>in, RMS</sub>)</span>
+                            <span id="val-vin" class="code-font text-sky-400 font-bold">220 V</span>
+                        </div>
+                        <input type="range" id="slider-vin" min="12" max="240" step="2" value="220" class="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-sky-400 touch-target">
+                    </div>
+
+                    <!-- Turns Ratio -->
+                    <div class="bg-slate-900/60 p-3 rounded-xl border border-slate-800 space-y-1.5">
+                        <div class="flex justify-between items-center text-xs">
+                            <span class="text-slate-300 font-medium">Turns Ratio (N<sub>1</sub> : N<sub>2</sub>)</span>
+                            <span id="val-turns" class="code-font text-sky-400 font-bold">10:1 (Sec: 22V)</span>
+                        </div>
+                        <input type="range" id="slider-turns" min="1" max="20" step="1" value="10" class="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-sky-400 touch-target">
+                    </div>
+
+                    <!-- Frequency -->
+                    <div class="bg-slate-900/60 p-3 rounded-xl border border-slate-800 space-y-1.5">
+                        <div class="flex justify-between items-center text-xs">
+                            <span class="text-slate-300 font-medium">AC Frequency (f)</span>
+                            <span id="val-freq" class="code-font text-amber-400 font-bold">50 Hz</span>
+                        </div>
+                        <input type="range" id="slider-freq" min="20" max="100" step="5" value="50" class="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-amber-400 touch-target">
+                    </div>
+
+                    <!-- Load Resistance -->
+                    <div class="bg-slate-900/60 p-3 rounded-xl border border-slate-800 space-y-1.5">
+                        <div class="flex justify-between items-center text-xs">
+                            <span class="text-slate-300 font-medium">Load Resistance (R<sub>L</sub>)</span>
+                            <span id="val-rl" class="code-font text-emerald-400 font-bold">100 Ω</span>
+                        </div>
+                        <input type="range" id="slider-rl" min="10" max="1000" step="10" value="100" class="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-emerald-400 touch-target">
+                    </div>
+
+                    <!-- Filter Capacitor (C) -->
+                    <div id="c-filter-box" class="bg-slate-900/60 p-3 rounded-xl border border-slate-800 space-y-1.5">
+                        <div class="flex justify-between items-center text-xs">
+                            <span class="text-slate-300 font-medium">Filter Capacitance (C)</span>
+                            <span id="val-cap" class="code-font text-purple-400 font-bold">470 µF</span>
+                        </div>
+                        <input type="range" id="slider-cap" min="10" max="2200" step="10" value="470" class="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-purple-400 touch-target">
+                    </div>
+
+                    <!-- Filter Inductor (L) -->
+                    <div id="l-filter-box" class="bg-slate-900/60 p-3 rounded-xl border border-slate-800 space-y-1.5 opacity-50 pointer-events-none">
+                        <div class="flex justify-between items-center text-xs">
+                            <span class="text-slate-300 font-medium">Filter Inductance (L)</span>
+                            <span id="val-ind" class="code-font text-purple-400 font-bold">1.0 H</span>
+                        </div>
+                        <input type="range" id="slider-ind" min="0.1" max="5.0" step="0.1" value="1.0" class="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-purple-400 touch-target">
+                    </div>
+                </div>
+            </div>
+
+            <!-- D. CALCULATED ENGINEERING METRICS -->
+            <div class="glass-card p-4 rounded-2xl space-y-3">
+                <span class="text-xs font-semibold text-slate-300 block uppercase tracking-wider flex items-center gap-2">
+                    <i class="fa-solid fa-calculator text-sky-400"></i> Quantitative Engineering Metrics
+                </span>
+
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
+                    <div class="bg-slate-900/60 p-2.5 rounded-xl border border-slate-800">
+                        <span class="text-[10px] text-slate-400 block">Peak Sec. Volt (V<sub>m</sub>)</span>
+                        <span id="m-vm" class="code-font text-sm font-bold text-sky-400">31.11 V</span>
+                    </div>
+                    <div class="bg-slate-900/60 p-2.5 rounded-xl border border-slate-800">
+                        <span class="text-[10px] text-slate-400 block">DC Output (V<sub>dc</sub>)</span>
+                        <span id="m-vdc" class="code-font text-sm font-bold text-emerald-400">26.85 V</span>
+                    </div>
+                    <div class="bg-slate-900/60 p-2.5 rounded-xl border border-slate-800">
+                        <span class="text-[10px] text-slate-400 block">Ripple Voltage (V<sub>rms</sub>)</span>
+                        <span id="m-vrip" class="code-font text-sm font-bold text-amber-400">1.42 V</span>
+                    </div>
+                    <div class="bg-slate-900/60 p-2.5 rounded-xl border border-slate-800">
+                        <span class="text-[10px] text-slate-400 block">Ripple Factor (γ)</span>
+                        <span id="m-gamma" class="code-font text-sm font-bold text-purple-400">0.053</span>
+                    </div>
+                    <div class="bg-slate-900/60 p-2.5 rounded-xl border border-slate-800">
+                        <span class="text-[10px] text-slate-400 block">DC Current (I<sub>dc</sub>)</span>
+                        <span id="m-idc" class="code-font text-sm font-bold text-emerald-400">0.27 A</span>
+                    </div>
+                    <div class="bg-slate-900/60 p-2.5 rounded-xl border border-slate-800">
+                        <span class="text-[10px] text-slate-400 block">Efficiency (η)</span>
+                        <span id="m-eta" class="code-font text-sm font-bold text-sky-400">81.2 %</span>
+                    </div>
+                    <div class="bg-slate-900/60 p-2.5 rounded-xl border border-slate-800">
+                        <span class="text-[10px] text-slate-400 block">Diode PIV</span>
+                        <span id="m-piv" class="code-font text-sm font-bold text-rose-400">31.11 V</span>
+                    </div>
+                    <div class="bg-slate-900/60 p-2.5 rounded-xl border border-slate-800">
+                        <span class="text-[10px] text-slate-400 block">Peak Current (I<sub>peak</sub>)</span>
+                        <span id="m-ipeak" class="code-font text-sm font-bold text-amber-400">0.31 A</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- E. COMPONENT DETAILS CARD -->
+            <div id="details-panel" class="glass-card p-4 sm:p-5 rounded-2xl space-y-3">
+                <div class="flex items-center gap-3 pb-3 border-b border-slate-800">
+                    <div id="part-icon" class="p-2.5 bg-sky-500/20 text-sky-400 rounded-xl border border-sky-500/30">
+                        <i class="fa-solid fa-bolt text-lg"></i>
+                    </div>
+                    <div>
+                        <span id="part-cat" class="text-[10px] font-bold tracking-wider uppercase text-sky-400 code-font">RECTIFIER COMPONENT</span>
+                        <h2 id="part-title" class="text-base font-bold text-white">4-Diode Bridge Rectifier</h2>
+                    </div>
+                </div>
+                <p id="part-desc" class="text-xs text-slate-300 leading-relaxed bg-slate-900/60 p-3 rounded-xl border border-slate-800">
+                    Arranged in a full diamond bridge topology. Diodes D1 & D2 conduct during positive half-cycles, while D3 & D4 conduct during negative half-cycles, delivering a continuous full-wave DC signal across the output load.
+                </p>
+                <div class="grid grid-cols-2 gap-2 text-xs">
+                    <div class="bg-slate-900/60 p-2.5 rounded-xl border border-slate-800">
+                        <span class="text-[10px] text-slate-400 block font-medium">PRIMARY FUNCTION</span>
+                        <span id="part-func" class="font-semibold text-slate-200 block mt-0.5">Full-Wave Rectification</span>
+                    </div>
+                    <div class="bg-slate-900/60 p-2.5 rounded-xl border border-slate-800">
+                        <span class="text-[10px] text-slate-400 block font-medium">KEY SPECIFICATION</span>
+                        <span id="part-spec" class="font-semibold text-slate-200 block mt-0.5">PIV = Vm, f_ripple = 2f</span>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+        <a href="quiz.html" class="block rounded-2xl p-4 border border-sky-500/40 bg-sky-900/20 hover:border-sky-300 transition mt-4">
+            <div class="flex items-center justify-between gap-3"><div><div class="text-sm font-bold text-white">Test your knowledge</div><div class="text-[11px] text-slate-400 mt-0.5">Take a 10-question quiz after exploring.</div></div><i class="fa-solid fa-graduation-cap text-sky-400"></i></div></a>
+    </main>
+    <nav class="app-nav" aria-label="Main"><a href="index.html" class="nav-tab"><i class="fa-solid fa-house"></i><span>Home</span></a><a href="rectifier.html" class="nav-tab" aria-current="page"><i class="fa-solid fa-wave-square"></i><span>Rectifier</span></a><a href="index.html#library" class="nav-tab"><i class="fa-solid fa-layer-group"></i><span>Library</span></a></nav>
+
+    <!-- COMPONENT DATA & LOGIC -->
+    <script>
+        // DETAILS DATA
+        const DETAILS_DATA = {
+            'transformer': {
+                title: 'Step-Down Transformer',
+                cat: 'MAGNETIC ISOLATION & STEP DOWN',
+                icon: 'fa-bolt',
+                desc: 'Steps down high-voltage AC input (Vin) to a secondary voltage (Vsec) based on the turns ratio N1:N2, providing galvanically isolated AC power to the rectifier stage.',
+                func: 'AC Voltage Scaling & Isolation',
+                spec: 'Vsec(RMS) = Vin / (N1/N2)'
+            },
+            'diodes': {
+                title: 'Semiconductor Rectifier Diodes',
+                cat: 'PN-JUNCTION RECTIFICATION',
+                icon: 'fa-play',
+                desc: 'Permits unidirectional electric current flow during forward bias condition (V > 0.7V) and blocks reverse current during negative half-cycles.',
+                func: 'Unidirectional Current Flow',
+                spec: 'Silicon Junction (Vf ≈ 0.7V)'
+            },
+            'capacitor': {
+                title: 'Smoothing Filter Capacitor (C)',
+                cat: 'SHUNT ENERGY STORAGE',
+                icon: 'fa-box-archive',
+                desc: 'Connected in parallel with the load. Charges to peak voltage during conduction peaks and discharges into the load during off-peaks, greatly dampening voltage ripple.',
+                func: 'Voltage Ripple Reduction',
+                spec: 'Shunt Electrolytic Capacitor'
+            },
+            'inductor': {
+                title: 'Filter Choke Inductor (L)',
+                cat: 'SERIES INDUCTIVE FILTER',
+                icon: 'fa-ring',
+                desc: 'Connected in series with the load. Opposes sudden changes in electric current by producing a back-EMF, yielding smooth DC output current.',
+                func: 'Current Ripple Reduction',
+                spec: 'Series Iron-Core Choke'
+            },
+            'load': {
+                title: 'Output Load & Indicator Lamp',
+                cat: 'DC ELECTRICAL LOAD',
+                icon: 'fa-lightbulb',
+                desc: 'Consumes rectified and filtered DC electrical power. Visualized with an incandescent load bulb whose brightness scales with the calculated DC voltage.',
+                func: 'DC Power Dissipation',
+                spec: 'Adjustable Resistance RL'
+            }
+        };
+
+        // GLOBAL CIRCUIT STATE
+        const state = {
+            recType: '4d',      // '1d' | '2d' | '4d'
+            filterType: 'c',    // 'none' | 'c' | 'l' | 'lc' | 'pi'
+            powerOn: true,
+            vIn: 220,
+            turnsRatio: 10,
+            freq: 50,
+            rL: 100,
+            capVal: 470,        // µF
+            indVal: 1.0,        // H
+            selectedPartKey: 'diodes',
+            halfCyclePos: true  // true: Positive (+), false: Negative (-)
+        };
+
+        let scopeCtx;
+        let timeOffset = 0;
+
+        window.addEventListener('DOMContentLoaded', () => {
+            setupEventListeners();
+            initOscilloscope();
+            updateCalculations();
+            renderSVGSchematic();
+
+            // Cycle switch timer for AC direction simulation
+            setInterval(() => {
+                if (state.powerOn) {
+                    state.halfCyclePos = !state.halfCyclePos;
+                    const badge = document.getElementById('cycle-indicator');
+                    if (state.halfCyclePos) {
+                        badge.innerText = 'Positive Half-Cycle (+)';
+                        badge.className = 'text-[10px] font-mono px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30';
+                    } else {
+                        badge.innerText = 'Negative Half-Cycle (-)';
+                        badge.className = 'text-[10px] font-mono px-2 py-0.5 rounded bg-sky-500/20 text-sky-300 border border-sky-500/30';
+                    }
+                    renderSVGSchematic();
+                }
+            }, 1000);
+
+            requestAnimationFrame(animate);
+        });
+
+        // RENDER SVG CIRCUIT SCHEMATIC
+        function renderSVGSchematic() {
+            const svg = document.getElementById('circuit-svg');
+            if (!svg) return;
+
+            const isPos = state.halfCyclePos && state.powerOn;
+            const isNeg = !state.halfCyclePos && state.powerOn;
+            // conventional current: a path is drawn in the direction the current travels (fwd) or against it (!fwd)
+            const flow = (on, fwd) => on ? (fwd ? 'wire-path' : 'wire-path-reverse') : 'wire-off';
+            const primOn = state.powerOn && (state.recType !== '1d' || isPos); // half-wave: no load current in the negative half
+            // Half-wave, negative half-cycle: the diode blocks. Only a capacitor can keep feeding the load, so wires between the rectifier and the first capacitor go idle.
+            const railOn = state.powerOn && (state.recType !== '1d' || state.halfCyclePos);
+            const capFed = state.filterType === 'c' || state.filterType === 'lc' || state.filterType === 'pi';
+            const loadOn = capFed ? state.powerOn : railOn;
+
+            const activeWireColor = state.powerOn ? '#38bdf8' : '#475569';
+            const returnWireColor = state.powerOn ? '#f59e0b' : '#475569';
+            const inactiveWireColor = '#334155';
+
+            const activeDiodeColor = state.powerOn ? '#10b981' : '#64748b';
+            const offDiodeColor = '#334155';
+
+            // Calculate Load Bulb Glow
+            const vDc = state.calcCache ? state.calcCache.vDc : 0;
+            const bulbOpacity = state.powerOn ? Math.min(1.0, Math.max(0.15, vDc / 32)) : 0.05;
+            const bulbGlowColor = state.powerOn && vDc > 1 ? '#ffea00' : '#475569';
+
+            let schematicHTML = `
+                <!-- Background Grid -->
+                <defs>
+                    <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+                        <path d="M 20 0 L 0 0 0 20" fill="none" stroke="rgba(51, 65, 85, 0.25)" stroke-width="0.5"/>
+                    </pattern>
+                    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+                        <feGaussianBlur stdDeviation="3" result="blur" />
+                        <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                    </filter>
+                </defs>
+                <rect width="850" height="400" fill="url(#grid)" />
+
+                <!-- AC SOURCE & TRANSFORMER (Left) -->
+                <g class="cursor-pointer" onclick="highlightPart('transformer')">
+                    <!-- AC Source Circle -->
+                    <circle cx="70" cy="200" r="24" fill="#0f172a" stroke="#38bdf8" stroke-width="2.5"/>
+                    <path d="M 58 200 Q 64 188 70 200 T 82 200" fill="none" stroke="#38bdf8" stroke-width="2.5"/>
+                    <text x="70" y="240" font-size="11" fill="#94a3b8" text-anchor="middle" font-family="JetBrains Mono">AC Vin</text>
+
+                    <!-- Wires from AC Source to Primary Winding -->
+                    <path d="M 70 176 L 70 130 L 120 130" fill="none" stroke="${activeWireColor}" stroke-width="2" class="${flow(primOn, isPos)}"/>
+                    <path d="M 70 224 L 70 270 L 120 270" fill="none" stroke="${activeWireColor}" stroke-width="2" class="${flow(primOn, !isPos)}"/>
+
+                    <!-- Primary Winding -->
+                    <path d="M 120 130 C 120 145 135 145 135 155 C 135 165 120 165 120 175 C 120 185 135 185 135 195 C 135 205 120 205 120 215 C 120 225 135 225 135 235 C 135 245 120 245 120 270" fill="none" stroke="#38bdf8" stroke-width="3"/>
+                    <!-- Core Lines -->
+                    <line x1="148" y1="130" x2="148" y2="270" stroke="#94a3b8" stroke-width="2"/>
+                    <line x1="154" y1="130" x2="154" y2="270" stroke="#94a3b8" stroke-width="2"/>
+                    <!-- Secondary Winding -->
+                    <path d="M 182 130 C 182 145 167 145 167 155 C 167 165 182 165 182 175 C 182 185 167 185 167 195 C 167 205 182 205 182 215 C 182 225 167 225 167 235 C 167 245 182 245 182 270" fill="none" stroke="#e2e8f0" stroke-width="3"/>
+
+                    <text x="151" y="112" font-size="12" fill="#38bdf8" font-weight="bold" text-anchor="middle">Transformer</text>
+                    <text x="151" y="292" font-size="10" fill="#64748b" text-anchor="middle" font-family="JetBrains Mono">N1 : N2</text>
+                </g>
+            `;
+
+            // RECTIFIER TOPOLOGIES SCHEMATICS
+            if (state.recType === '1d') {
+                // HALF-WAVE (1 DIODE)
+                const d1Color = isPos ? activeDiodeColor : offDiodeColor;
+                const topWireStyle = isPos ? activeWireColor : inactiveWireColor;
+                const retWireStyle = isPos ? returnWireColor : inactiveWireColor;
+
+                schematicHTML += `
+                    <g class="cursor-pointer" onclick="highlightPart('diodes')">
+                        <!-- Top Wire Sec to Diode Anode -->
+                        <path d="M 182 130 L 260 130" fill="none" stroke="${topWireStyle}" stroke-width="2.5" class="${isPos ? 'wire-path' : 'wire-off'}"/>
+
+                        <!-- Diode D1 -->
+                        <g transform="translate(260, 130)">
+                            <polygon points="0,-12 24,0 0,12" fill="${d1Color}" stroke="#e2e8f0" stroke-width="1.5"/>
+                            <line x1="24" y1="-14" x2="24" y2="14" stroke="${d1Color}" stroke-width="3"/>
+                            <text x="12" y="-20" font-size="12" fill="#38bdf8" font-weight="bold" text-anchor="middle">D1</text>
+                        </g>
+
+                        <!-- Wire D1 Cathode to Filter Input (+DC) -->
+                        <path d="M 284 130 L 440 130" fill="none" stroke="${topWireStyle}" stroke-width="2.5" class="${isPos ? 'wire-path' : 'wire-off'}"/>
+
+                        <!-- Bottom Secondary Return Path to (-DC) -->
+                        <path d="M 440 270 L 182 270" fill="none" stroke="${retWireStyle}" stroke-width="2.5" class="${isPos ? 'wire-path' : 'wire-off'}"/>
+
+                        <!-- Node Polarity Markers -->
+                        <text x="195" y="122" font-size="12" fill="${isPos ? '#38bdf8' : '#64748b'}" font-weight="bold">${isPos ? '+' : '-'}</text>
+                        <text x="195" y="262" font-size="12" fill="${isPos ? '#f59e0b' : '#64748b'}" font-weight="bold">${isPos ? '-' : '+'}</text>
+                    </g>
+                `;
+            } else if (state.recType === '2d') {
+                // FULL-WAVE CENTER-TAPPED (2 DIODES)
+                const d1Active = isPos && state.powerOn;
+                const d2Active = isNeg && state.powerOn;
+
+                const d1Color = d1Active ? activeDiodeColor : offDiodeColor;
+                const d2Color = d2Active ? activeDiodeColor : offDiodeColor;
+
+                schematicHTML += `
+                    <g class="cursor-pointer" onclick="highlightPart('diodes')">
+                        <!-- Top Sec Winding to D1 Anode -->
+                        <path d="M 182 130 L 260 130" fill="none" stroke="${d1Active ? activeWireColor : inactiveWireColor}" stroke-width="2.5" class="${d1Active ? 'wire-path' : 'wire-off'}"/>
+                        <!-- Diode D1 -->
+                        <g transform="translate(260, 130)">
+                            <polygon points="0,-12 24,0 0,12" fill="${d1Color}" stroke="#e2e8f0" stroke-width="1.5"/>
+                            <line x1="24" y1="-14" x2="24" y2="14" stroke="${d1Color}" stroke-width="3"/>
+                            <text x="12" y="-20" font-size="12" fill="#38bdf8" font-weight="bold" text-anchor="middle">D1</text>
+                        </g>
+
+                        <!-- Bottom Sec Winding to D2 Anode -->
+                        <path d="M 182 270 L 260 270" fill="none" stroke="${d2Active ? activeWireColor : inactiveWireColor}" stroke-width="2.5" class="${d2Active ? 'wire-path' : 'wire-off'}"/>
+                        <!-- Diode D2 -->
+                        <g transform="translate(260, 270)">
+                            <polygon points="0,-12 24,0 0,12" fill="${d2Color}" stroke="#e2e8f0" stroke-width="1.5"/>
+                            <line x1="24" y1="-14" x2="24" y2="14" stroke="${d2Color}" stroke-width="3"/>
+                            <text x="12" y="30" font-size="12" fill="#38bdf8" font-weight="bold" text-anchor="middle">D2</text>
+                        </g>
+
+                        <!-- Joined Cathodes Wire strictly to Positive DC Rail -->
+                        <path d="M 284 130 L 360 130" fill="none" stroke="${d1Active ? activeWireColor : inactiveWireColor}" stroke-width="2.5" class="${flow(d1Active, true)}"/>
+                        <path d="M 284 270 L 360 270 L 360 130" fill="none" stroke="${d2Active ? activeWireColor : inactiveWireColor}" stroke-width="2.5" class="${flow(d2Active, true)}"/>
+                        <path d="M 360 130 L 440 130" fill="none" stroke="${state.powerOn ? activeWireColor : inactiveWireColor}" stroke-width="2.5" class="${flow(state.powerOn, true)}"/>
+                        <circle cx="360" cy="130" r="3.5" fill="#10b981"/>
+                        <circle cx="360" cy="200" r="4" fill="#10b981"/>
+                        <text x="360" y="118" font-size="11" fill="#10b981" font-weight="bold" text-anchor="middle">+ DC Rail</text>
+
+                        <!-- Center Tap Line (Routing directly to Ground / -DC Bus) -->
+                        <path d="M 175 200 L 220 200 L 220 330 L 440 330 L 440 270" fill="none" stroke="${state.powerOn ? returnWireColor : inactiveWireColor}" stroke-width="2.5" class="${state.powerOn ? 'wire-path-reverse' : 'wire-off'}"/>
+                        <circle cx="175" cy="200" r="4" fill="#38bdf8"/>
+                        <text x="182" y="193" font-size="10" fill="#38bdf8" font-weight="bold">Center-Tap (0V Ground)</text>
+
+                        <!-- Secondary Voltage Polarity Indicators -->
+                        <text x="195" y="122" font-size="11" fill="${d1Active ? '#38bdf8' : '#64748b'}">${d1Active ? '+' : '-'}</text>
+                        <text x="195" y="262" font-size="11" fill="${d2Active ? '#38bdf8' : '#64748b'}">${d2Active ? '+' : '-'}</text>
+                    </g>
+                `;
+            } else {
+                // 4-DIODE BRIDGE RECTIFIER - Clean Non-Overlapping Wire Traces
+                const d1d2Active = isPos && state.powerOn; // Positive half cycle: D1 & D2 conduct
+                const d3d4Active = isNeg && state.powerOn; // Negative half cycle: D3 & D4 conduct
+
+                const d1Color = d1d2Active ? activeDiodeColor : offDiodeColor;
+                const d2Color = d1d2Active ? activeDiodeColor : offDiodeColor;
+                const d3Color = d3d4Active ? activeDiodeColor : offDiodeColor;
+                const d4Color = d3d4Active ? activeDiodeColor : offDiodeColor;
+
+                schematicHTML += `
+                    <g class="cursor-pointer" onclick="highlightPart('diodes')">
+                        <!-- Top Secondary Winding Wire -> Bridge Left Node (D1/D4 junction) -->
+                        <path d="M 182 130 L 250 130 L 250 200" fill="none" stroke="${isPos ? activeWireColor : returnWireColor}" stroke-width="2.5" class="${isPos ? 'wire-path' : (isNeg ? 'wire-path-reverse' : 'wire-off')}"/>
+
+                        <!-- Bottom Secondary Winding Wire -> Routing BELOW -DC line cleanly to Bridge Right Node (D2/D3 junction) -->
+                        <path d="M 182 270 L 220 270 L 220 315 L 370 315 L 370 200" fill="none" stroke="${isNeg ? activeWireColor : returnWireColor}" stroke-width="2.5" class="${isNeg ? 'wire-path' : (isPos ? 'wire-path-reverse' : 'wire-off')}"/>
+
+                        <!-- Bridge Diamond Diodes -->
+                        <!-- Diodes sit on the diamond edges and point toward the cathode: D1 A->T, D3 B->T, D4 -DC->A, D2 -DC->B -->
+                        <g transform="translate(280, 165) rotate(-49.4) translate(-10, 0)">
+                            <polygon points="0,-10 20,0 0,10" fill="${d1Color}" stroke="#e2e8f0"/>
+                            <line x1="20" y1="-12" x2="20" y2="12" stroke="${d1Color}" stroke-width="2.5"/>
+                        </g>
+                        <g transform="translate(340, 165) rotate(-130.6) translate(-10, 0)">
+                            <polygon points="0,-10 20,0 0,10" fill="${d3Color}" stroke="#e2e8f0"/>
+                            <line x1="20" y1="-12" x2="20" y2="12" stroke="${d3Color}" stroke-width="2.5"/>
+                        </g>
+                        <g transform="translate(280, 235) rotate(-130.6) translate(-10, 0)">
+                            <polygon points="0,-10 20,0 0,10" fill="${d4Color}" stroke="#e2e8f0"/>
+                            <line x1="20" y1="-12" x2="20" y2="12" stroke="${d4Color}" stroke-width="2.5"/>
+                        </g>
+                        <g transform="translate(340, 235) rotate(-49.4) translate(-10, 0)">
+                            <polygon points="0,-10 20,0 0,10" fill="${d2Color}" stroke="#e2e8f0"/>
+                            <line x1="20" y1="-12" x2="20" y2="12" stroke="${d2Color}" stroke-width="2.5"/>
+                        </g>
+                        <text x="258" y="156" font-size="10" fill="#38bdf8" text-anchor="end">D1</text>
+                        <text x="362" y="156" font-size="10" fill="#38bdf8">D3</text>
+                        <text x="258" y="258" font-size="10" fill="#38bdf8" text-anchor="end">D4</text>
+                        <text x="362" y="258" font-size="10" fill="#38bdf8">D2</text>
+
+                        <!-- Bridge Outer Frame Lines -->
+                        <path d="M 250 200 L 310 130 L 370 200 L 310 270 Z" fill="none" stroke="#64748b" stroke-width="2"/>
+                        <!-- current along the two conducting edges -->
+                        <path d="M 250 200 L 310 130" fill="none" stroke="${activeWireColor}" stroke-width="2.5" class="${flow(isPos, true)}"/>
+                        <path d="M 310 270 L 370 200" fill="none" stroke="${returnWireColor}" stroke-width="2.5" class="${flow(isPos, true)}"/>
+                        <path d="M 370 200 L 310 130" fill="none" stroke="${activeWireColor}" stroke-width="2.5" class="${flow(isNeg, true)}"/>
+                        <path d="M 310 270 L 250 200" fill="none" stroke="${returnWireColor}" stroke-width="2.5" class="${flow(isNeg, true)}"/>
+
+                        <!-- Positive DC Output (+DC) from Bridge Top Junction -->
+                        <path d="M 310 130 L 440 130" fill="none" stroke="${state.powerOn ? activeWireColor : inactiveWireColor}" stroke-width="2.5" class="${state.powerOn ? 'wire-path' : 'wire-off'}"/>
+                        <circle cx="310" cy="130" r="4" fill="#10b981"/>
+                        <text x="310" y="118" font-size="11" fill="#10b981" font-weight="bold" text-anchor="middle">+ DC</text>
+
+                        <!-- Negative DC Return (-DC) to Bridge Bottom Junction -->
+                        <path d="M 440 270 L 310 270" fill="none" stroke="${state.powerOn ? returnWireColor : inactiveWireColor}" stroke-width="2.5" class="${state.powerOn ? 'wire-path' : 'wire-off'}"/>
+                        <circle cx="310" cy="270" r="4" fill="#f43f5e"/>
+                        <text x="310" y="288" font-size="11" fill="#f43f5e" font-weight="bold" text-anchor="middle">- DC</text>
+                    </g>
+                `;
+            }
+
+            // FILTER NETWORK SCHEMATICS
+            let loadStartX = 650;
+            const filterWirePos = state.powerOn ? activeWireColor : inactiveWireColor;
+            const filterWireNeg = state.powerOn ? returnWireColor : inactiveWireColor;
+
+            schematicHTML += `<g id="filter-group">`;
+
+            if (state.filterType === 'c') {
+                // CAPACITOR FILTER (PARALLEL)
+                schematicHTML += `
+                    <g class="cursor-pointer" onclick="highlightPart('capacitor')">
+                        <path d="M 440 130 L 530 130 M 530 270 L 440 270" stroke="${filterWirePos}" stroke-width="2.5" class="${railOn ? 'wire-path' : 'wire-off'}"/>
+                        <path d="M 530 130 L 530 185 M 530 215 L 530 270" stroke="${filterWirePos}" stroke-width="2.5"/>
+                        <!-- Capacitor Plates -->
+                        <line x1="510" y1="185" x2="550" y2="185" stroke="#a855f7" stroke-width="3.5"/>
+                        <line x1="510" y1="215" x2="550" y2="215" stroke="#a855f7" stroke-width="3.5"/>
+                        <text x="560" y="204" font-size="12" fill="#c084fc" font-weight="bold">C</text>
+                        <!-- Bus to Load -->
+                        <path d="M 530 130 L ${loadStartX} 130" stroke="${filterWirePos}" stroke-width="2.5" class="${loadOn ? 'wire-path' : 'wire-off'}"/>
+                        <path d="M ${loadStartX} 270 L 530 270" stroke="${filterWireNeg}" stroke-width="2.5" class="${loadOn ? 'wire-path' : 'wire-off'}"/>
+                    </g>
+                `;
+            } else if (state.filterType === 'l') {
+                // INDUCTOR CHOKE FILTER (SERIES)
+                schematicHTML += `
+                    <g class="cursor-pointer" onclick="highlightPart('inductor')">
+                        <!-- Series Inductor Coils -->
+                        <path d="M 440 130 C 455 110 470 110 480 130 C 495 110 510 110 520 130 C 535 110 550 110 560 130 C 575 110 590 110 600 130" fill="none" stroke="#a855f7" stroke-width="3"/>
+                        <text x="520" y="105" font-size="12" fill="#c084fc" font-weight="bold" text-anchor="middle">L (Choke)</text>
+                        <path d="M 600 130 L ${loadStartX} 130" stroke="${filterWirePos}" stroke-width="2.5" class="${loadOn ? 'wire-path' : 'wire-off'}"/>
+                        <path d="M ${loadStartX} 270 L 440 270" stroke="${filterWireNeg}" stroke-width="2.5" class="${railOn ? 'wire-path' : 'wire-off'}"/>
+                    </g>
+                `;
+            } else if (state.filterType === 'lc') {
+                // L-C FILTER (SERIES L + SHUNT C)
+                schematicHTML += `
+                    <g class="cursor-pointer">
+                        <!-- Series L -->
+                        <path d="M 440 130 C 450 115 465 115 475 130 C 485 115 500 115 510 130" fill="none" stroke="#a855f7" stroke-width="3" onclick="highlightPart('inductor')"/>
+                        <text x="475" y="110" font-size="11" fill="#c084fc" font-weight="bold" text-anchor="middle">L</text>
+                        <!-- Shunt C -->
+                        <path d="M 510 130 L 570 130" stroke="${filterWirePos}" stroke-width="2.5" class="${railOn ? 'wire-path' : 'wire-off'}"/>
+                        <path d="M 570 130 L 570 185 M 570 215 L 570 270" stroke="${filterWirePos}" stroke-width="2.5"/>
+                        <path d="M 570 270 L 440 270" stroke="${filterWireNeg}" stroke-width="2.5" class="${railOn ? 'wire-path' : 'wire-off'}"/>
+                        <line x1="550" y1="185" x2="590" y2="185" stroke="#a855f7" stroke-width="3.5" onclick="highlightPart('capacitor')"/>
+                        <line x1="550" y1="215" x2="590" y2="215" stroke="#a855f7" stroke-width="3.5" onclick="highlightPart('capacitor')"/>
+                        <text x="600" y="204" font-size="11" fill="#c084fc" font-weight="bold">C</text>
+                        <path d="M 570 130 L ${loadStartX} 130" stroke="${filterWirePos}" stroke-width="2.5" class="${loadOn ? 'wire-path' : 'wire-off'}"/>
+                        <path d="M ${loadStartX} 270 L 570 270" stroke="${filterWireNeg}" stroke-width="2.5" class="${loadOn ? 'wire-path' : 'wire-off'}"/>
+                    </g>
+                `;
+            } else if (state.filterType === 'pi') {
+                // CLC PI FILTER (SHUNT C1 + SERIES L + SHUNT C2)
+                schematicHTML += `
+                    <g class="cursor-pointer">
+                        <!-- C1 -->
+                        <path d="M 440 130 L 480 130" stroke="${filterWirePos}" stroke-width="2.5" class="${railOn ? 'wire-path' : 'wire-off'}"/>
+                        <path d="M 480 130 L 480 185 M 480 215 L 480 270" stroke="${filterWirePos}" stroke-width="2.5"/>
+                        <path d="M 480 270 L 440 270" stroke="${filterWireNeg}" stroke-width="2.5" class="${railOn ? 'wire-path' : 'wire-off'}"/>
+                        <line x1="465" y1="185" x2="495" y2="185" stroke="#a855f7" stroke-width="3" onclick="highlightPart('capacitor')"/>
+                        <line x1="465" y1="215" x2="495" y2="215" stroke="#a855f7" stroke-width="3" onclick="highlightPart('capacitor')"/>
+                        <text x="480" y="105" font-size="10" fill="#c084fc" font-weight="bold" text-anchor="middle">C1</text>
+                        <!-- Series L -->
+                        <path d="M 480 130 C 490 115 505 115 515 130 C 525 115 540 115 550 130" fill="none" stroke="#a855f7" stroke-width="3" onclick="highlightPart('inductor')"/>
+                        <text x="515" y="105" font-size="10" fill="#c084fc" font-weight="bold" text-anchor="middle">L</text>
+                        <!-- C2 -->
+                        <path d="M 550 130 L 600 130" stroke="${filterWirePos}" stroke-width="2.5" class="${loadOn ? 'wire-path' : 'wire-off'}"/>
+                        <path d="M 600 130 L 600 185 M 600 215 L 600 270" stroke="${filterWirePos}" stroke-width="2.5"/>
+                        <path d="M 600 270 L 480 270" stroke="${filterWireNeg}" stroke-width="2.5" class="${loadOn ? 'wire-path' : 'wire-off'}"/>
+                        <line x1="585" y1="185" x2="615" y2="185" stroke="#a855f7" stroke-width="3" onclick="highlightPart('capacitor')"/>
+                        <line x1="585" y1="215" x2="615" y2="215" stroke="#a855f7" stroke-width="3" onclick="highlightPart('capacitor')"/>
+                        <text x="600" y="105" font-size="10" fill="#c084fc" font-weight="bold" text-anchor="middle">C2</text>
+                        <path d="M 600 130 L ${loadStartX} 130" stroke="${filterWirePos}" stroke-width="2.5" class="${loadOn ? 'wire-path' : 'wire-off'}"/>
+                        <path d="M ${loadStartX} 270 L 600 270" stroke="${filterWireNeg}" stroke-width="2.5" class="${loadOn ? 'wire-path' : 'wire-off'}"/>
+                    </g>
+                `;
+            } else {
+                // NO FILTER (DIRECT UNBROKEN BUS BAR)
+                schematicHTML += `
+                    <path d="M 440 130 L ${loadStartX} 130" stroke="${filterWirePos}" stroke-width="2.5" class="${railOn ? 'wire-path' : 'wire-off'}"/>
+                    <path d="M ${loadStartX} 270 L 440 270" stroke="${filterWireNeg}" stroke-width="2.5" class="${railOn ? 'wire-path' : 'wire-off'}"/>
+                `;
+            }
+
+            schematicHTML += `</g>`;
+
+            // LOAD RESISTOR & LIGHT BULB (Right Side)
+            schematicHTML += `
+                <g class="cursor-pointer" onclick="highlightPart('load')">
+                    <!-- Wire connection into Load -->
+                    <path d="M ${loadStartX} 130 L 730 130 L 730 160" stroke="${filterWirePos}" stroke-width="2.5" class="${loadOn ? 'wire-path' : 'wire-off'}"/>
+                    <path d="M 730 240 L 730 270 L ${loadStartX} 270" stroke="${filterWireNeg}" stroke-width="2.5" class="${loadOn ? 'wire-path' : 'wire-off'}"/>
+
+                    <!-- Load Resistor (Zig-Zag) -->
+                    <path d="M 730 160 L 742 166 L 718 178 L 742 190 L 718 202 L 742 214 L 718 226 L 730 240" fill="none" stroke="#10b981" stroke-width="3"/>
+                    <text x="755" y="204" font-size="12" fill="#10b981" font-weight="bold">RL</text>
+
+                    <!-- Parallel Light Bulb Visualizer -->
+                    <path d="M 730 130 L 800 130 L 800 175" stroke="${filterWirePos}" stroke-width="2" class="${loadOn ? 'wire-path' : 'wire-off'}"/>
+                    <path d="M 800 225 L 800 270 L 730 270" stroke="${filterWireNeg}" stroke-width="2" class="${loadOn ? 'wire-path' : 'wire-off'}"/>
+                    <!-- Bulb Glass Globe -->
+                    <circle cx="800" cy="200" r="22" fill="#0f172a" stroke="${bulbGlowColor}" stroke-width="2" filter="url(#glow)"/>
+                    <!-- Inner Filament -->
+                    <path d="M 792 210 L 800 192 L 808 210" fill="none" stroke="${bulbGlowColor}" stroke-width="2" opacity="${bulbOpacity}"/>
+                    <!-- Outer Glow Light Effect -->
+                    <circle cx="800" cy="200" r="30" fill="${bulbGlowColor}" opacity="${bulbOpacity * 0.35}"/>
+
+                    <text x="800" y="242" font-size="10" fill="#94a3b8" text-anchor="middle">Load Lamp</text>
+                </g>
+            `;
+
+            svg.innerHTML = schematicHTML;
+        }
+
+        // HIGHLIGHT SELECTED COMPONENT
+        function highlightPart(key) {
+            state.selectedPartKey = key;
+            const data = DETAILS_DATA[key] || DETAILS_DATA['diodes'];
+
+            document.getElementById('part-title').innerText = data.title;
+            document.getElementById('part-cat').innerText = data.cat;
+            document.getElementById('part-desc').innerText = data.desc;
+            document.getElementById('part-func').innerText = data.func;
+            document.getElementById('part-spec').innerText = data.spec;
+            document.getElementById('part-icon').innerHTML = `<i class="fa-solid ${data.icon} text-lg"></i>`;
+            document.getElementById('tooltip-text').innerText = data.title;
+        }
+
+        // ENGINEERING CALCULATIONS & METRICS UPDATE
+        function updateCalculations() {
+            const vSecRms = state.vIn / state.turnsRatio;     // for the center-tap this is each half of the secondary
+            const vPeak = vSecRms * Math.SQRT2;
+            const isFullWave = state.recType !== '1d';
+            const drop = state.recType === '4d' ? 1.4 : 0.7;   // silicon diodes in the conduction path
+            const vm = Math.max(0, vPeak - drop);               // peak voltage at the filter input
+            const rippleFreq = isFullWave ? state.freq * 2 : state.freq;
+            const capFront = state.filterType === 'c' || state.filterType === 'pi';
+            const piv = (state.recType === '2d' || (state.recType === '1d' && capFront)) ? 2 * vPeak : vPeak;
+
+            const RL = state.rL, C = state.capVal * 1e-6, L = state.indVal;
+            const XL = 2 * Math.PI * rippleFreq * L, XC = 1 / (2 * Math.PI * rippleFreq * C);
+
+            // unfiltered output
+            const vDc0 = isFullWave ? (2 * vm) / Math.PI : vm / Math.PI;
+            const gamma0 = isFullWave ? 0.482 : 1.21;
+            let vDc = vDc0, rippleFactor = gamma0;
+
+            if (capFront) {
+                const dV = vm / (rippleFreq * C * RL);                // peak-to-peak ripple, RC discharge approximation
+                vDc = Math.max(vDc0, vm - dV / 2);
+                rippleFactor = Math.min(gamma0, vDc > 0 ? dV / (2 * Math.sqrt(3)) / vDc : gamma0);
+                if (state.filterType === 'pi') rippleFactor *= Math.min(1, XC / XL);   // the extra L-C section
+            } else if (state.filterType === 'l') {
+                rippleFactor = Math.min(gamma0, (isFullWave ? 0.471 : 1.11) * RL / XL);
+            } else if (state.filterType === 'lc') {
+                rippleFactor = Math.min(gamma0, (isFullWave ? 0.471 : 1.11) * (XC / XL));
+            }
+
+            vDc = Math.max(0, vDc);
+            const iDc = vDc / RL;
+            const iPeak = vm / RL;
+            const vRipple = vDc * rippleFactor;                         // rms ripple
+            // rectification efficiency = DC power / (DC power + ripple power + diode loss)
+            const pDc = vDc * iDc, pRip = vRipple * vRipple / RL, pDiode = iDc * drop;
+            const eta = pDc > 0 ? 100 * pDc / (pDc + pRip + pDiode) : 0;
+
+            document.getElementById('val-vin').innerText = `${state.vIn} V`;
+            document.getElementById('val-turns').innerText = `${state.turnsRatio}:1 (Sec: ${vSecRms.toFixed(1)}V${state.recType === '2d' ? ' per half' : ''})`;
+            document.getElementById('val-freq').innerText = `${state.freq} Hz`;
+            document.getElementById('val-rl').innerText = `${state.rL} Ω`;
+            document.getElementById('val-cap').innerText = `${state.capVal} µF`;
+            document.getElementById('val-ind').innerText = `${state.indVal.toFixed(1)} H`;
+
+            if (state.powerOn) {
+                document.getElementById('m-vm').innerText = `${vPeak.toFixed(2)} V`;
+                document.getElementById('m-vdc').innerText = `${vDc.toFixed(2)} V`;
+                document.getElementById('m-vrip').innerText = `${vRipple.toFixed(2)} V`;
+                document.getElementById('m-gamma').innerText = rippleFactor.toFixed(3);
+                document.getElementById('m-idc').innerText = `${iDc.toFixed(3)} A`;
+                document.getElementById('m-eta').innerText = `${eta.toFixed(1)}%`;
+                document.getElementById('m-piv').innerText = `${piv.toFixed(1)} V`;
+                document.getElementById('m-ipeak').innerText = `${iPeak.toFixed(3)} A`;
+                document.getElementById('quick-v-readout').innerText = `V_dc: ${vDc.toFixed(1)}V`;
+            } else {
+                ['m-vm', 'm-vdc', 'm-vrip'].forEach(id => document.getElementById(id).innerText = '0.00 V');
+                document.getElementById('m-gamma').innerText = '0.000';
+                document.getElementById('m-idc').innerText = '0.000 A';
+                document.getElementById('m-ipeak').innerText = '0.000 A';
+                document.getElementById('m-eta').innerText = '0.0%';
+                document.getElementById('m-piv').innerText = `${piv.toFixed(1)} V`;
+                document.getElementById('quick-v-readout').innerText = 'V_dc: 0.0V (OFF)';
+            }
+
+            state.calcCache = { vPeak, vm, vDc, rippleFactor, isFullWave, rippleFreq, drop, XL, XC };
+            renderSVGSchematic();
+        }
+
+        // REAL-TIME DUAL TRACE OSCILLOSCOPE
+        function initOscilloscope() {
+            const canvas = document.getElementById('scope-canvas');
+            const fit = () => {
+                const r = window.devicePixelRatio || 1;
+                const w = Math.round(canvas.clientWidth * r), h = Math.round(canvas.clientHeight * r);
+                if (w && h && (canvas.width !== w || canvas.height !== h)) { canvas.width = w; canvas.height = h; }
+            };
+            fit();
+            scopeCtx = canvas.getContext('2d');
+            new ResizeObserver(fit).observe(canvas);
+        }
+
+        function drawOscilloscope(dt) {
+            if (!scopeCtx) return;
+            const width = scopeCtx.canvas.width;
+            const height = scopeCtx.canvas.height;
+            if (!width || !height) return;
+
+            scopeCtx.clearRect(0, 0, width, height);
+            scopeCtx.strokeStyle = 'rgba(51, 65, 85, 0.4)';
+            scopeCtx.lineWidth = 1;
+            for (let i = 0; i <= 8; i++) { const x = (i / 8) * width; scopeCtx.beginPath(); scopeCtx.moveTo(x, 0); scopeCtx.lineTo(x, height); scopeCtx.stroke(); }
+            for (let j = 0; j <= 4; j++) { const y = (j / 4) * height; scopeCtx.beginPath(); scopeCtx.moveTo(0, y); scopeCtx.lineTo(width, y); scopeCtx.stroke(); }
+            const midY = height / 2;
+            scopeCtx.strokeStyle = 'rgba(148, 163, 184, 0.3)';
+            scopeCtx.beginPath(); scopeCtx.moveTo(0, midY); scopeCtx.lineTo(width, midY); scopeCtx.stroke();
+
+            if (!state.powerOn) return;
+
+            const cache = state.calcCache || { vPeak: 30, vm: 29, vDc: 20, isFullWave: true, drop: 0.7, rippleFactor: 0.1, XL: 1, XC: 1 };
+            const scaleY = (height / 2.5) / Math.max(12, cache.vPeak);
+            timeOffset += dt * 3 * (state.freq / 50);      // slow motion: about half a mains cycle per second
+
+            // Channel A: input AC sine wave
+            scopeCtx.strokeStyle = '#38bdf8';
+            scopeCtx.lineWidth = 2.5 * (window.devicePixelRatio || 1) / 2;
+            scopeCtx.beginPath();
+            for (let x = 0; x < width; x++) {
+                const t = (x / width) * 4 * Math.PI + timeOffset;
+                const y = midY - Math.sin(t) * cache.vPeak * scaleY;
+                if (x === 0) scopeCtx.moveTo(x, y); else scopeCtx.lineTo(x, y);
+            }
+            scopeCtx.stroke();
+
+            // Channel B: output. Capacitor filters are simulated step by step (charge on the peaks, discharge through RL).
+            const rect = (t) => { const s = Math.sin(t); const v = (cache.isFullWave ? Math.abs(s) : Math.max(0, s)) * cache.vPeak - cache.drop; return Math.max(0, v); };
+            const capFront = state.filterType === 'c' || state.filterType === 'pi';
+            const out = new Float32Array(width);
+            if (capFront) {
+                const dTheta = (4 * Math.PI) / width, dSec = dTheta / (2 * Math.PI * state.freq);
+                const decay = Math.exp(-dSec / (state.rL * state.capVal * 1e-6));
+                let vC = 0;
+                const warm = width;                       // one extra window so the capacitor is already at steady state
+                for (let i = -warm; i < width; i++) {
+                    const r = rect(i * dTheta + timeOffset);
+                    vC = r > vC ? r : vC * decay;
+                    if (i >= 0) out[i] = vC;
+                }
+                if (state.filterType === 'pi') { const k = Math.min(1, cache.XC / cache.XL); for (let i = 0; i < width; i++) out[i] = cache.vDc + (out[i] - cache.vDc) * k; }
+            } else if (state.filterType === 'none') {
+                for (let x = 0; x < width; x++) out[x] = rect((x / width) * 4 * Math.PI + timeOffset);
+            } else {
+                const mult = cache.isFullWave ? 2 : 1, amp = Math.SQRT2 * cache.rippleFactor * cache.vDc;
+                for (let x = 0; x < width; x++) out[x] = cache.vDc + amp * Math.cos(mult * ((x / width) * 4 * Math.PI + timeOffset) - Math.PI / 2 + Math.PI);
+            }
+            scopeCtx.strokeStyle = '#f59e0b';
+            scopeCtx.beginPath();
+            for (let x = 0; x < width; x++) {
+                const y = height - (out[x] * scaleY * 0.85) - 15;
+                if (x === 0) scopeCtx.moveTo(x, y); else scopeCtx.lineTo(x, y);
+            }
+            scopeCtx.stroke();
+        }
+
+        // EVENT HANDLERS & LISTENERS
+        function setupEventListeners() {
+            // Power Button
+            document.getElementById('btn-power').addEventListener('click', () => {
+                state.powerOn = !state.powerOn;
+                const btn = document.getElementById('btn-power');
+                const text = document.getElementById('power-text');
+                const icon = document.getElementById('power-icon');
+                const indicator = document.getElementById('status-indicator');
+                const statusText = document.getElementById('status-text');
+
+                if (state.powerOn) {
+                    btn.classList.add('active');
+                    text.innerText = 'POWER ON';
+                    icon.className = 'fa-solid fa-power-off text-emerald-400';
+                    indicator.className = 'w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse';
+                    statusText.innerText = 'Circuit Active: Closed Loop Conduction';
+                } else {
+                    btn.classList.remove('active');
+                    text.innerText = 'POWER OFF';
+                    icon.className = 'fa-solid fa-power-off text-rose-500';
+                    indicator.className = 'w-2.5 h-2.5 rounded-full bg-rose-500';
+                    statusText.innerText = 'Circuit Powered Down';
+                }
+                updateCalculations();
+            });
+
+            // Rectifier Selection
+            const recBtns = { '1d': 'btn-rec-1d', '2d': 'btn-rec-2d', '4d': 'btn-rec-4d' };
+            Object.keys(recBtns).forEach(key => {
+                document.getElementById(recBtns[key]).addEventListener('click', () => {
+                    state.recType = key;
+                    Object.keys(recBtns).forEach(k => document.getElementById(recBtns[k]).classList.remove('active'));
+                    document.getElementById(recBtns[key]).classList.add('active');
+                    updateBadge();
+                    updateCalculations();
+                });
+            });
+
+            // Filter Selection
+            const fltBtns = { 'none': 'btn-flt-none', 'c': 'btn-flt-c', 'l': 'btn-flt-l', 'lc': 'btn-flt-lc', 'pi': 'btn-flt-pi' };
+            Object.keys(fltBtns).forEach(key => {
+                document.getElementById(fltBtns[key]).addEventListener('click', () => {
+                    state.filterType = key;
+                    Object.keys(fltBtns).forEach(k => document.getElementById(fltBtns[k]).classList.remove('active'));
+                    document.getElementById(fltBtns[key]).classList.add('active');
+
+                    // Disable/Enable Slider Boxes
+                    const cBox = document.getElementById('c-filter-box');
+                    const lBox = document.getElementById('l-filter-box');
+
+                    cBox.classList.toggle('opacity-50', !(key === 'c' || key === 'lc' || key === 'pi'));
+                    cBox.classList.toggle('pointer-events-none', !(key === 'c' || key === 'lc' || key === 'pi'));
+                    lBox.classList.toggle('opacity-50', !(key === 'l' || key === 'lc' || key === 'pi'));
+                    lBox.classList.toggle('pointer-events-none', !(key === 'l' || key === 'lc' || key === 'pi'));
+
+                    updateBadge();
+                    updateCalculations();
+                });
+            });
+
+            // Sliders
+            document.getElementById('slider-vin').addEventListener('input', (e) => { state.vIn = parseFloat(e.target.value); updateCalculations(); });
+            document.getElementById('slider-turns').addEventListener('input', (e) => { state.turnsRatio = parseFloat(e.target.value); updateCalculations(); });
+            document.getElementById('slider-freq').addEventListener('input', (e) => { state.freq = parseFloat(e.target.value); updateCalculations(); });
+            document.getElementById('slider-rl').addEventListener('input', (e) => { state.rL = parseFloat(e.target.value); updateCalculations(); });
+            document.getElementById('slider-cap').addEventListener('input', (e) => { state.capVal = parseFloat(e.target.value); updateCalculations(); });
+            document.getElementById('slider-ind').addEventListener('input', (e) => { state.indVal = parseFloat(e.target.value); updateCalculations(); });
+
+            window.addEventListener('resize', initOscilloscope);
+        }
+
+        function updateBadge() {
+            const recText = state.recType === '1d' ? 'Half-Wave' : state.recType === '2d' ? 'Center-Tap' : 'Bridge';
+            const fltText = state.filterType === 'none' ? 'No Filter' : `${state.filterType.toUpperCase()}-Filter`;
+            document.getElementById('topology-badge').innerText = `${recText} + ${fltText}`;
+        }
+
+        let lastFrame = 0;
+        function animate(now) {
+            requestAnimationFrame(animate);
+            const dt = Math.min(((now || 0) - lastFrame) / 1000, 0.05) || 0.016;
+            lastFrame = now || 0;
+            if (document.hidden) return;
+            drawOscilloscope(dt);
+        }
+    </script>
+</body>
+</html>

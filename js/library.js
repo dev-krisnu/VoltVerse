@@ -27,6 +27,12 @@ window.VOLTVERSE_LIBRARY = [
       { title: 'Electrical Switches', href: 'switches.html', tag: '14 3D labs', icon: 'fa-toggle-on',
         desc: 'Knife, toggle, push button, rotary, float, limit, centrifugal, SPST, SPDT, DPST, DPDT, flush, intermediate and MCB, each with a 3D model and a circuit symbol.' }
     ] },
+  { id: 'electronics', title: 'Power Electronics', accent: 'cyan', icon: 'fa-wave-square',
+    blurb: 'Turn AC into DC and smooth it out.',
+    tools: [
+      { title: 'Rectifier & Filter Visualizer', href: 'rectifier.html', tag: 'Circuit + scope', icon: 'fa-wave-square',
+        desc: 'Half-wave, center-tap and bridge rectifiers with C, L, LC and pi filters: current flow, oscilloscope, ripple and efficiency.' }
+    ] },
   { id: 'practice', title: 'Practice', accent: 'sky', icon: 'fa-graduation-cap',
     blurb: 'Check what you remember after exploring.',
     tools: [
