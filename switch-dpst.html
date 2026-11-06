@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-950 text-slate-100">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Double Pole Single Throw (DPST) | Electrical Switches | VoltVerse</title>
+  <meta name="description" content="Dual-circuit master isolator (Switches Live & Neutral simultaneously)">
+
+  <meta name="theme-color" content="#020617">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="vendor/fonts/inter-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="css/tailwind.css">
+  <link rel="stylesheet" href="css/app.css">
+  <link rel="stylesheet" href="css/fa/fa.css">
+  <script src="vendor/three.min.js"></script>
+  <script src="vendor/OrbitControls.js"></script>
+  <style>
+    /* Custom Smooth Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(15, 23, 42, 0.6);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(56, 189, 248, 0.3);
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(56, 189, 248, 0.6);
+    }
+    canvas {
+      outline: none;
+    }
+  </style>
+<style>.vp-h{height:45vh;height:45dvh}@media (min-width:1024px){.vp-h{height:100%}}html,body{height:100%}body{height:100vh;height:100dvh}.app-nav{position:relative}</style>
+</head>
+<body class="h-full flex flex-col font-sans antialiased overflow-x-hidden bg-slate-950">
+
+  <!-- TOP HEADER NAVBAR -->
+  <header class="h-14 lg:h-16 border-b border-slate-800 bg-slate-900/90 backdrop-blur-md px-4 lg:px-8 flex items-center justify-between z-30 sticky top-0 shrink-0">
+    <!-- Brand Logo & Title -->
+    <div class="flex items-center space-x-3">
+      <a href="index.html" aria-label="VoltVerse home" class="h-9 w-9 lg:h-10 lg:w-10 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-white shadow-lg shadow-cyan-500/20"><i class="fa-solid fa-bolt text-lg lg:text-xl"></i></a>
+      <div>
+        <h1 class="text-base lg:text-lg font-bold tracking-tight text-white flex items-center gap-2">
+          <a href="switches.html" class="hover:text-cyan-300 transition">Switches</a> <span class="text-[10px] lg:text-xs px-2 py-0.5 rounded bg-sky-500/20 text-sky-400 border border-sky-500/30 font-mono">#10 of 14</span>
+        </h1>
+        <p class="text-[11px] text-slate-400 hidden sm:block">VoltVerse: interactive 3D electrical switches</p>
+      </div>
+    </div>
+
+    <!-- Right Controls / Hamburger Menu Button -->
+    <div class="flex items-center gap-3">
+      <div class="hidden md:flex items-center text-xs text-slate-400 bg-slate-800/80 px-3 py-1 rounded-lg border border-slate-700">
+        <span class="inline-block w-2 h-2 rounded-full bg-amber-400 animate-pulse mr-2"></span>
+        <span>Switch #10: Double Pole Single Throw (DPST)</span>
+      </div>
+
+      <!-- Hamburger Menu Button (Square with 3 lines) -->
+      <button id="menu-btn" aria-label="Toggle Navigation Menu" class="w-10 h-10 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 flex items-center justify-center transition focus:outline-none focus:ring-2 focus:ring-sky-500">
+        <i class="fa-solid fa-bars text-lg"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER (Viewport + Study Info Panel) -->
+  <main class="flex-1 flex flex-col lg:flex-row overflow-hidden relative">
+
+    <!-- 3D VIEWPORT CONTAINER -->
+    <div class="w-full lg:w-7/12 xl:w-2/3 vp-h lg:h-full relative bg-slate-950 flex flex-col border-b lg:border-b-0 lg:border-r border-slate-800 shrink-0 lg:shrink">
+      
+      <!-- Canvas Container -->
+      <div id="canvas-container" class="w-full flex-1 relative overflow-hidden cursor-grab active:cursor-grabbing">
+        <canvas id="three-canvas" class="w-full h-full block"></canvas>
+
+        <!-- Floating View Controls & Mechanical Actuator Bar -->
+        <div class="absolute bottom-3 left-3 right-3 flex items-center justify-between pointer-events-none z-10">
+          <div class="flex items-center gap-1.5 bg-slate-900/85 backdrop-blur-md p-1.5 rounded-xl border border-slate-800 pointer-events-auto shadow-xl">
+            <button id="btn-reset" title="Reset Camera View" class="w-8 h-8 rounded-lg hover:bg-slate-800 text-slate-300 hover:text-white flex items-center justify-center transition">
+              <i class="fa-solid fa-rotate text-xs"></i>
+            </button>
+            <button id="btn-autorotate" title="Toggle Auto Rotation" class="w-8 h-8 rounded-lg bg-sky-500/20 text-sky-400 hover:bg-sky-500/30 flex items-center justify-center transition">
+              <i class="fa-solid fa-arrows-spin text-xs"></i>
+            </button>
+            <button id="btn-wireframe" title="Toggle Wireframe Mode" class="w-8 h-8 rounded-lg hover:bg-slate-800 text-slate-300 hover:text-white flex items-center justify-center transition">
+              <i class="fa-solid fa-border-all text-xs"></i>
+            </button>
+            <button id="btn-toggle-state" title="Toggle Dual-Pole Contacts (ON/OFF)" class="px-3 h-8 rounded-lg bg-amber-500/20 border border-amber-500/40 text-amber-400 hover:bg-amber-500/30 text-xs font-semibold flex items-center gap-1.5 transition">
+              <i class="fa-solid fa-power-off text-xs"></i> <span id="switch-btn-text">Turn Switch ON</span>
+            </button>
+          </div>
+
+          <div class="hidden sm:flex items-center gap-2 text-[11px] text-slate-400 bg-slate-900/70 backdrop-blur-md px-3 py-1.5 rounded-xl border border-slate-800">
+            <i class="fa-solid fa-arrows-up-down-left-right text-sky-400"></i>
+            <span>Drag to rotate | Scroll to zoom</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DESCRIPTION & DIPLOMA TECHNICAL PANEL (Scrollable) -->
+    <div class="w-full lg:w-5/12 xl:w-1/3 flex-1 lg:h-full bg-slate-900 flex flex-col overflow-hidden min-h-0">
+      
+      <!-- Panel Header / Compact Title Sub-header -->
+      <div class="p-3.5 border-b border-slate-800 bg-slate-900/95 backdrop-blur shrink-0">
+        <div class="flex items-center justify-between mb-1">
+          <span class="px-2 py-0.5 text-[10px] font-semibold rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20">
+            Dual Pole Isolation Topology
+          </span>
+          <span id="circuit-status-badge" class="px-2 py-0.5 text-[10px] rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/30 font-mono font-semibold">
+            STATUS: BOTH POLES ISOLATED (OFF)
+          </span>
+        </div>
+        
+        <!-- Compact Title -->
+        <h2 class="text-sm md:text-base font-bold text-white tracking-tight">Switch #10: Double Pole Single Throw (DPST)</h2>
+        <p class="text-[11px] text-slate-400 mt-0.5">Dual-circuit master isolator (Switches Live & Neutral simultaneously)</p>
+
+        <!-- Navigation Tabs -->
+        <div class="flex border-b border-slate-800 mt-2.5 -mb-3 gap-3 text-xs font-medium">
+          <button id="tab-overview" class="pb-2 text-sky-400 border-b-2 border-sky-400 transition tab-btn">Overview</button>
+          <button id="tab-construction" class="pb-2 text-slate-400 hover:text-slate-200 transition tab-btn">Construction</button>
+          <button id="tab-lab" class="pb-2 text-slate-400 hover:text-slate-200 transition tab-btn">Diploma Lab</button>
+          <button id="tab-symbol" class="pb-2 text-slate-400 hover:text-slate-200 transition tab-btn">Schematic Symbol</button>
+        </div>
+      </div>
+
+      <!-- Tab Content Area (Smooth Scrollable) -->
+      <div class="flex-1 overflow-y-auto p-4 space-y-4 scroll-smooth">
+        
+        <!-- SECTION 1: OVERVIEW -->
+        <div id="content-overview" class="tab-content space-y-3.5">
+          <div class="bg-slate-800/40 p-3.5 rounded-xl border border-slate-800/80">
+            <h3 class="text-[11px] font-semibold uppercase tracking-wider text-slate-300 mb-1.5 flex items-center gap-1.5">
+              <i class="fa-solid fa-circle-info text-sky-400"></i> Operational Purpose
+            </h3>
+            <p class="text-xs text-slate-300 leading-relaxed">
+              A <strong>Double Pole Single Throw (DPST)</strong> switch controls two separate electrical circuits simultaneously through a single mechanical actuator handle. It has 4 terminal connections: 2 input poles (e.g., Live and Neutral) and 2 output throws. When turned OFF, it completely isolates both lines from the load, providing 100% electrical safety.
+            </p>
+          </div>
+
+          <div class="bg-slate-800/40 p-3.5 rounded-xl border border-slate-800/80">
+            <h3 class="text-[11px] font-semibold uppercase tracking-wider text-slate-300 mb-1.5 flex items-center gap-1.5">
+              <i class="fa-solid fa-network-wired text-sky-400"></i> Terminal Configuration
+            </h3>
+            <div class="grid grid-cols-2 gap-2 mt-1">
+              <div class="p-2 rounded bg-slate-950 border border-slate-800 text-center">
+                <span class="text-[10px] text-amber-400 font-semibold block uppercase">Pole 1 (L1 ➔ L2)</span>
+                <p class="text-[10px] text-slate-400 mt-0.5">Phase / Live Line Isolation</p>
+              </div>
+              <div class="p-2 rounded bg-slate-950 border border-slate-800 text-center">
+                <span class="text-[10px] text-sky-400 font-semibold block uppercase">Pole 2 (N1 ➔ N2)</span>
+                <p class="text-[10px] text-slate-400 mt-0.5">Neutral Line Isolation</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2">
+            <div class="bg-slate-800/50 p-2.5 rounded-lg border border-slate-800">
+              <span class="text-[10px] text-slate-400 uppercase tracking-wider block mb-0.5">Contact Arrangement</span>
+              <span class="text-xs font-mono font-semibold text-white">2 NO (Normally Open)</span>
+            </div>
+            <div class="bg-slate-800/50 p-2.5 rounded-lg border border-slate-800">
+              <span class="text-[10px] text-slate-400 uppercase tracking-wider block mb-0.5">Safety Classification</span>
+              <span class="text-xs font-mono font-semibold text-white">Double-Pole Disconnect</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 2: CONSTRUCTION -->
+        <div id="content-construction" class="tab-content hidden space-y-3.5">
+          <div class="bg-slate-800/40 p-3.5 rounded-xl border border-slate-800">
+            <h3 class="text-[11px] font-semibold text-slate-200 mb-2 flex items-center gap-1.5 uppercase tracking-wider">
+              <i class="fa-solid fa-gears text-sky-400"></i> Key Components
+            </h3>
+            <ul class="space-y-2 text-xs text-slate-300">
+              <li class="flex items-start gap-2 bg-slate-800/50 p-2 rounded border border-slate-800">
+                <span class="text-amber-400 font-bold">•</span>
+                <div><strong>Common Actuator Lever / Rocker:</strong> Single mechanical bar connecting two isolated internal contact mechanisms to ensure ganged opening/closing.</div>
+              </li>
+              <li class="flex items-start gap-2 bg-slate-800/50 p-2 rounded border border-slate-800">
+                <span class="text-sky-400 font-bold">•</span>
+                <div><strong>Dual Contact Blades:</strong> Parallel heavy-duty copper/brass conductive arms for Phase and Neutral lines.</div>
+              </li>
+              <li class="flex items-start gap-2 bg-slate-800/50 p-2 rounded border border-slate-800">
+                <span class="text-emerald-400 font-bold">•</span>
+                <div><strong>Insulated Dielectric Housing:</strong> High-temperature Bakelite/Polycarbonate casing maintaining complete electrical breakdown isolation between Pole 1 and Pole 2.</div>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- SECTION 3: DIPLOMA LAB PRACTICAL -->
+        <div id="content-lab" class="tab-content hidden space-y-3.5">
+          <div class="bg-slate-800/40 p-3.5 rounded-xl border border-slate-800">
+            <h3 class="text-[11px] font-semibold text-slate-200 mb-2 flex items-center gap-1.5 uppercase tracking-wider">
+              <i class="fa-solid fa-flask text-emerald-400"></i> Laboratory Experiments & Safety Applications
+            </h3>
+            <div class="space-y-2.5 text-xs text-slate-300">
+              <div class="p-2.5 rounded bg-slate-800/60 border border-slate-700/50">
+                <span class="font-semibold text-amber-400 block mb-1">230V AC Mains Appliance Main Disconnect</span>
+                Used on heavy domestic appliances (Water Heaters, Air Conditioners, Industrial Test Benches). Turning off a DPST switch guarantees that voltage cannot enter the load via neutral reversal or floating grounds.
+              </div>
+              <div class="p-2.5 rounded bg-slate-800/60 border border-slate-700/50">
+                <span class="font-semibold text-sky-400 block mb-1">Diploma Lab: Single Phase Induction Motor Starter</span>
+                Wire Line to Pole 1 COM and Neutral to Pole 2 COM. Connect the output terminals of both poles directly to the motor main winding to provide a full line-break isolation switch.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 4: SCHEMATIC SYMBOL -->
+        <div id="content-symbol" class="tab-content hidden space-y-3.5">
+          <div class="bg-slate-800/40 p-3.5 rounded-xl border border-slate-800 text-center flex flex-col items-center justify-center min-h-[140px]">
+            <div class="w-full max-w-[260px] h-36 flex items-center justify-center bg-slate-950 rounded-lg border border-slate-800 p-2">
+              <!-- DPST Schematic SVG -->
+              <svg viewBox="0 0 200 100" class="w-48 h-24 stroke-amber-400 fill-none stroke-2">
+                <!-- Pole 1 (Phase) -->
+                <line x1="20" y1="30" x2="60" y2="30" stroke="#f59e0b" />
+                <circle cx="60" cy="30" r="4" class="fill-amber-400 stroke-amber-400" />
+                <line x1="60" y1="30" x2="135" y2="15" stroke="#f59e0b" stroke-width="2.5" />
+                <circle cx="140" cy="30" r="4" class="fill-amber-400" />
+                <line x1="140" y1="30" x2="180" y2="30" stroke="#f59e0b" />
+
+                <!-- Mechanical Linkage (Dotted Line) -->
+                <line x1="95" y1="22" x2="95" y2="62" stroke="#94a3b8" stroke-dasharray="3 3" stroke-width="1.5" />
+
+                <!-- Pole 2 (Neutral) -->
+                <line x1="20" y1="70" x2="60" y2="70" stroke="#38bdf8" />
+                <circle cx="60" cy="70" r="4" class="fill-sky-400 stroke-sky-400" />
+                <line x1="60" y1="70" x2="135" y2="55" stroke="#38bdf8" stroke-width="2.5" />
+                <circle cx="140" cy="70" r="4" class="fill-sky-400" />
+                <line x1="140" y1="70" x2="180" y2="70" stroke="#38bdf8" />
+
+                <!-- Text Labels -->
+                <text x="15" y="22" fill="#f59e0b" font-size="8" stroke="none" font-family="monospace">LINE (L)</text>
+                <text x="15" y="88" fill="#38bdf8" font-size="8" stroke="none" font-family="monospace">NEUTRAL (N)</text>
+                <text x="145" y="22" fill="#f59e0b" font-size="8" stroke="none" font-family="monospace">LOAD L</text>
+                <text x="145" y="88" fill="#38bdf8" font-size="8" stroke="none" font-family="monospace">LOAD N</text>
+              </svg>
+            </div>
+            <p class="text-[10px] text-slate-400 mt-2 font-mono">Standard IEC/IEEE DPST Ganged Circuit Diagram Schematic</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- SLIDE-OVER DRAWER MENU (Right Side) -->
+  <div id="menu-backdrop" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-40 opacity-0 pointer-events-none transition-opacity duration-300"></div>
+
+  <aside id="drawer-menu" class="fixed top-0 right-0 bottom-0 w-80 max-w-[85vw] bg-slate-900 border-l border-slate-800 z-50 transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col shadow-2xl">
+    <!-- Drawer Header -->
+    <div class="p-3.5 border-b border-slate-800 flex items-center justify-between bg-slate-900/90">
+      <div class="flex items-center gap-2">
+        <i class="fa-solid fa-list-ul text-sky-400"></i>
+        <h2 class="font-bold text-white text-sm">All Switches (14)</h2>
+      </div>
+      <button id="close-menu-btn" aria-label="Close Navigation Menu" class="w-8 h-8 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center transition">
+        <i class="fa-solid fa-xmark text-base"></i>
+      </button>
+    </div>
+
+    <!-- Search Bar -->
+    <div class="p-3 border-b border-slate-800 bg-slate-950/40">
+      <div class="relative">
+        <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-xs text-slate-500"></i>
+        <input type="text" id="menu-search" placeholder="Search switch type..." class="w-full bg-slate-800 text-slate-200 text-xs rounded-lg pl-8 pr-3 py-2 border border-slate-700 focus:outline-none focus:border-sky-500">
+      </div>
+    </div>
+
+    <!-- Switch Navigation List -->
+    <div class="flex-1 overflow-y-auto p-2 space-y-1" id="drawer-switch-list">
+      <!-- Dynamically Rendered -->
+    </div>
+
+    <!-- Drawer Footer -->
+    <div class="p-3 border-t border-slate-800 text-center text-[10px] text-slate-500 font-mono">
+      VoltVerse &middot; Electrical Switches
+    </div>
+  </aside>
+
+  <nav class="app-nav" aria-label="Main"><a href="index.html" class="nav-tab"><i class="fa-solid fa-house"></i><span>Home</span></a><a href="switches.html" class="nav-tab" aria-current="page"><i class="fa-solid fa-toggle-on"></i><span>Switches</span></a><a href="index.html#library" class="nav-tab"><i class="fa-solid fa-layer-group"></i><span>Library</span></a></nav>
+  <script src="js/switches-data.js"></script>
+  <script src="js/switches-engine.js"></script>
+  <script src="js/switches-nav.js"></script>
+  <!-- JAVASCRIPT LOGIC -->
+  <script>// Three.js Scene Variables
+    let scene, camera, renderer, controls;
+    let rockerLeverGroup, pole1Bar, pole2Bar, indicatorLed1, indicatorLed2;
+    let isSwitchedOn = false;
+    let isWireframe = false;
+    let autoRotate = true;
+
+    // Materials Palette
+    const mats = {
+      baseBakelite: new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.7, metalness: 0.1 }),
+      pole1Brass: new THREE.MeshStandardMaterial({ color: 0xf59e0b, roughness: 0.25, metalness: 0.85 }), // Line Pole
+      pole2Brass: new THREE.MeshStandardMaterial({ color: 0x38bdf8, roughness: 0.25, metalness: 0.85 }), // Neutral Pole
+      screwSteel: new THREE.MeshStandardMaterial({ color: 0x94a3b8, roughness: 0.2, metalness: 0.9 }),
+      rockerHandle: new THREE.MeshStandardMaterial({ color: 0xd97706, roughness: 0.3, metalness: 0.2 }),
+      ledOff: new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.5, metalness: 0.1 }),
+      ledOn: new THREE.MeshStandardMaterial({ color: 0xf59e0b, roughness: 0.2, metalness: 0.1, emissive: 0xd97706, emissiveIntensity: 0.9 })
+    };
+
+    function initThree() {
+      const E = SWE.create({ camera: [0, 4.0, 5.2], gridY: -1.2, maxDistance: 10, minDistance: 1.8 });
+      scene = E.scene; camera = E.camera; renderer = E.renderer; controls = E.controls;
+      buildDPSTSwitchModel();
+      SWE.start(function (dt) {
+        // Smooth mechanical rotation of dual contact blades around hinge axis
+      if (rockerLeverGroup) {
+        const targetAngle = isSwitchedOn ? 0.0 : -0.38; // 0 deg (Closed/ON) vs -22 deg (Open/OFF)
+        rockerLeverGroup.rotation.z += (targetAngle - rockerLeverGroup.rotation.z) * SWE.k(0.15);
+      }
+      }, function () { return autoRotate; });
+    }
+
+    // Build Detailed Dual-Pole DPST Switch 3D Model
+    function buildDPSTSwitchModel() {
+      const mainGroup = new THREE.Group();
+
+      // 1. Dual-Pole Insulated Molded Base Enclosure
+      const baseGeo = new THREE.BoxGeometry(3.6, 0.5, 3.2);
+      const baseMesh = new THREE.Mesh(baseGeo, mats.baseBakelite);
+      baseMesh.position.y = -0.25;
+      mainGroup.add(baseMesh);
+
+      // Insulation Barrier Wall between Pole 1 & Pole 2
+      const dividerGeo = new THREE.BoxGeometry(3.4, 0.7, 0.2);
+      const dividerMesh = new THREE.Mesh(dividerGeo, mats.baseBakelite);
+      dividerMesh.position.set(0, 0.2, 0);
+      mainGroup.add(dividerMesh);
+
+      // 2. Terminal Blocks for Pole 1 (Phase / Line - Front Side)
+      const termGeo = new THREE.BoxGeometry(0.5, 0.35, 0.5);
+      const screwGeo = new THREE.CylinderGeometry(0.1, 0.1, 0.3, 16);
+
+      // Pole 1 Input L1
+      const p1In = new THREE.Mesh(termGeo, mats.pole1Brass);
+      p1In.position.set(-1.2, 0.15, -0.9);
+      mainGroup.add(p1In);
+      const p1InScrew = new THREE.Mesh(screwGeo, mats.screwSteel);
+      p1InScrew.position.set(-1.2, 0.35, -0.9);
+      mainGroup.add(p1InScrew);
+
+      // Pole 1 Output L2
+      const p1Out = new THREE.Mesh(termGeo, mats.pole1Brass);
+      p1Out.position.set(1.2, 0.15, -0.9);
+      mainGroup.add(p1Out);
+      const p1OutScrew = new THREE.Mesh(screwGeo, mats.screwSteel);
+      p1OutScrew.position.set(1.2, 0.35, -0.9);
+      mainGroup.add(p1OutScrew);
+
+      // 3. Terminal Blocks for Pole 2 (Neutral - Back Side)
+      // Pole 2 Input N1
+      const p2In = new THREE.Mesh(termGeo, mats.pole2Brass);
+      p2In.position.set(-1.2, 0.15, 0.9);
+      mainGroup.add(p2In);
+      const p2InScrew = new THREE.Mesh(screwGeo, mats.screwSteel);
+      p2InScrew.position.set(-1.2, 0.35, 0.9);
+      mainGroup.add(p2InScrew);
+
+      // Pole 2 Output N2
+      const p2Out = new THREE.Mesh(termGeo, mats.pole2Brass);
+      p2Out.position.set(1.2, 0.15, 0.9);
+      mainGroup.add(p2Out);
+      const p2OutScrew = new THREE.Mesh(screwGeo, mats.screwSteel);
+      p2OutScrew.position.set(1.2, 0.35, 0.9);
+      mainGroup.add(p2OutScrew);
+
+      // 4. Single Mechanical Ganged Handle & Contact Arms
+      rockerLeverGroup = new THREE.Group();
+      rockerLeverGroup.position.set(-1.0, 0.35, 0); // Common Hinge Axis
+
+      // Central Insulated Rocker Crossbar
+      const handleBarGeo = new THREE.BoxGeometry(0.4, 0.6, 2.4);
+      const handleBar = new THREE.Mesh(handleBarGeo, mats.rockerHandle);
+      handleBar.position.set(1.0, 0.4, 0);
+      rockerLeverGroup.add(handleBar);
+
+      // Blade 1 (Pole 1 Contact Arm)
+      const blade1Geo = new THREE.BoxGeometry(2.1, 0.08, 0.16);
+      blade1Geo.translate(1.05, 0, 0);
+      pole1Bar = new THREE.Mesh(blade1Geo, mats.pole1Brass);
+      pole1Bar.position.set(0, 0, -0.9);
+      rockerLeverGroup.add(pole1Bar);
+
+      // Blade 2 (Pole 2 Contact Arm)
+      const blade2Geo = new THREE.BoxGeometry(2.1, 0.08, 0.16);
+      blade2Geo.translate(1.05, 0, 0);
+      pole2Bar = new THREE.Mesh(blade2Geo, mats.pole2Brass);
+      pole2Bar.position.set(0, 0, 0.9);
+      rockerLeverGroup.add(pole2Bar);
+
+      mainGroup.add(rockerLeverGroup);
+
+      // 5. Dual Live Contact Status LEDs
+      const ledGeo = new THREE.CylinderGeometry(0.1, 0.1, 0.16, 16);
+      indicatorLed1 = new THREE.Mesh(ledGeo, mats.ledOff);
+      indicatorLed1.position.set(1.2, 0.45, -0.9);
+      mainGroup.add(indicatorLed1);
+
+      indicatorLed2 = new THREE.Mesh(ledGeo, mats.ledOff);
+      indicatorLed2.position.set(1.2, 0.45, 0.9);
+      mainGroup.add(indicatorLed2);
+
+      scene.add(mainGroup);
+    }
+
+    // Toggle DPST State (Both Poles ON / OFF)
+    function toggleDPSTState() {
+      isSwitchedOn = !isSwitchedOn;
+      const btnText = document.getElementById('switch-btn-text');
+      const badge = document.getElementById('circuit-status-badge');
+
+      if (isSwitchedOn) {
+        btnText.innerText = "Turn Switch OFF";
+        badge.className = "px-2 py-0.5 text-[10px] rounded-full border font-mono font-semibold bg-emerald-500/10 text-emerald-400 border-emerald-500/30";
+        badge.innerText = "STATUS: CLOSED (BOTH POLES LIVE)";
+        indicatorLed1.material = mats.ledOn;
+        indicatorLed2.material = mats.ledOn;
+      } else {
+        btnText.innerText = "Turn Switch ON";
+        badge.className = "px-2 py-0.5 text-[10px] rounded-full border font-mono font-semibold bg-rose-500/10 text-rose-400 border-rose-500/30";
+        badge.innerText = "STATUS: BOTH POLES ISOLATED (OFF)";
+        indicatorLed1.material = mats.ledOff;
+        indicatorLed2.material = mats.ledOff;
+      }
+    }
+
+
+
+    // Viewport Controls
+    document.getElementById('btn-reset').addEventListener('click', () => {
+      SWE.reset();
+    });
+
+    document.getElementById('btn-autorotate').addEventListener('click', (e) => {
+      autoRotate = !autoRotate;
+      e.currentTarget.classList.toggle('bg-sky-500/20');
+      e.currentTarget.classList.toggle('text-sky-400');
+    });
+
+    document.getElementById('btn-wireframe').addEventListener('click', (e) => {
+      isWireframe = !isWireframe;
+      scene.traverse((child) => {
+        if (child.isMesh && child.material) {
+          child.material.wireframe = isWireframe;
+        }
+      });
+      e.currentTarget.classList.toggle('bg-sky-500/20');
+      e.currentTarget.classList.toggle('text-sky-400');
+    });
+
+    document.getElementById('btn-toggle-state').addEventListener('click', toggleDPSTState);
+
+    // Tab Switching Logic
+    const tabs = ['overview', 'construction', 'lab', 'symbol'];
+    tabs.forEach(tabKey => {
+      document.getElementById(`tab-${tabKey}`).addEventListener('click', (e) => {
+        tabs.forEach(k => {
+          document.getElementById(`content-${k}`).classList.add('hidden');
+          const tabBtn = document.getElementById(`tab-${tabKey}`);
+          tabBtn.classList.remove('text-sky-400', 'border-b-2', 'border-sky-400');
+          tabBtn.classList.add('text-slate-400');
+        });
+
+        document.getElementById(`content-${tabKey}`).classList.remove('hidden');
+        e.currentTarget.classList.remove('text-slate-400');
+        e.currentTarget.classList.add('text-sky-400', 'border-b-2', 'border-sky-400');
+      });
+    });
+
+    // Window Load Initialization
+    window.onload = function() {
+      try { initThree(); } catch (err) {
+        console.error('3D view unavailable:', err);
+        const cc = document.getElementById('canvas-container');
+        if (cc) cc.insertAdjacentHTML('beforeend', '<div class="absolute inset-0 flex items-center justify-center p-4 text-center text-xs text-slate-400">The 3D view needs WebGL, which is not available on this device. The description tabs below still work.</div>');
+      }
+      SWMenu.init('dpst');
+    };
+  </script>
+</body>
+</html>

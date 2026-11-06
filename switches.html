@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Electrical Switches | VoltVerse</title>
+<meta name="description" content="Fourteen interactive 3D electrical switches: knife, toggle, push button, rotary, float, limit, centrifugal, SPST, SPDT, DPST, DPDT, flush, intermediate and MCB.">
+<meta name="theme-color" content="#080c14">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="preload" href="vendor/fonts/inter-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="css/tailwind.css">
+<link rel="stylesheet" href="css/app.css">
+<link rel="stylesheet" href="css/fa/fa.css">
+<style>
+body{background:#080c14 radial-gradient(circle at 85% -5%,#12263d 0%,#080c14 55%) no-repeat;padding-bottom:calc(76px + env(safe-area-inset-bottom,0px))}
+.app-nav{position:fixed;left:0;right:0;bottom:0}
+#cat-chips{scrollbar-width:none}#cat-chips::-webkit-scrollbar{display:none}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body class="min-h-screen text-gray-100 antialiased">
+<header class="max-w-6xl mx-auto px-5 pt-5 flex items-center gap-2.5">
+  <a href="index.html" aria-label="VoltVerse home" class="w-9 h-9 rounded-lg bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/20"><i class="fa-solid fa-bolt text-white"></i></a>
+  <span class="font-extrabold tracking-tight text-lg">VoltVerse</span>
+</header>
+<main class="max-w-6xl mx-auto px-5 pb-10">
+  <section class="grid md:grid-cols-[1fr_auto] gap-6 items-center pt-8">
+    <div>
+      <h1 class="text-3xl md:text-5xl font-extrabold tracking-tight leading-[1.05]">Electrical switches, up close.</h1>
+      <p class="mt-4 text-gray-300 max-w-xl leading-relaxed">Pick a switch to open its 3D lab. Flip it, spin it, look inside, and read how it works, where it is used and what its circuit symbol looks like.</p>
+    </div>
+    <svg viewBox="0 0 220 120" class="w-52 md:w-60 mx-auto" role="img" aria-label="A knife switch opening and closing">
+      <rect x="20" y="82" width="180" height="14" rx="4" fill="#1e293b"/>
+      <circle cx="50" cy="76" r="8" fill="#d97706"/><rect x="164" y="60" width="14" height="22" rx="3" fill="#d97706"/>
+      <g><rect x="50" y="72" width="118" height="8" rx="3" fill="#22d3ee">
+        <animateTransform attributeName="transform" type="rotate" values="0 54 76;0 54 76;-38 54 76;-38 54 76;0 54 76" keyTimes="0;.35;.5;.85;1" dur="5s" repeatCount="indefinite"/>
+      </rect><circle cx="170" cy="76" r="9" fill="#f59e0b">
+        <animateTransform attributeName="transform" type="rotate" values="0 54 76;0 54 76;-38 54 76;-38 54 76;0 54 76" keyTimes="0;.35;.5;.85;1" dur="5s" repeatCount="indefinite"/>
+      </circle></g>
+    </svg>
+  </section>
+  <section class="mt-8 flex flex-col sm:flex-row sm:items-center gap-3" aria-label="Find a switch">
+    <label class="relative sm:w-72">
+      <span class="sr-only">Search switches</span>
+      <input id="hub-search" type="search" placeholder="Search: toggle, relay, 3-way..." class="w-full pl-9 pr-3 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400">
+      <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
+    </label>
+    <div id="cat-chips" class="flex gap-2 overflow-x-auto pb-1" role="group" aria-label="Filter by type"></div>
+    <span id="hub-count" class="text-[11px] font-mono text-slate-500 sm:ml-auto"></span>
+  </section>
+  <div id="hub-root"></div>
+  <section id="soon-box" class="mt-10" aria-label="Coming soon">
+    <h2 class="text-lg font-bold text-slate-300">Coming next</h2>
+    <p class="text-xs text-slate-500 mt-0.5">More switchgear is on the way.</p>
+    <div id="soon-root" class="mt-3 grid sm:grid-cols-3 gap-3"></div>
+  </section>
+  <a href="quiz.html" class="mt-10 flex items-center justify-between gap-3 rounded-2xl p-4 border border-sky-500/40 bg-sky-900/20 hover:border-sky-300 transition">
+    <div><div class="text-sm font-bold text-white">Test your knowledge</div><div class="text-[11px] text-slate-400 mt-0.5">Take a 10-question quiz after exploring.</div></div><i class="fa-solid fa-graduation-cap text-sky-400"></i>
+  </a>
+</main>
+<nav class="app-nav" aria-label="Main"><a href="index.html" class="nav-tab"><i class="fa-solid fa-house"></i><span>Home</span></a><a href="switches.html" class="nav-tab" aria-current="page"><i class="fa-solid fa-toggle-on"></i><span>Switches</span></a><a href="index.html#library" class="nav-tab"><i class="fa-solid fa-layer-group"></i><span>Library</span></a></nav>
+<script src="js/switches-data.js"></script>
+<script src="js/switches-hub.js"></script>
+</body>
+</html>

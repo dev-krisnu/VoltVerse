@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-950 text-slate-100">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Limit Switch | Electrical Switches | VoltVerse</title>
+  <meta name="description" content="Heavy-duty roller-lever electromechanical position interlock switch">
+
+  <meta name="theme-color" content="#020617">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="vendor/fonts/inter-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="css/tailwind.css">
+  <link rel="stylesheet" href="css/app.css">
+  <link rel="stylesheet" href="css/fa/fa.css">
+  <script src="vendor/three.min.js"></script>
+  <script src="vendor/OrbitControls.js"></script>
+  <style>
+    /* Custom Smooth Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(15, 23, 42, 0.6);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(245, 158, 11, 0.3);
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(245, 158, 11, 0.6);
+    }
+    canvas {
+      outline: none;
+    }
+  </style>
+<style>.vp-h{height:45vh;height:45dvh}@media (min-width:1024px){.vp-h{height:100%}}html,body{height:100%}body{height:100vh;height:100dvh}.app-nav{position:relative}</style>
+</head>
+<body class="h-full flex flex-col font-sans antialiased overflow-x-hidden bg-slate-950">
+
+  <!-- TOP HEADER NAVBAR -->
+  <header class="h-14 lg:h-16 border-b border-slate-800 bg-slate-900/90 backdrop-blur-md px-4 lg:px-8 flex items-center justify-between z-30 sticky top-0 shrink-0">
+    <!-- Brand Logo & Title -->
+    <div class="flex items-center space-x-3">
+      <a href="index.html" aria-label="VoltVerse home" class="h-9 w-9 lg:h-10 lg:w-10 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-white shadow-lg shadow-cyan-500/20"><i class="fa-solid fa-bolt text-lg lg:text-xl"></i></a>
+      <div>
+        <h1 class="text-base lg:text-lg font-bold tracking-tight text-white flex items-center gap-2">
+          <a href="switches.html" class="hover:text-cyan-300 transition">Switches</a> <span class="text-[10px] lg:text-xs px-2 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/30 font-mono">#6 of 14</span>
+        </h1>
+        <p class="text-[11px] text-slate-400 hidden sm:block">VoltVerse: interactive 3D electrical switches</p>
+      </div>
+    </div>
+
+    <!-- Right Controls / Hamburger Menu Button -->
+    <div class="flex items-center gap-3">
+      <div class="hidden md:flex items-center text-xs text-slate-400 bg-slate-800/80 px-3 py-1 rounded-lg border border-slate-700">
+        <span class="inline-block w-2 h-2 rounded-full bg-amber-400 animate-pulse mr-2"></span>
+        <span>Switch #6: Limit Switch</span>
+      </div>
+
+      <!-- Hamburger Menu Button (Square with 3 lines) -->
+      <button id="menu-btn" aria-label="Toggle Navigation Menu" class="w-10 h-10 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 flex items-center justify-center transition focus:outline-none focus:ring-2 focus:ring-amber-500">
+        <i class="fa-solid fa-bars text-lg"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER (Viewport + Study Info Panel) -->
+  <main class="flex-1 flex flex-col lg:flex-row overflow-hidden relative">
+
+    <!-- 3D VIEWPORT CONTAINER -->
+    <div class="w-full lg:w-7/12 xl:w-2/3 vp-h lg:h-full relative bg-slate-950 flex flex-col border-b lg:border-b-0 lg:border-r border-slate-800 shrink-0 lg:shrink">
+      
+      <!-- Canvas Container -->
+      <div id="canvas-container" class="w-full flex-1 relative overflow-hidden cursor-grab active:cursor-grabbing">
+        <canvas id="three-canvas" class="w-full h-full block"></canvas>
+
+        <!-- Floating View Controls & Mechanical Actuator Bar -->
+        <div class="absolute bottom-3 left-3 right-3 flex items-center justify-between pointer-events-none z-10">
+          <div class="flex items-center gap-1.5 bg-slate-900/85 backdrop-blur-md p-1.5 rounded-xl border border-slate-800 pointer-events-auto shadow-xl">
+            <button id="btn-reset" title="Reset Camera View" class="w-8 h-8 rounded-lg hover:bg-slate-800 text-slate-300 hover:text-white flex items-center justify-center transition">
+              <i class="fa-solid fa-rotate text-xs"></i>
+            </button>
+            <button id="btn-autorotate" title="Toggle Auto Rotation" class="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-400 hover:bg-amber-500/30 flex items-center justify-center transition">
+              <i class="fa-solid fa-arrows-spin text-xs"></i>
+            </button>
+            <button id="btn-wireframe" title="Toggle Wireframe Mode" class="w-8 h-8 rounded-lg hover:bg-slate-800 text-slate-300 hover:text-white flex items-center justify-center transition">
+              <i class="fa-solid fa-border-all text-xs"></i>
+            </button>
+            <button id="btn-trigger-lever" title="Actuate Roller Lever Arm" class="px-3 h-8 rounded-lg bg-amber-500/20 border border-amber-500/40 text-amber-400 hover:bg-amber-500/30 text-xs font-semibold flex items-center gap-1.5 transition">
+              <i class="fa-solid fa-hand-pointer text-xs"></i> <span id="actuate-btn-text">Trigger Lever (Press)</span>
+            </button>
+          </div>
+
+          <div class="hidden sm:flex items-center gap-2 text-[11px] text-slate-400 bg-slate-900/70 backdrop-blur-md px-3 py-1.5 rounded-xl border border-slate-800">
+            <i class="fa-solid fa-arrows-up-down-left-right text-amber-400"></i>
+            <span>Drag to rotate | Scroll to zoom</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DESCRIPTION & DIPLOMA TECHNICAL PANEL (Scrollable) -->
+    <div class="w-full lg:w-5/12 xl:w-1/3 flex-1 lg:h-full bg-slate-900 flex flex-col overflow-hidden min-h-0">
+      
+      <!-- Panel Header / Compact Title Sub-header -->
+      <div class="p-3.5 border-b border-slate-800 bg-slate-900/95 backdrop-blur shrink-0">
+        <div class="flex items-center justify-between mb-1">
+          <span class="px-2 py-0.5 text-[10px] font-semibold rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20">
+            Position & End-of-Travel Sensing
+          </span>
+          <span id="circuit-status-badge" class="px-2 py-0.5 text-[10px] rounded-full bg-slate-800 text-slate-300 border border-slate-700 font-mono font-semibold">
+            DEFAULT: NO OPEN / NC CLOSED
+          </span>
+        </div>
+        
+        <!-- Compact Title -->
+        <h2 class="text-sm md:text-base font-bold text-white tracking-tight">Switch #6: Limit Switch</h2>
+        <p class="text-[11px] text-slate-400 mt-0.5">Heavy-duty roller-lever electromechanical position interlock switch</p>
+
+        <!-- Navigation Tabs -->
+        <div class="flex border-b border-slate-800 mt-2.5 -mb-3 gap-3 text-xs font-medium">
+          <button id="tab-overview" class="pb-2 text-amber-400 border-b-2 border-amber-400 transition tab-btn">Overview</button>
+          <button id="tab-construction" class="pb-2 text-slate-400 hover:text-slate-200 transition tab-btn">Construction</button>
+          <button id="tab-lab" class="pb-2 text-slate-400 hover:text-slate-200 transition tab-btn">Diploma Lab</button>
+          <button id="tab-symbol" class="pb-2 text-slate-400 hover:text-slate-200 transition tab-btn">Schematic Symbol</button>
+        </div>
+      </div>
+
+      <!-- Tab Content Area (Smooth Scrollable) -->
+      <div class="flex-1 overflow-y-auto p-4 space-y-4 scroll-smooth">
+        
+        <!-- SECTION 1: OVERVIEW -->
+        <div id="content-overview" class="tab-content space-y-3.5">
+          <div class="bg-slate-800/40 p-3.5 rounded-xl border border-slate-800/80">
+            <h3 class="text-[11px] font-semibold uppercase tracking-wider text-slate-300 mb-1.5 flex items-center gap-1.5">
+              <i class="fa-solid fa-circle-info text-amber-400"></i> Definition & Operational Role
+            </h3>
+            <p class="text-xs text-slate-300 leading-relaxed">
+              A <strong>Limit Switch</strong> is an electromechanical device actuated by the physical force or contact of a moving object, machine component, or conveyor workpiece. When an object strikes the actuator (such as a roller lever), it triggers internal contacts to alter an electrical control circuit, signaling arrival, end-of-travel, or safety interlocking.
+            </p>
+          </div>
+
+          <div class="bg-slate-800/40 p-3.5 rounded-xl border border-slate-800/80">
+            <h3 class="text-[11px] font-semibold uppercase tracking-wider text-slate-300 mb-1.5 flex items-center gap-1.5">
+              <i class="fa-solid fa-gears text-amber-400"></i> Common Mechanical Actuator Types
+            </h3>
+            <div class="space-y-2 text-xs text-slate-300">
+              <div class="p-2 rounded bg-slate-800/60 border border-slate-700/50">
+                <span class="font-semibold text-amber-400">Roller Lever Actuator:</span> Uses a rotary arm with a steel roller wheel to absorb sliding friction from moving machine cams (as modeled in 3D viewport).
+              </div>
+              <div class="p-2 rounded bg-slate-800/60 border border-slate-700/50">
+                <span class="font-semibold text-cyan-400">Push Plunger Actuator:</span> Operates via direct linear perpendicular mechanical displacement (ideal for short stroke precision stopping).
+              </div>
+              <div class="p-2 rounded bg-slate-800/60 border border-slate-700/50">
+                <span class="font-semibold text-emerald-400">Flexible Whisker / Coil Spring:</span> Multi-directional flexible rod triggered by objects approaching from any arbitrary angle.
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2">
+            <div class="bg-slate-800/50 p-2.5 rounded-lg border border-slate-800">
+              <span class="text-[10px] text-slate-400 uppercase tracking-wider block mb-0.5">Protection Rating</span>
+              <span class="text-xs font-mono font-semibold text-white">IP67 Oil/Dust Tight</span>
+            </div>
+            <div class="bg-slate-800/50 p-2.5 rounded-lg border border-slate-800">
+              <span class="text-[10px] text-slate-400 uppercase tracking-wider block mb-0.5">Contact Form</span>
+              <span class="text-xs font-mono font-semibold text-white">1 NO + 1 NC Snap-Action</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 2: CONSTRUCTION -->
+        <div id="content-construction" class="tab-content hidden space-y-3.5">
+          <div class="bg-slate-800/40 p-3.5 rounded-xl border border-slate-800">
+            <h3 class="text-[11px] font-semibold text-slate-200 mb-2 flex items-center gap-1.5 uppercase tracking-wider">
+              <i class="fa-solid fa-screwdriver-wrench text-amber-400"></i> Internal Mechanical Components
+            </h3>
+            <ul class="space-y-2 text-xs text-slate-300">
+              <li class="flex items-start gap-2 bg-slate-800/50 p-2 rounded border border-slate-800">
+                <span class="text-amber-400 font-bold">•</span>
+                <div><strong>Cast Metal Alloy Housing:</strong> Die-cast aluminum alloy box with heavy mounting flange holes and oil-resistant seals.</div>
+              </li>
+              <li class="flex items-start gap-2 bg-slate-800/50 p-2 rounded border border-slate-800">
+                <span class="text-amber-400 font-bold">•</span>
+                <div><strong>Roller Lever & Shaft Assembly:</strong> Hardened steel wheel attached to a spring-loaded shaft that converts rotational displacement into linear pin pressing.</div>
+              </li>
+              <li class="flex items-start gap-2 bg-slate-800/50 p-2 rounded border border-slate-800">
+                <span class="text-amber-400 font-bold">•</span>
+                <div><strong>Snap-Action Contact Block:</strong> High-speed internal spring mechanism that transfers electrical contacts rapidly regardless of how slow the machine physical contact moves.</div>
+              </li>
+              <li class="flex items-start gap-2 bg-slate-800/50 p-2 rounded border border-slate-800">
+                <span class="text-amber-400 font-bold">•</span>
+                <div><strong>Threaded Conduit Entry Gland:</strong> ½" NPT or M20 bottom entry for armored cabling and sealing against industrial coolants.</div>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- SECTION 3: DIPLOMA LAB PRACTICAL -->
+        <div id="content-lab" class="tab-content hidden space-y-3.5">
+          <div class="bg-slate-800/40 p-3.5 rounded-xl border border-slate-800">
+            <h3 class="text-[11px] font-semibold text-slate-200 mb-2 flex items-center gap-1.5 uppercase tracking-wider">
+              <i class="fa-solid fa-flask text-emerald-400"></i> Industrial & Lab Control Applications
+            </h3>
+            <p class="text-xs text-slate-300 leading-relaxed mb-2">
+              In Diploma Electrical, PLC, and Industrial Automation practicals, limit switches form core safety interlocks:
+            </p>
+            <ul class="list-disc list-inside text-xs text-slate-300 space-y-1">
+              <li><strong>Conveyor Automatic Stop / Reverse:</strong> Mounted at the end of a belt to de-energize the motor starter when a box reaches the end position.</li>
+              <li><strong>Overhead Traveling Crane Safety Stop:</strong> Stops crane hoist and trolley motors before physical crash against structural end stops.</li>
+              <li><strong>Elevator Floor Leveling:</strong> Senses cabin alignment at each building floor to signal brake engagement.</li>
+              <li><strong>Machine Tool Guard Safety Interlock:</strong> Ensures CNC machine power is cut whenever access doors are opened.</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- SECTION 4: SCHEMATIC SYMBOL -->
+        <div id="content-symbol" class="tab-content hidden space-y-3.5">
+          <div class="bg-slate-800/40 p-3.5 rounded-xl border border-slate-800 text-center flex flex-col items-center justify-center min-h-[140px]">
+            <div class="w-full max-w-[240px] h-32 flex items-center justify-center bg-slate-950 rounded-lg border border-slate-800 p-2">
+              <!-- Limit Switch Symbol SVG -->
+              <svg viewBox="0 0 120 80" class="w-32 h-20 stroke-amber-400 fill-none stroke-2">
+                <!-- Normally Open Contact (Left) -->
+                <line x1="10" y1="45" x2="25" y2="45" />
+                <circle cx="25" cy="45" r="2.5" class="fill-amber-400" />
+                <line x1="25" y1="45" x2="50" y2="28" stroke-width="2.5" />
+                <!-- Triangular Wedge / Roller Cam symbol on switch arm -->
+                <polygon points="40,25 48,20 48,30" class="fill-cyan-400 stroke-cyan-400" />
+                <circle cx="50" cy="45" r="2.5" class="fill-amber-400" />
+                <line x1="50" y1="45" x2="65" y2="45" />
+
+                <!-- Separator line -->
+                <line x1="70" y1="15" x2="70" y2="65" stroke="#334155" stroke-dasharray="2,2" />
+
+                <!-- Normally Closed Contact (Right) -->
+                <line x1="75" y1="45" x2="88" y2="45" />
+                <circle cx="88" cy="45" r="2.5" class="fill-amber-400" />
+                <line x1="88" y1="45" x2="110" y2="45" stroke-width="2.5" />
+                <polygon points="98,40 106,35 106,45" class="fill-cyan-400 stroke-cyan-400" />
+                <circle cx="110" cy="45" r="2.5" class="fill-amber-400" />
+                <line x1="110" y1="45" x2="118" y2="45" />
+              </svg>
+            </div>
+            <p class="text-[10px] text-slate-400 mt-2 font-mono">IEC 60947 Standard Limit Switch Symbols (NO & NC Contacts with Cam Actuator)</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- SLIDE-OVER DRAWER MENU (Right Side) -->
+  <div id="menu-backdrop" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-40 opacity-0 pointer-events-none transition-opacity duration-300"></div>
+
+  <aside id="drawer-menu" class="fixed top-0 right-0 bottom-0 w-80 max-w-[85vw] bg-slate-900 border-l border-slate-800 z-50 transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col shadow-2xl">
+    <!-- Drawer Header -->
+    <div class="p-3.5 border-b border-slate-800 flex items-center justify-between bg-slate-900/90">
+      <div class="flex items-center gap-2">
+        <i class="fa-solid fa-list-ul text-amber-400"></i>
+        <h2 class="font-bold text-white text-sm">All Switches (14)</h2>
+      </div>
+      <button id="close-menu-btn" aria-label="Close Navigation Menu" class="w-8 h-8 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center transition">
+        <i class="fa-solid fa-xmark text-base"></i>
+      </button>
+    </div>
+
+    <!-- Search Bar -->
+    <div class="p-3 border-b border-slate-800 bg-slate-950/40">
+      <div class="relative">
+        <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-xs text-slate-500"></i>
+        <input type="text" id="menu-search" placeholder="Search switch type..." class="w-full bg-slate-800 text-slate-200 text-xs rounded-lg pl-8 pr-3 py-2 border border-slate-700 focus:outline-none focus:border-amber-500">
+      </div>
+    </div>
+
+    <!-- Switch Navigation List -->
+    <div class="flex-1 overflow-y-auto p-2 space-y-1" id="drawer-switch-list">
+      <!-- Dynamically Rendered -->
+    </div>
+
+    <!-- Drawer Footer -->
+    <div class="p-3 border-t border-slate-800 text-center text-[10px] text-slate-500 font-mono">
+      VoltVerse &middot; Electrical Switches
+    </div>
+  </aside>
+
+  <nav class="app-nav" aria-label="Main"><a href="index.html" class="nav-tab"><i class="fa-solid fa-house"></i><span>Home</span></a><a href="switches.html" class="nav-tab" aria-current="page"><i class="fa-solid fa-toggle-on"></i><span>Switches</span></a><a href="index.html#library" class="nav-tab"><i class="fa-solid fa-layer-group"></i><span>Library</span></a></nav>
+  <script src="js/switches-data.js"></script>
+  <script src="js/switches-engine.js"></script>
+  <script src="js/switches-nav.js"></script>
+  <!-- JAVASCRIPT LOGIC -->
+  <script>// Three.js Scene Variables
+    let scene, camera, renderer, controls;
+    let leverGroup, rollerWheel, internalPlunger;
+    let isActuated = false;
+    let isWireframe = false;
+    let autoRotate = true;
+
+    // Materials Palette
+    const mats = {
+      bodyBlue: new THREE.MeshStandardMaterial({ color: 0x1e3a8a, roughness: 0.4, metalness: 0.6 }),
+      headBlack: new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.5, metalness: 0.7 }),
+      leverChrome: new THREE.MeshStandardMaterial({ color: 0xd1d5db, roughness: 0.2, metalness: 0.9 }),
+      rollerSteel: new THREE.MeshStandardMaterial({ color: 0xf59e0b, roughness: 0.3, metalness: 0.8 }),
+      glandBrass: new THREE.MeshStandardMaterial({ color: 0xd97706, roughness: 0.3, metalness: 0.8 }),
+      plungerMetal: new THREE.MeshStandardMaterial({ color: 0x94a3b8, roughness: 0.3, metalness: 0.8 }),
+      screwHead: new THREE.MeshStandardMaterial({ color: 0x64748b, roughness: 0.4, metalness: 0.8 })
+    };
+
+    function initThree() {
+      const E = SWE.create({ camera: [3.2, 2.0, 3.8], gridY: -1.4, maxDistance: 10, minDistance: 1.8 });
+      scene = E.scene; camera = E.camera; renderer = E.renderer; controls = E.controls;
+      buildLimitSwitchModel();
+      SWE.start(function (dt) {
+        
+      }, function () { return autoRotate; });
+    }
+
+    // Build Procedural Heavy-Duty Limit Switch
+    function buildLimitSwitchModel() {
+      const mainGroup = new THREE.Group();
+
+      // 1. Cast Alloy Main Body Enclosure
+      const bodyGeo = new THREE.BoxGeometry(1.0, 1.8, 0.9);
+      const bodyMesh = new THREE.Mesh(bodyGeo, mats.bodyBlue);
+      bodyMesh.position.y = -0.2;
+      mainGroup.add(bodyMesh);
+
+      // Body Front Cover Screws
+      const screwGeo = new THREE.CylinderGeometry(0.06, 0.06, 0.04, 16);
+      screwGeo.rotateX(Math.PI / 2);
+      const screwPositions = [
+        [-0.38, 0.55, 0.46], [0.38, 0.55, 0.46],
+        [-0.38, -0.95, 0.46], [0.38, -0.95, 0.46]
+      ];
+      screwPositions.forEach(pos => {
+        const screw = new THREE.Mesh(screwGeo, mats.screwHead);
+        screw.position.set(...pos);
+        mainGroup.add(screw);
+      });
+
+      // 2. Bottom Threaded Conduit Gland
+      const glandGeo = new THREE.CylinderGeometry(0.22, 0.26, 0.4, 24);
+      const glandMesh = new THREE.Mesh(glandGeo, mats.glandBrass);
+      glandMesh.position.set(0, -1.3, 0);
+      mainGroup.add(glandMesh);
+
+      // 3. Operating Switch Head Block (Rotary Turret)
+      const headGeo = new THREE.BoxGeometry(0.9, 0.5, 0.85);
+      const headMesh = new THREE.Mesh(headGeo, mats.headBlack);
+      headMesh.position.set(0, 0.85, 0);
+      mainGroup.add(headMesh);
+
+      // 4. Internal Vertical Pin Plunger (Depressed by lever shaft)
+      const plungerGeo = new THREE.CylinderGeometry(0.08, 0.08, 0.35, 16);
+      internalPlunger = new THREE.Mesh(plungerGeo, mats.plungerMetal);
+      internalPlunger.position.set(0, 1.1, 0);
+      mainGroup.add(internalPlunger);
+
+      // 5. Rotary Lever Shaft & Roller Lever Arm Assembly
+      leverGroup = new THREE.Group();
+      leverGroup.position.set(0, 1.15, 0.45); // Pivot axis center
+
+      // Central Rotary Pivot Hub
+      const pivotHub = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.18, 0.2, 24), mats.headBlack);
+      pivotHub.rotation.x = Math.PI / 2;
+      leverGroup.add(pivotHub);
+
+      // Metallic Lever Arm Bar
+      const armGeo = new THREE.BoxGeometry(0.12, 1.0, 0.08);
+      const armMesh = new THREE.Mesh(armGeo, mats.leverChrome);
+      armMesh.position.set(0, 0.45, 0.08);
+      leverGroup.add(armMesh);
+
+      // Roller Wheel at Arm Tip
+      const rollerGeo = new THREE.CylinderGeometry(0.22, 0.22, 0.14, 32);
+      rollerWheel = new THREE.Mesh(rollerGeo, mats.rollerSteel);
+      rollerWheel.rotation.x = Math.PI / 2;
+      rollerWheel.position.set(0, 0.9, 0.12);
+      leverGroup.add(rollerWheel);
+
+      mainGroup.add(leverGroup);
+      scene.add(mainGroup);
+    }
+
+    // Mechanical Actuation Animation (Press / Spring Return)
+    function triggerLeverActuation() {
+      isActuated = !isActuated;
+
+      const targetLeverRot = isActuated ? -Math.PI / 4 : 0; // Rotate arm 45 deg down
+      const targetPlungerY = isActuated ? 0.98 : 1.1;     // Plunger moves down inside housing
+
+      const startLeverRot = leverGroup.rotation.z;
+      const startPlungerY = internalPlunger.position.y;
+
+      const startTime = performance.now();
+      const duration = 350; // Fast snap-action timing
+
+      function animateActuator(now) {
+        const elapsed = now - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const ease = progress < 0.5 ? 2 * progress * progress : -1 + (4 - 2 * progress) * progress;
+
+        leverGroup.rotation.z = startLeverRot + (targetLeverRot - startLeverRot) * ease;
+        internalPlunger.position.y = startPlungerY + (targetPlungerY - startPlungerY) * ease;
+
+        if (progress < 1) {
+          requestAnimationFrame(animateActuator);
+        }
+      }
+      requestAnimationFrame(animateActuator);
+
+      // Update UI Status Badges
+      const badge = document.getElementById('circuit-status-badge');
+      const btnText = document.getElementById('actuate-btn-text');
+
+      if (isActuated) {
+        badge.className = "px-2 py-0.5 text-[10px] rounded-full border font-mono font-semibold bg-emerald-500/10 text-emerald-400 border-emerald-500/30";
+        badge.innerText = "ACTUATED: NO CLOSED / NC OPEN";
+        btnText.innerText = "Release Lever (DEFAULT)";
+      } else {
+        badge.className = "px-2 py-0.5 text-[10px] rounded-full border font-mono font-semibold bg-slate-800 text-slate-300 border-slate-700";
+        badge.innerText = "DEFAULT: NO OPEN / NC CLOSED";
+        btnText.innerText = "Trigger Lever (Press)";
+      }
+    }
+
+
+
+    // Viewport Controls
+    document.getElementById('btn-reset').addEventListener('click', () => {
+      SWE.reset();
+    });
+
+    document.getElementById('btn-autorotate').addEventListener('click', (e) => {
+      autoRotate = !autoRotate;
+      e.currentTarget.classList.toggle('bg-amber-500/20');
+      e.currentTarget.classList.toggle('text-amber-400');
+    });
+
+    document.getElementById('btn-wireframe').addEventListener('click', (e) => {
+      isWireframe = !isWireframe;
+      scene.traverse((child) => {
+        if (child.isMesh && child.material) {
+          child.material.wireframe = isWireframe;
+        }
+      });
+      e.currentTarget.classList.toggle('bg-amber-500/20');
+      e.currentTarget.classList.toggle('text-amber-400');
+    });
+
+    document.getElementById('btn-trigger-lever').addEventListener('click', triggerLeverActuation);
+
+    // Tab Switching Logic
+    const tabs = ['overview', 'construction', 'lab', 'symbol'];
+    tabs.forEach(tabKey => {
+      document.getElementById(`tab-${tabKey}`).addEventListener('click', (e) => {
+        tabs.forEach(k => {
+          document.getElementById(`content-${k}`).classList.add('hidden');
+          const tabBtn = document.getElementById(`tab-${k}`);
+          tabBtn.classList.remove('text-amber-400', 'border-b-2', 'border-amber-400');
+          tabBtn.classList.add('text-slate-400');
+        });
+
+        document.getElementById(`content-${tabKey}`).classList.remove('hidden');
+        e.currentTarget.classList.remove('text-slate-400');
+        e.currentTarget.classList.add('text-amber-400', 'border-b-2', 'border-amber-400');
+      });
+    });
+
+    // Window Load Initialization
+    window.onload = function() {
+      try { initThree(); } catch (err) {
+        console.error('3D view unavailable:', err);
+        const cc = document.getElementById('canvas-container');
+        if (cc) cc.insertAdjacentHTML('beforeend', '<div class="absolute inset-0 flex items-center justify-center p-4 text-center text-xs text-slate-400">The 3D view needs WebGL, which is not available on this device. The description tabs below still work.</div>');
+      }
+      SWMenu.init('limit');
+    };
+  </script>
+</body>
+</html>

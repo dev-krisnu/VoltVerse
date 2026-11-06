@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-950 text-slate-100">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Single Pole Single Throw (SPST) | Electrical Switches | VoltVerse</title>
+  <meta name="description" content="Basic ON/OFF single circuit control switch (1 Input Pole, 1 Output Throw)">
+
+  <meta name="theme-color" content="#020617">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="vendor/fonts/inter-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="css/tailwind.css">
+  <link rel="stylesheet" href="css/app.css">
+  <link rel="stylesheet" href="css/fa/fa.css">
+  <script src="vendor/three.min.js"></script>
+  <script src="vendor/OrbitControls.js"></script>
+  <style>
+    /* Custom Smooth Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(15, 23, 42, 0.6);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(56, 189, 248, 0.3);
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(56, 189, 248, 0.6);
+    }
+    canvas {
+      outline: none;
+    }
+  </style>
+<style>.vp-h{height:45vh;height:45dvh}@media (min-width:1024px){.vp-h{height:100%}}html,body{height:100%}body{height:100vh;height:100dvh}.app-nav{position:relative}</style>
+</head>
+<body class="h-full flex flex-col font-sans antialiased overflow-x-hidden bg-slate-950">
+
+  <!-- TOP HEADER NAVBAR -->
+  <header class="h-14 lg:h-16 border-b border-slate-800 bg-slate-900/90 backdrop-blur-md px-4 lg:px-8 flex items-center justify-between z-30 sticky top-0 shrink-0">
+    <!-- Brand Logo & Title -->
+    <div class="flex items-center space-x-3">
+      <a href="index.html" aria-label="VoltVerse home" class="h-9 w-9 lg:h-10 lg:w-10 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-white shadow-lg shadow-cyan-500/20"><i class="fa-solid fa-bolt text-lg lg:text-xl"></i></a>
+      <div>
+        <h1 class="text-base lg:text-lg font-bold tracking-tight text-white flex items-center gap-2">
+          <a href="switches.html" class="hover:text-cyan-300 transition">Switches</a> <span class="text-[10px] lg:text-xs px-2 py-0.5 rounded bg-sky-500/20 text-sky-400 border border-sky-500/30 font-mono">#8 of 14</span>
+        </h1>
+        <p class="text-[11px] text-slate-400 hidden sm:block">VoltVerse: interactive 3D electrical switches</p>
+      </div>
+    </div>
+
+    <!-- Right Controls / Hamburger Menu Button -->
+    <div class="flex items-center gap-3">
+      <div class="hidden md:flex items-center text-xs text-slate-400 bg-slate-800/80 px-3 py-1 rounded-lg border border-slate-700">
+        <span class="inline-block w-2 h-2 rounded-full bg-sky-400 animate-pulse mr-2"></span>
+        <span>Switch #8: Single Pole Single Throw (SPST)</span>
+      </div>
+
+      <!-- Hamburger Menu Button (Square with 3 lines) -->
+      <button id="menu-btn" aria-label="Toggle Navigation Menu" class="w-10 h-10 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 flex items-center justify-center transition focus:outline-none focus:ring-2 focus:ring-sky-500">
+        <i class="fa-solid fa-bars text-lg"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER (Viewport + Study Info Panel) -->
+  <main class="flex-1 flex flex-col lg:flex-row overflow-hidden relative">
+
+    <!-- 3D VIEWPORT CONTAINER -->
+    <div class="w-full lg:w-7/12 xl:w-2/3 vp-h lg:h-full relative bg-slate-950 flex flex-col border-b lg:border-b-0 lg:border-r border-slate-800 shrink-0 lg:shrink">
+      
+      <!-- Canvas Container -->
+      <div id="canvas-container" class="w-full flex-1 relative overflow-hidden cursor-grab active:cursor-grabbing">
+        <canvas id="three-canvas" class="w-full h-full block"></canvas>
+
+        <!-- Floating View Controls & Mechanical Actuator Bar -->
+        <div class="absolute bottom-3 left-3 right-3 flex items-center justify-between pointer-events-none z-10">
+          <div class="flex items-center gap-1.5 bg-slate-900/85 backdrop-blur-md p-1.5 rounded-xl border border-slate-800 pointer-events-auto shadow-xl">
+            <button id="btn-reset" title="Reset Camera View" class="w-8 h-8 rounded-lg hover:bg-slate-800 text-slate-300 hover:text-white flex items-center justify-center transition">
+              <i class="fa-solid fa-rotate text-xs"></i>
+            </button>
+            <button id="btn-autorotate" title="Toggle Auto Rotation" class="w-8 h-8 rounded-lg bg-sky-500/20 text-sky-400 hover:bg-sky-500/30 flex items-center justify-center transition">
+              <i class="fa-solid fa-arrows-spin text-xs"></i>
+            </button>
+            <button id="btn-wireframe" title="Toggle Wireframe Mode" class="w-8 h-8 rounded-lg hover:bg-slate-800 text-slate-300 hover:text-white flex items-center justify-center transition">
+              <i class="fa-solid fa-border-all text-xs"></i>
+            </button>
+            <button id="btn-toggle-state" title="Toggle Switch State (ON/OFF)" class="px-3 h-8 rounded-lg bg-sky-500/20 border border-sky-500/40 text-sky-400 hover:bg-sky-500/30 text-xs font-semibold flex items-center gap-1.5 transition">
+              <i class="fa-solid fa-power-off text-xs"></i> <span id="switch-btn-text">Close Switch (ON)</span>
+            </button>
+          </div>
+
+          <div class="hidden sm:flex items-center gap-2 text-[11px] text-slate-400 bg-slate-900/70 backdrop-blur-md px-3 py-1.5 rounded-xl border border-slate-800">
+            <i class="fa-solid fa-arrows-up-down-left-right text-sky-400"></i>
+            <span>Drag to rotate | Scroll to zoom</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DESCRIPTION & DIPLOMA TECHNICAL PANEL (Scrollable) -->
+    <div class="w-full lg:w-5/12 xl:w-1/3 flex-1 lg:h-full bg-slate-900 flex flex-col overflow-hidden min-h-0">
+      
+      <!-- Panel Header / Compact Title Sub-header -->
+      <div class="p-3.5 border-b border-slate-800 bg-slate-900/95 backdrop-blur shrink-0">
+        <div class="flex items-center justify-between mb-1">
+          <span class="px-2 py-0.5 text-[10px] font-semibold rounded-full bg-sky-500/10 text-sky-400 border border-sky-500/20">
+            Fundamental Topology Switch
+          </span>
+          <span id="circuit-status-badge" class="px-2 py-0.5 text-[10px] rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/30 font-mono font-semibold">
+            STATE: OPEN (OFF)
+          </span>
+        </div>
+        
+        <!-- Compact Title -->
+        <h2 class="text-sm md:text-base font-bold text-white tracking-tight">Switch #8: Single Pole Single Throw (SPST)</h2>
+        <p class="text-[11px] text-slate-400 mt-0.5">Basic ON/OFF single circuit control switch (1 Input Pole, 1 Output Throw)</p>
+
+        <!-- Navigation Tabs -->
+        <div class="flex border-b border-slate-800 mt-2.5 -mb-3 gap-3 text-xs font-medium">
+          <button id="tab-overview" class="pb-2 text-sky-400 border-b-2 border-sky-400 transition tab-btn">Overview</button>
+          <button id="tab-construction" class="pb-2 text-slate-400 hover:text-slate-200 transition tab-btn">Construction</button>
+          <button id="tab-lab" class="pb-2 text-slate-400 hover:text-slate-200 transition tab-btn">Diploma Lab</button>
+          <button id="tab-symbol" class="pb-2 text-slate-400 hover:text-slate-200 transition tab-btn">Schematic Symbol</button>
+        </div>
+      </div>
+
+      <!-- Tab Content Area (Smooth Scrollable) -->
+      <div class="flex-1 overflow-y-auto p-4 space-y-4 scroll-smooth">
+        
+        <!-- SECTION 1: OVERVIEW -->
+        <div id="content-overview" class="tab-content space-y-3.5">
+          <div class="bg-slate-800/40 p-3.5 rounded-xl border border-slate-800/80">
+            <h3 class="text-[11px] font-semibold uppercase tracking-wider text-slate-300 mb-1.5 flex items-center gap-1.5">
+              <i class="fa-solid fa-circle-info text-sky-400"></i> Operational Purpose
+            </h3>
+            <p class="text-xs text-slate-300 leading-relaxed">
+              A <strong>Single Pole Single Throw (SPST)</strong> switch is the simplest type of electrical switch. It consists of one input terminal (Pole) and one output terminal (Throw). It provides straightforward **ON/OFF control** for a single electrical circuit, completing or breaking the current path between power source and load.
+            </p>
+          </div>
+
+          <div class="bg-slate-800/40 p-3.5 rounded-xl border border-slate-800/80">
+            <h3 class="text-[11px] font-semibold uppercase tracking-wider text-slate-300 mb-1.5 flex items-center gap-1.5">
+              <i class="fa-solid fa-diagram-project text-sky-400"></i> Terminal Configuration
+            </h3>
+            <div class="grid grid-cols-2 gap-2 mt-1">
+              <div class="p-2.5 rounded bg-slate-950 border border-slate-800">
+                <span class="text-[10px] text-sky-400 font-semibold block uppercase">Pole (1)</span>
+                <p class="text-[11px] text-slate-300 mt-0.5">Common supply feed connection point.</p>
+              </div>
+              <div class="p-2.5 rounded bg-slate-950 border border-slate-800">
+                <span class="text-[10px] text-sky-400 font-semibold block uppercase">Throw (1)</span>
+                <p class="text-[11px] text-slate-300 mt-0.5">Single downstream load routing terminal.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2">
+            <div class="bg-slate-800/50 p-2.5 rounded-lg border border-slate-800">
+              <span class="text-[10px] text-slate-400 uppercase tracking-wider block mb-0.5">Circuit Paths</span>
+              <span class="text-xs font-mono font-semibold text-white">1 Conductive Track</span>
+            </div>
+            <div class="bg-slate-800/50 p-2.5 rounded-lg border border-slate-800">
+              <span class="text-[10px] text-slate-400 uppercase tracking-wider block mb-0.5">Default Contact State</span>
+              <span class="text-xs font-mono font-semibold text-white">Normally Open (NO) / OFF</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 2: CONSTRUCTION -->
+        <div id="content-construction" class="tab-content hidden space-y-3.5">
+          <div class="bg-slate-800/40 p-3.5 rounded-xl border border-slate-800">
+            <h3 class="text-[11px] font-semibold text-slate-200 mb-2 flex items-center gap-1.5 uppercase tracking-wider">
+              <i class="fa-solid fa-gears text-sky-400"></i> Assembly & Materials
+            </h3>
+            <ul class="space-y-2 text-xs text-slate-300">
+              <li class="flex items-start gap-2 bg-slate-800/50 p-2 rounded border border-slate-800">
+                <span class="text-sky-400 font-bold">•</span>
+                <div><strong>Insulating Base Plate:</strong> Non-conductive phenolic bakelite or ceramic base preventing electrical leakage to ground.</div>
+              </li>
+              <li class="flex items-start gap-2 bg-slate-800/50 p-2 rounded border border-slate-800">
+                <span class="text-sky-400 font-bold">•</span>
+                <div><strong>Input Terminal Post (Pole):</strong> Brass stud or screw clamp connected directly to incoming line voltage.</div>
+              </li>
+              <li class="flex items-start gap-2 bg-slate-800/50 p-2 rounded border border-slate-800">
+                <span class="text-sky-400 font-bold">•</span>
+                <div><strong>Output Terminal Post (Throw):</strong> Contact clip stud connected directly to load circuit.</div>
+              </li>
+              <li class="flex items-start gap-2 bg-slate-800/50 p-2 rounded border border-slate-800">
+                <span class="text-sky-400 font-bold">•</span>
+                <div><strong>Movable Conductive Arm:</strong> Phosphor bronze or brass contact bar bridging the two terminal posts when actuated.</div>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- SECTION 3: DIPLOMA LAB PRACTICAL -->
+        <div id="content-lab" class="tab-content hidden space-y-3.5">
+          <div class="bg-slate-800/40 p-3.5 rounded-xl border border-slate-800">
+            <h3 class="text-[11px] font-semibold text-slate-200 mb-2 flex items-center gap-1.5 uppercase tracking-wider">
+              <i class="fa-solid fa-flask text-emerald-400"></i> Laboratory Experiments & Wiring Procedure
+            </h3>
+            <div class="space-y-2.5 text-xs text-slate-300">
+              <div class="p-2.5 rounded bg-slate-800/60 border border-slate-700/50">
+                <span class="font-semibold text-sky-400 block mb-1">Experiment 1: Single Lamp Control Setup</span>
+                Connect live AC line to Pole terminal screw. Wire Throw terminal screw to lamp socket terminal 1. Connect lamp socket terminal 2 to neutral. Toggle SPST switch to verify ON/OFF illumination.
+              </div>
+              <div class="p-2.5 rounded bg-slate-800/60 border border-slate-700/50">
+                <span class="font-semibold text-amber-400 block mb-1">Experiment 2: Contact Resistance Measurement</span>
+                Measure voltage drop (V<sub>drop</sub>) across closed SPST contacts under load current (I). Calculate contact resistance using R<sub>c</sub> = V<sub>drop</sub> / I.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 4: SCHEMATIC SYMBOL -->
+        <div id="content-symbol" class="tab-content hidden space-y-3.5">
+          <div class="bg-slate-800/40 p-3.5 rounded-xl border border-slate-800 text-center flex flex-col items-center justify-center min-h-[140px]">
+            <div class="w-full max-w-[260px] h-36 flex items-center justify-center bg-slate-950 rounded-lg border border-slate-800 p-2">
+              <!-- SPST Schematic SVG -->
+              <svg viewBox="0 0 200 100" class="w-48 h-24 stroke-sky-400 fill-none stroke-2">
+                <!-- Input Line -->
+                <line x1="20" y1="50" x2="60" y2="50" />
+                <circle cx="60" cy="50" r="4" class="fill-sky-400" />
+                
+                <!-- Switch Blade (Open State Representation) -->
+                <line x1="60" y1="50" x2="135" y2="25" stroke="#f59e0b" stroke-width="3" />
+                
+                <!-- Output Terminal -->
+                <circle cx="140" cy="50" r="4" class="fill-sky-400" />
+                <line x1="140" y1="50" x2="180" y2="50" />
+
+                <!-- Text Labels -->
+                <text x="25" y="40" fill="#38bdf8" font-size="9" stroke="none" font-family="monospace">INPUT (POLE)</text>
+                <text x="110" y="70" fill="#38bdf8" font-size="9" stroke="none" font-family="monospace">OUTPUT (THROW)</text>
+              </svg>
+            </div>
+            <p class="text-[10px] text-slate-400 mt-2 font-mono">Standard IEC/IEEE SPST Open Contact Schematic Symbol</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- SLIDE-OVER DRAWER MENU (Right Side) -->
+  <div id="menu-backdrop" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-40 opacity-0 pointer-events-none transition-opacity duration-300"></div>
+
+  <aside id="drawer-menu" class="fixed top-0 right-0 bottom-0 w-80 max-w-[85vw] bg-slate-900 border-l border-slate-800 z-50 transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col shadow-2xl">
+    <!-- Drawer Header -->
+    <div class="p-3.5 border-b border-slate-800 flex items-center justify-between bg-slate-900/90">
+      <div class="flex items-center gap-2">
+        <i class="fa-solid fa-list-ul text-sky-400"></i>
+        <h2 class="font-bold text-white text-sm">All Switches (14)</h2>
+      </div>
+      <button id="close-menu-btn" aria-label="Close Navigation Menu" class="w-8 h-8 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center transition">
+        <i class="fa-solid fa-xmark text-base"></i>
+      </button>
+    </div>
+
+    <!-- Search Bar -->
+    <div class="p-3 border-b border-slate-800 bg-slate-950/40">
+      <div class="relative">
+        <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-xs text-slate-500"></i>
+        <input type="text" id="menu-search" placeholder="Search switch type..." class="w-full bg-slate-800 text-slate-200 text-xs rounded-lg pl-8 pr-3 py-2 border border-slate-700 focus:outline-none focus:border-sky-500">
+      </div>
+    </div>
+
+    <!-- Switch Navigation List -->
+    <div class="flex-1 overflow-y-auto p-2 space-y-1" id="drawer-switch-list">
+      <!-- Dynamically Rendered -->
+    </div>
+
+    <!-- Drawer Footer -->
+    <div class="p-3 border-t border-slate-800 text-center text-[10px] text-slate-500 font-mono">
+      VoltVerse &middot; Electrical Switches
+    </div>
+  </aside>
+
+  <nav class="app-nav" aria-label="Main"><a href="index.html" class="nav-tab"><i class="fa-solid fa-house"></i><span>Home</span></a><a href="switches.html" class="nav-tab" aria-current="page"><i class="fa-solid fa-toggle-on"></i><span>Switches</span></a><a href="index.html#library" class="nav-tab"><i class="fa-solid fa-layer-group"></i><span>Library</span></a></nav>
+  <script src="js/switches-data.js"></script>
+  <script src="js/switches-engine.js"></script>
+  <script src="js/switches-nav.js"></script>
+  <!-- JAVASCRIPT LOGIC -->
+  <script>// Three.js Scene Variables
+    let scene, camera, renderer, controls;
+    let contactBlade, indicatorLed;
+    let isClosed = false;
+    let isWireframe = false;
+    let autoRotate = true;
+
+    // Materials Palette
+    const mats = {
+      baseBakelite: new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.7, metalness: 0.1 }),
+      brassBlade: new THREE.MeshStandardMaterial({ color: 0xf59e0b, roughness: 0.25, metalness: 0.85 }),
+      copperTerminal: new THREE.MeshStandardMaterial({ color: 0xb45309, roughness: 0.3, metalness: 0.9 }),
+      screwSteel: new THREE.MeshStandardMaterial({ color: 0x94a3b8, roughness: 0.2, metalness: 0.9 }),
+      handlePlastic: new THREE.MeshStandardMaterial({ color: 0x0284c7, roughness: 0.4, metalness: 0.2 }),
+      ledOff: new THREE.MeshStandardMaterial({ color: 0x991b1b, roughness: 0.5, metalness: 0.1 }),
+      ledOn: new THREE.MeshStandardMaterial({ color: 0x22c55e, roughness: 0.2, metalness: 0.1, emissive: 0x15803d, emissiveIntensity: 0.8 })
+    };
+
+    function initThree() {
+      const E = SWE.create({ camera: [0, 3.5, 4.8], gridY: -1.2, maxDistance: 10, minDistance: 1.8 });
+      scene = E.scene; camera = E.camera; renderer = E.renderer; controls = E.controls;
+      buildSPSTSwitchModel();
+      SWE.start(function (dt) {
+        // Smooth Hinge Blade Rotation Animation
+      if (contactBlade) {
+        const targetAngle = isClosed ? 0 : Math.PI / 5;
+        contactBlade.rotation.z += (targetAngle - contactBlade.rotation.z) * SWE.k(0.15);
+      }
+      }, function () { return autoRotate; });
+    }
+
+    // Build Detailed SPST Switch 3D Model
+    function buildSPSTSwitchModel() {
+      const mainGroup = new THREE.Group();
+
+      // 1. Bakelite Insulating Base Board
+      const baseGeo = new THREE.BoxGeometry(3.2, 0.4, 2.0);
+      const baseMesh = new THREE.Mesh(baseGeo, mats.baseBakelite);
+      baseMesh.position.y = -0.2;
+      mainGroup.add(baseMesh);
+
+      // Base Mounting Holes
+      const holeGeo = new THREE.CylinderGeometry(0.1, 0.1, 0.42, 16);
+      const hole1 = new THREE.Mesh(holeGeo, mats.screwSteel);
+      hole1.position.set(-1.3, -0.2, -0.7);
+      mainGroup.add(hole1);
+
+      const hole2 = new THREE.Mesh(holeGeo, mats.screwSteel);
+      hole2.position.set(1.3, -0.2, -0.7);
+      mainGroup.add(hole2);
+
+      // 2. Terminal Post 1: POLE (Input)
+      const poleBaseGeo = new THREE.BoxGeometry(0.6, 0.3, 0.6);
+      const poleBase = new THREE.Mesh(poleBaseGeo, mats.copperTerminal);
+      poleBase.position.set(-1.0, 0.15, 0);
+      mainGroup.add(poleBase);
+
+      const poleScrewGeo = new THREE.CylinderGeometry(0.12, 0.12, 0.4, 16);
+      const poleScrew = new THREE.Mesh(poleScrewGeo, mats.screwSteel);
+      poleScrew.position.set(-1.0, 0.35, 0);
+      mainGroup.add(poleScrew);
+
+      // Hinge Pivot Post on Pole Terminal
+      const pivotPostGeo = new THREE.CylinderGeometry(0.15, 0.15, 0.5, 16);
+      const pivotPost = new THREE.Mesh(pivotPostGeo, mats.brassBlade);
+      pivotPost.position.set(-0.8, 0.3, 0);
+      mainGroup.add(pivotPost);
+
+      // 3. Terminal Post 2: THROW (Output Catch Clip)
+      const throwBaseGeo = new THREE.BoxGeometry(0.6, 0.3, 0.6);
+      const throwBase = new THREE.Mesh(throwBaseGeo, mats.copperTerminal);
+      throwBase.position.set(1.0, 0.15, 0);
+      mainGroup.add(throwBase);
+
+      const throwScrewGeo = new THREE.CylinderGeometry(0.12, 0.12, 0.4, 16);
+      const throwScrew = new THREE.Mesh(throwScrewGeo, mats.screwSteel);
+      throwScrew.position.set(1.0, 0.35, 0);
+      mainGroup.add(throwScrew);
+
+      // Catch Jaw Clip (Spring Copper)
+      const jawLeftGeo = new THREE.BoxGeometry(0.08, 0.4, 0.3);
+      const jawLeft = new THREE.Mesh(jawLeftGeo, mats.copperTerminal);
+      jawLeft.position.set(0.85, 0.4, -0.1);
+      mainGroup.add(jawLeft);
+
+      const jawRight = new THREE.Mesh(jawLeftGeo, mats.copperTerminal);
+      jawRight.position.set(0.85, 0.4, 0.1);
+      mainGroup.add(jawRight);
+
+      // 4. Movable Contact Arm (Hinged at Pole Post)
+      contactBlade = new THREE.Group();
+      contactBlade.position.set(-0.8, 0.35, 0); // Hinge pivot center
+
+      const bladeGeo = new THREE.BoxGeometry(1.7, 0.1, 0.2);
+      bladeGeo.translate(0.85, 0, 0); // Pivot relative offset
+      const bladeMesh = new THREE.Mesh(bladeGeo, mats.brassBlade);
+      contactBlade.add(bladeMesh);
+
+      // Blue Insulated Knob Handle
+      const knobGeo = new THREE.CylinderGeometry(0.18, 0.22, 0.6, 16);
+      const knobMesh = new THREE.Mesh(knobGeo, mats.handlePlastic);
+      knobMesh.position.set(1.6, 0.3, 0);
+      contactBlade.add(knobMesh);
+
+      // Set initial open position (35 degrees up)
+      contactBlade.rotation.z = Math.PI / 5;
+      mainGroup.add(contactBlade);
+
+      // 5. Visual Circuit Output Indicator LED
+      const ledGeo = new THREE.CylinderGeometry(0.15, 0.15, 0.2, 16);
+      indicatorLed = new THREE.Mesh(ledGeo, mats.ledOff);
+      indicatorLed.position.set(0, 0.1, 0.7);
+      mainGroup.add(indicatorLed);
+
+      scene.add(mainGroup);
+    }
+
+    // Toggle SPST Blade State (ON / OFF)
+    function toggleSPSTState() {
+      isClosed = !isClosed;
+      const btnText = document.getElementById('switch-btn-text');
+      const badge = document.getElementById('circuit-status-badge');
+
+      if (isClosed) {
+        btnText.innerText = "Open Switch (OFF)";
+        badge.className = "px-2 py-0.5 text-[10px] rounded-full border font-mono font-semibold bg-emerald-500/10 text-emerald-400 border-emerald-500/30";
+        badge.innerText = "STATE: CLOSED (ON)";
+        indicatorLed.material = mats.ledOn;
+      } else {
+        btnText.innerText = "Close Switch (ON)";
+        badge.className = "px-2 py-0.5 text-[10px] rounded-full border font-mono font-semibold bg-rose-500/10 text-rose-400 border-rose-500/30";
+        badge.innerText = "STATE: OPEN (OFF)";
+        indicatorLed.material = mats.ledOff;
+      }
+    }
+
+
+
+    // Viewport Controls
+    document.getElementById('btn-reset').addEventListener('click', () => {
+      SWE.reset();
+    });
+
+    document.getElementById('btn-autorotate').addEventListener('click', (e) => {
+      autoRotate = !autoRotate;
+      e.currentTarget.classList.toggle('bg-sky-500/20');
+      e.currentTarget.classList.toggle('text-sky-400');
+    });
+
+    document.getElementById('btn-wireframe').addEventListener('click', (e) => {
+      isWireframe = !isWireframe;
+      scene.traverse((child) => {
+        if (child.isMesh && child.material) {
+          child.material.wireframe = isWireframe;
+        }
+      });
+      e.currentTarget.classList.toggle('bg-sky-500/20');
+      e.currentTarget.classList.toggle('text-sky-400');
+    });
+
+    document.getElementById('btn-toggle-state').addEventListener('click', toggleSPSTState);
+
+    // Tab Switching Logic
+    const tabs = ['overview', 'construction', 'lab', 'symbol'];
+    tabs.forEach(tabKey => {
+      document.getElementById(`tab-${tabKey}`).addEventListener('click', (e) => {
+        tabs.forEach(k => {
+          document.getElementById(`content-${k}`).classList.add('hidden');
+          const tabBtn = document.getElementById(`tab-${k}`);
+          tabBtn.classList.remove('text-sky-400', 'border-b-2', 'border-sky-400');
+          tabBtn.classList.add('text-slate-400');
+        });
+
+        document.getElementById(`content-${tabKey}`).classList.remove('hidden');
+        e.currentTarget.classList.remove('text-slate-400');
+        e.currentTarget.classList.add('text-sky-400', 'border-b-2', 'border-sky-400');
+      });
+    });
+
+    // Window Load Initialization
+    window.onload = function() {
+      try { initThree(); } catch (err) {
+        console.error('3D view unavailable:', err);
+        const cc = document.getElementById('canvas-container');
+        if (cc) cc.insertAdjacentHTML('beforeend', '<div class="absolute inset-0 flex items-center justify-center p-4 text-center text-xs text-slate-400">The 3D view needs WebGL, which is not available on this device. The description tabs below still work.</div>');
+      }
+      SWMenu.init('spst');
+    };
+  </script>
+</body>
+</html>

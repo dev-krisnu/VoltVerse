@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-950 text-slate-100">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Toggle Switch (Tumbler) | Electrical Switches | VoltVerse</title>
+  <meta name="description" content="Snap-action lever mechanism for control & power distribution">
+
+  <meta name="theme-color" content="#020617">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="vendor/fonts/inter-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="css/tailwind.css">
+  <link rel="stylesheet" href="css/app.css">
+  <link rel="stylesheet" href="css/fa/fa.css">
+  <script src="vendor/three.min.js"></script>
+  <script src="vendor/OrbitControls.js"></script>
+  <style>
+    /* Custom Smooth Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(15, 23, 42, 0.6);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(56, 189, 248, 0.3);
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(56, 189, 248, 0.6);
+    }
+    canvas {
+      outline: none;
+    }
+  </style>
+<style>.vp-h{height:45vh;height:45dvh}@media (min-width:1024px){.vp-h{height:100%}}html,body{height:100%}body{height:100vh;height:100dvh}.app-nav{position:relative}</style>
+</head>
+<body class="h-full flex flex-col font-sans antialiased overflow-x-hidden bg-slate-950">
+
+  <!-- TOP HEADER NAVBAR -->
+  <header class="h-14 lg:h-16 border-b border-slate-800 bg-slate-900/90 backdrop-blur-md px-4 lg:px-8 flex items-center justify-between z-30 sticky top-0 shrink-0">
+    <!-- Brand Logo & Title -->
+    <div class="flex items-center space-x-3">
+      <a href="index.html" aria-label="VoltVerse home" class="h-9 w-9 lg:h-10 lg:w-10 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-white shadow-lg shadow-cyan-500/20"><i class="fa-solid fa-bolt text-lg lg:text-xl"></i></a>
+      <div>
+        <h1 class="text-base lg:text-lg font-bold tracking-tight text-white flex items-center gap-2">
+          <a href="switches.html" class="hover:text-cyan-300 transition">Switches</a> <span class="text-[10px] lg:text-xs px-2 py-0.5 rounded bg-electric-500/20 text-electric-400 border border-electric-500/30 font-mono">#2 of 14</span>
+        </h1>
+        <p class="text-[11px] text-slate-400 hidden sm:block">VoltVerse: interactive 3D electrical switches</p>
+      </div>
+    </div>
+
+    <!-- Right Controls / Hamburger Menu Button -->
+    <div class="flex items-center gap-3">
+      <div class="hidden md:flex items-center text-xs text-slate-400 bg-slate-800/80 px-3 py-1 rounded-lg border border-slate-700">
+        <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse mr-2"></span>
+        <span>Switch #2: Toggle Switch</span>
+      </div>
+
+      <!-- Hamburger Menu Button (Square with 3 lines) -->
+      <button id="menu-btn" aria-label="Toggle Navigation Menu" class="w-10 h-10 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 flex items-center justify-center transition focus:outline-none focus:ring-2 focus:ring-electric-500">
+        <i class="fa-solid fa-bars text-lg"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER (Viewport + Study Info Panel) -->
+  <main class="flex-1 flex flex-col lg:flex-row overflow-hidden relative">
+
+    <!-- 3D VIEWPORT CONTAINER -->
+    <div class="w-full lg:w-7/12 xl:w-2/3 vp-h lg:h-full relative bg-slate-950 flex flex-col border-b lg:border-b-0 lg:border-r border-slate-800 shrink-0 lg:shrink">
+      
+      <!-- Canvas Container -->
+      <div id="canvas-container" class="w-full flex-1 relative overflow-hidden cursor-grab active:cursor-grabbing">
+        <canvas id="three-canvas" class="w-full h-full block"></canvas>
+
+        <!-- Loading Indicator -->
+        <div id="loader" class="absolute inset-0 bg-slate-950/90 flex flex-col items-center justify-center z-10 transition-opacity duration-300 pointer-events-none opacity-0">
+          <div class="w-8 h-8 border-4 border-electric-500/20 border-t-electric-400 rounded-full animate-spin mb-2"></div>
+          <span class="text-xs font-medium text-slate-300">Rendering 3D Toggle Switch...</span>
+        </div>
+
+        <!-- Floating View & Actuator Overlay -->
+        <div class="absolute bottom-3 left-3 right-3 flex items-center justify-between pointer-events-none z-10">
+          <div class="flex items-center gap-1.5 bg-slate-900/85 backdrop-blur-md p-1.5 rounded-xl border border-slate-800 pointer-events-auto shadow-xl">
+            <button id="btn-reset" title="Reset Camera View" class="w-8 h-8 rounded-lg hover:bg-slate-800 text-slate-300 hover:text-white flex items-center justify-center transition">
+              <i class="fa-solid fa-rotate text-xs"></i>
+            </button>
+            <button id="btn-autorotate" title="Toggle Auto Rotation" class="w-8 h-8 rounded-lg bg-electric-500/20 text-electric-400 hover:bg-electric-500/30 flex items-center justify-center transition">
+              <i class="fa-solid fa-arrows-spin text-xs"></i>
+            </button>
+            <button id="btn-wireframe" title="Toggle Wireframe Mode" class="w-8 h-8 rounded-lg hover:bg-slate-800 text-slate-300 hover:text-white flex items-center justify-center transition">
+              <i class="fa-solid fa-border-all text-xs"></i>
+            </button>
+            <button id="btn-toggle-lever" title="Operate Toggle Lever" class="px-3 h-8 rounded-lg bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/30 text-xs font-semibold flex items-center gap-1.5 transition">
+              <i class="fa-solid fa-toggle-on text-xs"></i> <span id="toggle-btn-text">Toggle Lever (OFF)</span>
+            </button>
+          </div>
+
+          <div class="hidden sm:flex items-center gap-2 text-[11px] text-slate-400 bg-slate-900/70 backdrop-blur-md px-3 py-1.5 rounded-xl border border-slate-800">
+            <i class="fa-solid fa-hand-pointer text-electric-400"></i>
+            <span>Drag to rotate | Scroll to zoom</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DESCRIPTION & DIPLOMA TECHNICAL PANEL (Scrollable) -->
+    <div class="w-full lg:w-5/12 xl:w-1/3 flex-1 lg:h-full bg-slate-900 flex flex-col overflow-hidden min-h-0">
+      
+      <!-- Panel Header / Compact Title Sub-header -->
+      <div class="p-3.5 border-b border-slate-800 bg-slate-900/95 backdrop-blur shrink-0">
+        <div class="flex items-center justify-between mb-1">
+          <span class="px-2 py-0.5 text-[10px] font-semibold rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+            Electromechanical Switch
+          </span>
+          <span id="circuit-status-badge" class="px-2 py-0.5 text-[10px] rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-mono font-semibold">
+            STATUS: CLOSED (ON)
+          </span>
+        </div>
+        
+        <!-- Compact, Small Title Design -->
+        <h2 class="text-sm md:text-base font-bold text-white tracking-tight">Switch #2: Toggle Switch (Tumbler)</h2>
+        <p class="text-[11px] text-slate-400 mt-0.5">Snap-action lever mechanism for control & power distribution</p>
+
+        <!-- Navigation Tabs -->
+        <div class="flex border-b border-slate-800 mt-2.5 -mb-3 gap-3 text-xs font-medium">
+          <button id="tab-overview" class="pb-2 text-electric-400 border-b-2 border-electric-400 transition tab-btn">Overview</button>
+          <button id="tab-construction" class="pb-2 text-slate-400 hover:text-slate-200 transition tab-btn">Construction</button>
+          <button id="tab-lab" class="pb-2 text-slate-400 hover:text-slate-200 transition tab-btn">Diploma Lab</button>
+          <button id="tab-symbol" class="pb-2 text-slate-400 hover:text-slate-200 transition tab-btn">Schematic Symbol</button>
+        </div>
+      </div>
+
+      <!-- Tab Content Area (Smooth Scrollable) -->
+      <div class="flex-1 overflow-y-auto p-4 space-y-4 scroll-smooth">
+        
+        <!-- SECTION 1: OVERVIEW -->
+        <div id="content-overview" class="tab-content space-y-3.5">
+          <div class="bg-slate-800/40 p-3.5 rounded-xl border border-slate-800/80">
+            <h3 class="text-[11px] font-semibold uppercase tracking-wider text-slate-300 mb-1.5 flex items-center gap-1.5">
+              <i class="fa-solid fa-circle-info text-electric-400"></i> Description & Definition
+            </h3>
+            <p class="text-xs text-slate-300 leading-relaxed">
+              A <strong>Toggle Switch</strong> (or tumbler switch) is a manually operated mechanical switch actuated by a lever or bat handle that tilts back and forth to open or close an electric circuit. It uses an internal quick-make, quick-break spring mechanism to minimize contact arcing.
+            </p>
+          </div>
+
+          <div class="bg-slate-800/40 p-3.5 rounded-xl border border-slate-800/80">
+            <h3 class="text-[11px] font-semibold uppercase tracking-wider text-slate-300 mb-1.5 flex items-center gap-1.5">
+              <i class="fa-solid fa-gears text-amber-400"></i> Snap-Action Detent Mechanism
+            </h3>
+            <p class="text-xs text-slate-300 leading-relaxed">
+              As the toggle lever is pushed, an internal compression spring compresses against a plunger or detent ball until it passes the center pivot point. Once past center, the spring snaps the contacts open or closed rapidly, regardless of how slowly the handle is moved.
+            </p>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2">
+            <div class="bg-slate-800/50 p-2.5 rounded-lg border border-slate-800">
+              <span class="text-[10px] text-slate-400 uppercase tracking-wider block mb-0.5">Voltage Range</span>
+              <span class="text-xs font-mono font-semibold text-white">12V DC - 250V AC</span>
+            </div>
+            <div class="bg-slate-800/50 p-2.5 rounded-lg border border-slate-800">
+              <span class="text-[10px] text-slate-400 uppercase tracking-wider block mb-0.5">Current Rating</span>
+              <span class="text-xs font-mono font-semibold text-white">1A - 30A</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 2: CONSTRUCTION -->
+        <div id="content-construction" class="tab-content hidden space-y-3.5">
+          <div class="bg-slate-800/40 p-3.5 rounded-xl border border-slate-800">
+            <h3 class="text-[11px] font-semibold text-slate-200 mb-2 flex items-center gap-1.5 uppercase tracking-wider">
+              <i class="fa-solid fa-screwdriver-wrench text-amber-400"></i> Key Components
+            </h3>
+            <ul class="space-y-2 text-xs text-slate-300">
+              <li class="flex items-start gap-2 bg-slate-800/50 p-2 rounded border border-slate-800">
+                <span class="text-electric-400 font-bold">•</span>
+                <div><strong>Bat Handle / Actuator Lever:</strong> Metallic or plastic lever pivoted inside the central bushing.</div>
+              </li>
+              <li class="flex items-start gap-2 bg-slate-800/50 p-2 rounded border border-slate-800">
+                <span class="text-electric-400 font-bold">•</span>
+                <div><strong>Threaded Bushing & Nut:</strong> Brass or chrome-plated collar allowing panel-mount installation.</div>
+              </li>
+              <li class="flex items-start gap-2 bg-slate-800/50 p-2 rounded border border-slate-800">
+                <span class="text-electric-400 font-bold">•</span>
+                <div><strong>Bakelite Case:</strong> High-dielectric strength insulating body containing internal contacts.</div>
+              </li>
+              <li class="flex items-start gap-2 bg-slate-800/50 p-2 rounded border border-slate-800">
+                <span class="text-electric-400 font-bold">•</span>
+                <div><strong>Movable Contact Arm:</strong> Silver-plated copper rocker driven by the internal plunger spring.</div>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- SECTION 3: DIPLOMA LAB PRACTICAL -->
+        <div id="content-lab" class="tab-content hidden space-y-3.5">
+          <div class="bg-slate-800/40 p-3.5 rounded-xl border border-slate-800">
+            <h3 class="text-[11px] font-semibold text-slate-200 mb-2 flex items-center gap-1.5 uppercase tracking-wider">
+              <i class="fa-solid fa-flask text-emerald-400"></i> Diploma Practical Applications
+            </h3>
+            <p class="text-xs text-slate-300 leading-relaxed mb-2">
+              Toggle switches are widely used across electrical engineering laboratories and industrial control consoles:
+            </p>
+            <ul class="list-disc list-inside text-xs text-slate-300 space-y-1">
+              <li>Main DC control supply switches on experimental test benches.</li>
+              <li>Function generator and oscilloscope power selection.</li>
+              <li>Two-way light control simulation circuits (using SPDT toggle switches).</li>
+              <li>Motor forward/reverse selector control circuits.</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- SECTION 4: SCHEMATIC SYMBOL -->
+        <div id="content-symbol" class="tab-content hidden space-y-3.5">
+          <div class="bg-slate-800/40 p-3.5 rounded-xl border border-slate-800 text-center flex flex-col items-center justify-center min-h-[140px]">
+            <div class="w-full max-w-[220px] h-28 flex items-center justify-center bg-slate-950 rounded-lg border border-slate-800 p-2 gap-4">
+              <!-- SPST Symbol -->
+              <div class="flex flex-col items-center">
+                <svg viewBox="0 0 80 50" class="w-20 h-14 stroke-electric-400 fill-none stroke-2">
+                  <circle cx="15" cy="25" r="3.5"/>
+                  <circle cx="65" cy="25" r="3.5"/>
+                  <path d="M 18.5 25 L 55 10" stroke-width="2"/>
+                  <path d="M 35 18 L 30 5" stroke-dasharray="2 2" stroke-width="1.5" class="stroke-slate-400"/>
+                  <path d="M 0 25 L 11.5 25 M 68.5 25 L 80 25"/>
+                </svg>
+                <span class="text-[9px] text-slate-400 font-mono mt-1">SPST Toggle</span>
+              </div>
+              <!-- SPDT Symbol -->
+              <div class="flex flex-col items-center border-l border-slate-800 pl-4">
+                <svg viewBox="0 0 80 50" class="w-20 h-14 stroke-electric-400 fill-none stroke-2">
+                  <circle cx="15" cy="25" r="3.5"/>
+                  <circle cx="65" cy="12" r="3.5"/>
+                  <circle cx="65" cy="38" r="3.5"/>
+                  <path d="M 18.5 25 L 61.5 12" stroke-width="2"/>
+                  <path d="M 0 25 L 11.5 25 M 68.5 12 L 80 12 M 68.5 38 L 80 38"/>
+                </svg>
+                <span class="text-[9px] text-slate-400 font-mono mt-1">SPDT Toggle</span>
+              </div>
+            </div>
+            <p class="text-[10px] text-slate-400 mt-2 font-mono">IEC / IEEE Standard Toggle Switch Symbols</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- SLIDE-OVER DRAWER MENU (Right Side) -->
+  <div id="menu-backdrop" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-40 opacity-0 pointer-events-none transition-opacity duration-300"></div>
+
+  <aside id="drawer-menu" class="fixed top-0 right-0 bottom-0 w-80 max-w-[85vw] bg-slate-900 border-l border-slate-800 z-50 transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col shadow-2xl">
+    <!-- Drawer Header -->
+    <div class="p-3.5 border-b border-slate-800 flex items-center justify-between bg-slate-900/90">
+      <div class="flex items-center gap-2">
+        <i class="fa-solid fa-list-ul text-electric-400"></i>
+        <h2 class="font-bold text-white text-sm">All Switches (14)</h2>
+      </div>
+      <button id="close-menu-btn" aria-label="Close Navigation Menu" class="w-8 h-8 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center transition">
+        <i class="fa-solid fa-xmark text-base"></i>
+      </button>
+    </div>
+
+    <!-- Search Bar -->
+    <div class="p-3 border-b border-slate-800 bg-slate-950/40">
+      <div class="relative">
+        <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-xs text-slate-500"></i>
+        <input type="text" id="menu-search" placeholder="Search switch type..." class="w-full bg-slate-800 text-slate-200 text-xs rounded-lg pl-8 pr-3 py-2 border border-slate-700 focus:outline-none focus:border-electric-500">
+      </div>
+    </div>
+
+    <!-- Switch Navigation List -->
+    <div class="flex-1 overflow-y-auto p-2 space-y-1" id="drawer-switch-list">
+      <!-- Dynamically Rendered -->
+    </div>
+
+    <!-- Drawer Footer -->
+    <div class="p-3 border-t border-slate-800 text-center text-[10px] text-slate-500 font-mono">
+      VoltVerse &middot; Electrical Switches
+    </div>
+  </aside>
+
+  <nav class="app-nav" aria-label="Main"><a href="index.html" class="nav-tab"><i class="fa-solid fa-house"></i><span>Home</span></a><a href="switches.html" class="nav-tab" aria-current="page"><i class="fa-solid fa-toggle-on"></i><span>Switches</span></a><a href="index.html#library" class="nav-tab"><i class="fa-solid fa-layer-group"></i><span>Library</span></a></nav>
+  <script src="js/switches-data.js"></script>
+  <script src="js/switches-engine.js"></script>
+  <script src="js/switches-nav.js"></script>
+  <!-- JAVASCRIPT LOGIC -->
+  <script>// Three.js Scene Variables
+    let scene, camera, renderer, controls;
+    let leverPivotGroup;
+    let isToggleClosed = true;
+    let isWireframe = false;
+    let autoRotate = true;
+
+    // Materials Palette
+    const mats = {
+      bakelite: new THREE.MeshStandardMaterial({ color: 0x111827, roughness: 0.5, metalness: 0.2 }),
+      brassCollar: new THREE.MeshStandardMaterial({ color: 0xd97706, roughness: 0.3, metalness: 0.85 }),
+      chromeLever: new THREE.MeshStandardMaterial({ color: 0xe2e8f0, roughness: 0.15, metalness: 0.95 }),
+      terminalScrew: new THREE.MeshStandardMaterial({ color: 0xf59e0b, roughness: 0.3, metalness: 0.8 }),
+      mountingNut: new THREE.MeshStandardMaterial({ color: 0x94a3b8, roughness: 0.3, metalness: 0.85 })
+    };
+
+    function initThree() {
+      const E = SWE.create({ camera: [2.8, 2.2, 3.5], gridY: -1.2, maxDistance: 10, minDistance: 1.5 });
+      scene = E.scene; camera = E.camera; renderer = E.renderer; controls = E.controls;
+      buildToggleSwitchModel();
+      SWE.start(function (dt) {
+        
+      }, function () { return autoRotate; });
+    }
+
+    // Build Procedural 3D Toggle Switch Model
+    function buildToggleSwitchModel() {
+      const switchGroup = new THREE.Group();
+
+      // 1. Bakelite Main Body Box
+      const body = new THREE.Mesh(new THREE.BoxGeometry(1.4, 1.2, 0.9), mats.bakelite);
+      body.position.y = -0.6;
+      switchGroup.add(body);
+
+      // Terminal Screws at bottom
+      for (let x of [-0.45, 0, 0.45]) {
+        const screw = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 0.3, 16), mats.terminalScrew);
+        screw.position.set(x, -1.25, 0);
+        switchGroup.add(screw);
+
+        const screwHead = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.14, 0.08, 16), mats.terminalScrew);
+        screwHead.position.set(x, -1.4, 0);
+        switchGroup.add(screwHead);
+      }
+
+      // 2. Threaded Panel Mounting Bushing (Collar)
+      const bushing = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.4, 0.7, 32), mats.brassCollar);
+      bushing.position.y = 0.35;
+      switchGroup.add(bushing);
+
+      // Hex Mounting Nut
+      const hexNut = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.55, 0.15, 6), mats.mountingNut);
+      hexNut.position.y = 0.15;
+      switchGroup.add(hexNut);
+
+      // Beveled Lock Washer
+      const washer = new THREE.Mesh(new THREE.CylinderGeometry(0.58, 0.58, 0.04, 32), mats.mountingNut);
+      washer.position.y = 0.05;
+      switchGroup.add(washer);
+
+      // 3. Bat Handle Lever Pivot Group
+      leverPivotGroup = new THREE.Group();
+      leverPivotGroup.position.set(0, 0.4, 0);
+
+      // Ball Joint base of lever
+      const ballJoint = new THREE.Mesh(new THREE.SphereGeometry(0.28, 32, 32), mats.chromeLever);
+      leverPivotGroup.add(ballJoint);
+
+      // Bat Lever Shaft (Tapered cylinder)
+      const leverShaft = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.22, 1.2, 32), mats.chromeLever);
+      leverShaft.position.y = 0.6;
+      leverPivotGroup.add(leverShaft);
+
+      // Bat Lever Rounded Tip Top
+      const leverTip = new THREE.Mesh(new THREE.SphereGeometry(0.14, 32, 32), mats.chromeLever);
+      leverTip.position.y = 1.2;
+      leverPivotGroup.add(leverTip);
+
+      // Set initial ON angle tilt (~ -22 degrees)
+      leverPivotGroup.rotation.z = -Math.PI / 8;
+      switchGroup.add(leverPivotGroup);
+
+      scene.add(switchGroup);
+    }
+
+    function toggleLeverAction() {
+      isToggleClosed = !isToggleClosed;
+      // Tilt between -22 deg (ON) and +22 deg (OFF)
+      const targetRotationZ = isToggleClosed ? -Math.PI / 8 : Math.PI / 8;
+
+      const startRotationZ = leverPivotGroup.rotation.z;
+      const startTime = performance.now();
+      const duration = 250; // ms fast snap action
+
+      function animateLever(now) {
+        const elapsed = now - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        
+        // Custom Easing for Mechanical Snap
+        const snapProgress = Math.pow(progress, 3);
+        leverPivotGroup.rotation.z = startRotationZ + (targetRotationZ - startRotationZ) * snapProgress;
+
+        if (progress < 1) {
+          requestAnimationFrame(animateLever);
+        }
+      }
+      requestAnimationFrame(animateLever);
+
+      // Update UI Status Badges
+      const statusBadge = document.getElementById('circuit-status-badge');
+      const toggleBtnText = document.getElementById('toggle-btn-text');
+
+      if (isToggleClosed) {
+        statusBadge.className = "px-2 py-0.5 text-[10px] rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-mono font-semibold";
+        statusBadge.innerText = "STATUS: CLOSED (ON)";
+        toggleBtnText.innerText = "Toggle Lever (OFF)";
+      } else {
+        statusBadge.className = "px-2 py-0.5 text-[10px] rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/30 font-mono font-semibold";
+        statusBadge.innerText = "STATUS: OPEN (OFF)";
+        toggleBtnText.innerText = "Toggle Lever (ON)";
+      }
+    }
+
+
+
+    // Viewport Buttons
+    document.getElementById('btn-reset').addEventListener('click', () => {
+      SWE.reset();
+    });
+
+    document.getElementById('btn-autorotate').addEventListener('click', (e) => {
+      autoRotate = !autoRotate;
+      e.currentTarget.classList.toggle('bg-electric-500/20');
+      e.currentTarget.classList.toggle('text-electric-400');
+    });
+
+    document.getElementById('btn-wireframe').addEventListener('click', (e) => {
+      isWireframe = !isWireframe;
+      scene.traverse((child) => {
+        if (child.isMesh && child.material) {
+          child.material.wireframe = isWireframe;
+        }
+      });
+      e.currentTarget.classList.toggle('bg-electric-500/20');
+      e.currentTarget.classList.toggle('text-electric-400');
+    });
+
+    document.getElementById('btn-toggle-lever').addEventListener('click', toggleLeverAction);
+
+    // Tab Switching Logic
+    const tabs = ['overview', 'construction', 'lab', 'symbol'];
+    tabs.forEach(tabKey => {
+      document.getElementById(`tab-${tabKey}`).addEventListener('click', (e) => {
+        tabs.forEach(k => {
+          document.getElementById(`content-${k}`).classList.add('hidden');
+          const tabBtn = document.getElementById(`tab-${k}`);
+          tabBtn.classList.remove('text-electric-400', 'border-b-2', 'border-electric-400');
+          tabBtn.classList.add('text-slate-400');
+        });
+
+        document.getElementById(`content-${tabKey}`).classList.remove('hidden');
+        e.currentTarget.classList.remove('text-slate-400');
+        e.currentTarget.classList.add('text-electric-400', 'border-b-2', 'border-electric-400');
+      });
+    });
+
+    // Window Load Initialization
+    window.onload = function() {
+      try { initThree(); } catch (err) {
+        console.error('3D view unavailable:', err);
+        const cc = document.getElementById('canvas-container');
+        if (cc) cc.insertAdjacentHTML('beforeend', '<div class="absolute inset-0 flex items-center justify-center p-4 text-center text-xs text-slate-400">The 3D view needs WebGL, which is not available on this device. The description tabs below still work.</div>');
+      }
+      SWMenu.init('toggle');
+    };
+  </script>
+</body>
+</html>

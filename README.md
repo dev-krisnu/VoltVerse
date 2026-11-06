@@ -5,6 +5,7 @@ Static site, no build step needed.
 - `index.html` – library home (cards come from `js/library.js`)
 - Transformers: `transformer-explorer.html`, `transformer-calculator.html`, `transformer-design.html`
 - Motors: `dc-motor.html`, `dc-motor-types.html`, `induction-motor.html` (model in `js/induction-model.js`)
+- Switches: `switches.html` (menu) and 14 labs `switch-<name>.html`; list in `js/switches-data.js`, shared engine in `js/switches-engine.js`
 - Practice: `quiz.html` (50 questions in `js/quiz-data.js`, 10 per round, no repeats until all are seen)
 
 ## Deploy

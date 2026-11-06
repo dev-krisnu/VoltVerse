@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-950 text-slate-100">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Surface & Flush Switch | Electrical Switches | VoltVerse</title>
+  <meta name="description" content="Domestic Wall Wiring & Modular Box Switches (6A/16A, 240V AC)">
+
+  <meta name="theme-color" content="#020617">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="vendor/fonts/inter-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="css/tailwind.css">
+  <link rel="stylesheet" href="css/app.css">
+  <link rel="stylesheet" href="css/fa/fa.css">
+  <script src="vendor/three.min.js"></script>
+  <script src="vendor/OrbitControls.js"></script>
+  <style>
+    /* Custom Smooth Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(15, 23, 42, 0.6);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(56, 189, 248, 0.3);
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(56, 189, 248, 0.6);
+    }
+    canvas {
+      outline: none;
+    }
+  </style>
+<style>.vp-h{height:45vh;height:45dvh}@media (min-width:1024px){.vp-h{height:100%}}html,body{height:100%}body{height:100vh;height:100dvh}.app-nav{position:relative}</style>
+</head>
+<body class="h-full flex flex-col font-sans antialiased overflow-x-hidden bg-slate-950">
+
+  <!-- TOP HEADER NAVBAR -->
+  <header class="h-14 lg:h-16 border-b border-slate-800 bg-slate-900/90 backdrop-blur-md px-4 lg:px-8 flex items-center justify-between z-30 sticky top-0 shrink-0">
+    <!-- Brand Logo & Title -->
+    <div class="flex items-center space-x-3">
+      <a href="index.html" aria-label="VoltVerse home" class="h-9 w-9 lg:h-10 lg:w-10 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-white shadow-lg shadow-cyan-500/20"><i class="fa-solid fa-bolt text-lg lg:text-xl"></i></a>
+      <div>
+        <h1 class="text-base lg:text-lg font-bold tracking-tight text-white flex items-center gap-2">
+          <a href="switches.html" class="hover:text-cyan-300 transition">Switches</a> <span class="text-[10px] lg:text-xs px-2 py-0.5 rounded bg-sky-500/20 text-sky-400 border border-sky-500/30 font-mono">#12 of 14</span>
+        </h1>
+        <p class="text-[11px] text-slate-400 hidden sm:block">VoltVerse: interactive 3D electrical switches</p>
+      </div>
+    </div>
+
+    <!-- Right Controls / Hamburger Menu Button -->
+    <div class="flex items-center gap-3">
+      <div class="hidden md:flex items-center text-xs text-slate-400 bg-slate-800/80 px-3 py-1 rounded-lg border border-slate-700">
+        <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse mr-2"></span>
+        <span>Switch #12: Surface & Flush Switch</span>
+      </div>
+
+      <!-- Hamburger Menu Button (Square with 3 lines) -->
+      <button id="menu-btn" aria-label="Toggle Navigation Menu" class="w-10 h-10 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 flex items-center justify-center transition focus:outline-none focus:ring-2 focus:ring-sky-500">
+        <i class="fa-solid fa-bars text-lg"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER (Viewport + Study Info Panel) -->
+  <main class="flex-1 flex flex-col lg:flex-row overflow-hidden relative">
+
+    <!-- 3D VIEWPORT CONTAINER -->
+    <div class="w-full lg:w-7/12 xl:w-2/3 vp-h lg:h-full relative bg-slate-950 flex flex-col border-b lg:border-b-0 lg:border-r border-slate-800 shrink-0 lg:shrink">
+      
+      <!-- Canvas Container -->
+      <div id="canvas-container" class="w-full flex-1 relative overflow-hidden cursor-grab active:cursor-grabbing">
+        <canvas id="three-canvas" class="w-full h-full block"></canvas>
+
+        <!-- Floating View Controls & Mechanical Actuator Bar -->
+        <div class="absolute bottom-3 left-3 right-3 flex flex-wrap items-center justify-between pointer-events-none z-10 gap-2">
+          <div class="flex items-center gap-1.5 bg-slate-900/90 backdrop-blur-md p-1.5 rounded-xl border border-slate-800 pointer-events-auto shadow-xl">
+            <button id="btn-reset" title="Reset Camera View" class="w-8 h-8 rounded-lg hover:bg-slate-800 text-slate-300 hover:text-white flex items-center justify-center transition">
+              <i class="fa-solid fa-rotate text-xs"></i>
+            </button>
+            <button id="btn-autorotate" title="Toggle Auto Rotation" class="w-8 h-8 rounded-lg bg-sky-500/20 text-sky-400 hover:bg-sky-500/30 flex items-center justify-center transition">
+              <i class="fa-solid fa-arrows-spin text-xs"></i>
+            </button>
+            <button id="btn-wireframe" title="Toggle Wireframe Mode" class="w-8 h-8 rounded-lg hover:bg-slate-800 text-slate-300 hover:text-white flex items-center justify-center transition">
+              <i class="fa-solid fa-border-all text-xs"></i>
+            </button>
+            <button id="btn-switch-variant" title="Switch Mount Mode (Surface / Flush)" class="px-2.5 h-8 rounded-lg bg-indigo-500/20 border border-indigo-500/40 text-indigo-300 hover:bg-indigo-500/30 text-xs font-semibold flex items-center gap-1 transition">
+              <i class="fa-solid fa-layer-group text-xs"></i> <span id="mount-type-label">Mount: Flush Modular</span>
+            </button>
+            <button id="btn-toggle-state" title="Toggle Rocker Switch ON/OFF" class="px-3 h-8 rounded-lg bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/30 text-xs font-semibold flex items-center gap-1.5 transition">
+              <i class="fa-solid fa-power-off text-xs"></i> <span id="switch-btn-text">Action: Press ON</span>
+            </button>
+          </div>
+
+          <div class="hidden sm:flex items-center gap-2 text-[11px] text-slate-400 bg-slate-900/70 backdrop-blur-md px-3 py-1.5 rounded-xl border border-slate-800">
+            <i class="fa-solid fa-arrows-up-down-left-right text-sky-400"></i>
+            <span>Drag to rotate | Scroll to zoom</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DESCRIPTION & DIPLOMA TECHNICAL PANEL (Scrollable) -->
+    <div class="w-full lg:w-5/12 xl:w-1/3 flex-1 lg:h-full bg-slate-900 flex flex-col overflow-hidden min-h-0">
+      
+      <!-- Panel Header / Compact Title Sub-header -->
+      <div class="p-3.5 border-b border-slate-800 bg-slate-900/95 backdrop-blur shrink-0">
+        <div class="flex items-center justify-between mb-1">
+          <span class="px-2 py-0.5 text-[10px] font-semibold rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+            Domestic & Commercial Installation
+          </span>
+          <span id="circuit-status-badge" class="px-2 py-0.5 text-[10px] rounded-full bg-red-500/10 text-red-400 border border-red-500/30 font-mono font-semibold">
+            STATE: OPEN (OFF)
+          </span>
+        </div>
+        
+        <!-- Compact Title -->
+        <h2 class="text-sm md:text-base font-bold text-white tracking-tight">Switch #12: Surface & Flush Switch</h2>
+        <p class="text-[11px] text-slate-400 mt-0.5">Domestic Wall Wiring & Modular Box Switches (6A/16A, 240V AC)</p>
+
+        <!-- Navigation Tabs -->
+        <div class="flex border-b border-slate-800 mt-2.5 -mb-3 gap-3 text-xs font-medium">
+          <button id="tab-overview" class="pb-2 text-sky-400 border-b-2 border-sky-400 transition tab-btn">Overview</button>
+          <button id="tab-construction" class="pb-2 text-slate-400 hover:text-slate-200 transition tab-btn">Specs & Mechanics</button>
+          <button id="tab-lab" class="pb-2 text-slate-400 hover:text-slate-200 transition tab-btn">Diploma Lab</button>
+          <button id="tab-symbol" class="pb-2 text-slate-400 hover:text-slate-200 transition tab-btn">Schematic Symbol</button>
+        </div>
+      </div>
+
+      <!-- Tab Content Area (Smooth Scrollable) -->
+      <div class="flex-1 overflow-y-auto p-4 space-y-4 scroll-smooth">
+        
+        <!-- SECTION 1: OVERVIEW -->
+        <div id="content-overview" class="tab-content space-y-3.5">
+          <div class="bg-slate-800/40 p-3.5 rounded-xl border border-slate-800/80">
+            <h3 class="text-[11px] font-semibold uppercase tracking-wider text-slate-300 mb-1.5 flex items-center gap-1.5">
+              <i class="fa-solid fa-circle-info text-sky-400"></i> Purpose & Classification
+            </h3>
+            <p class="text-xs text-slate-300 leading-relaxed">
+              <strong>Surface and Flush switches</strong> are standard low-voltage AC domestic wall switches used in building wiring to control lighting, fans, and socket outlets. They are classified based on their <strong>installation enclosure method</strong>:
+            </p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+            <div class="bg-slate-800/50 p-3 rounded-xl border border-slate-800">
+              <span class="text-[10px] text-amber-400 font-semibold uppercase tracking-wider block mb-1">1. Surface Switch</span>
+              <p class="text-[11px] text-slate-300 leading-normal">
+                Mounted directly onto the outer wall surface on a wooden/PVC junction box. Used in exposed surface conduit wiring (PVC/GI pipes) or retrofitting older installations.
+              </p>
+            </div>
+            <div class="bg-slate-800/50 p-3 rounded-xl border border-slate-800">
+              <span class="text-[10px] text-sky-400 font-semibold uppercase tracking-wider block mb-1">2. Flush (Modular) Switch</span>
+              <p class="text-[11px] text-slate-300 leading-normal">
+                Embedded inside a metal or PVC backbox recessed within the brickwork. Only the front faceplate and rocker lever remain flush with the wall surface for aesthetic, sleek architectural design.
+              </p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2">
+            <div class="bg-slate-800/50 p-2.5 rounded-lg border border-slate-800">
+              <span class="text-[10px] text-slate-400 uppercase tracking-wider block mb-0.5">Standard Rating</span>
+              <span class="text-xs font-mono font-semibold text-white">6A / 16A, 240V AC 50Hz</span>
+            </div>
+            <div class="bg-slate-800/50 p-2.5 rounded-lg border border-slate-800">
+              <span class="text-[10px] text-slate-400 uppercase tracking-wider block mb-0.5">Material Body</span>
+              <span class="text-xs font-mono font-semibold text-white">Polycarbonate (Flame Retardant)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 2: SPECS & MECHANICS -->
+        <div id="content-construction" class="tab-content hidden space-y-3.5">
+          <div class="bg-slate-800/40 p-3.5 rounded-xl border border-slate-800">
+            <h3 class="text-[11px] font-semibold text-slate-200 mb-2 flex items-center gap-1.5 uppercase tracking-wider">
+              <i class="fa-solid fa-gears text-sky-400"></i> Internal Mechanical Assembly
+            </h3>
+            <ul class="space-y-2 text-xs text-slate-300">
+              <li class="flex items-start gap-2 bg-slate-800/50 p-2 rounded border border-slate-800">
+                <span class="text-amber-400 font-bold">•</span>
+                <div><strong>Rocker Mechanism & Detent Spring:</strong> Operates on a spring-loaded pivot blade that snaps cleanly into position to prevent arcing when contacts close.</div>
+              </li>
+              <li class="flex items-start gap-2 bg-slate-800/50 p-2 rounded border border-slate-800">
+                <span class="text-sky-400 font-bold">•</span>
+                <div><strong>Silver-Cadmium Contact Tips:</strong> High conductivity silver alloy contacts resist pitting and welding under inductive loads (fluorescent ballast, motors).</div>
+              </li>
+              <li class="flex items-start gap-2 bg-slate-800/50 p-2 rounded border border-slate-800">
+                <span class="text-emerald-400 font-bold">•</span>
+                <div><strong>Brass Screw Terminals:</strong> Dual captive screw terminals at the rear accept 1.5mm² to 2.5mm² copper wires for Phase Line input and Switched Phase output.</div>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- SECTION 3: DIPLOMA LAB PRACTICAL -->
+        <div id="content-lab" class="tab-content hidden space-y-3.5">
+          <div class="bg-slate-800/40 p-3.5 rounded-xl border border-slate-800">
+            <h3 class="text-[11px] font-semibold text-slate-200 mb-2 flex items-center gap-1.5 uppercase tracking-wider">
+              <i class="fa-solid fa-flask text-emerald-400"></i> Diploma Practical: Single Lamp Control Wiring
+            </h3>
+            <div class="space-y-2.5 text-xs text-slate-300">
+              <div class="p-2.5 rounded bg-slate-800/60 border border-slate-700/50">
+                <span class="font-semibold text-amber-400 block mb-1">Standard Connection Rules</span>
+                In Electrical Wiring Practical Labs:
+                <ol class="list-decimal list-inside mt-1.5 space-y-1 text-[11px] text-slate-400">
+                  <li><strong>Phase Wire (Live):</strong> MUST always connect to the input terminal of the switch. Never switch the Neutral wire.</li>
+                  <li><strong>Switched Phase (Load):</strong> Runs from the output switch terminal directly to the lamp holder.</li>
+                  <li><strong>Neutral Wire:</strong> Runs directly from the distribution board/junction box to the lamp holder.</li>
+                </ol>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 4: SCHEMATIC SYMBOL -->
+        <div id="content-symbol" class="tab-content hidden space-y-3.5">
+          <div class="bg-slate-800/40 p-3.5 rounded-xl border border-slate-800 text-center flex flex-col items-center justify-center min-h-[140px]">
+            <div class="w-full max-w-[280px] h-36 flex items-center justify-center bg-slate-950 rounded-lg border border-slate-800 p-2">
+              <!-- Single Pole One-Way Wall Switch Schematic SVG -->
+              <svg viewBox="0 0 200 100" class="w-48 h-24 stroke-sky-400 fill-none stroke-2">
+                <!-- Live Line In -->
+                <line x1="20" y1="50" x2="70" y2="50" stroke="#f59e0b" stroke-width="2.5" />
+                <text x="15" y="40" fill="#f59e0b" font-size="9" stroke="none" font-family="monospace">Phase (L)</text>
+                
+                <!-- Fixed Contact Terminal -->
+                <circle cx="70" cy="50" r="4" class="fill-sky-400" />
+                
+                <!-- Moving Rocker Blade (Open Position) -->
+                <line x1="70" y1="50" x2="125" y2="28" stroke="#38bdf8" stroke-width="2.5" />
+                
+                <!-- Output Contact Terminal -->
+                <circle cx="130" cy="50" r="4" class="fill-sky-400" />
+                
+                <!-- Switched Phase Out -->
+                <line x1="130" y1="50" x2="180" y2="50" stroke="#10b981" stroke-width="2.5" />
+                <text x="135" y="40" fill="#10b981" font-size="9" stroke="none" font-family="monospace">Load Out</text>
+              </svg>
+            </div>
+            <p class="text-[10px] text-slate-400 mt-2 font-mono">Standard IEC 60617 One-Way Wall Switch Schematic Symbol</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- SLIDE-OVER DRAWER MENU (Right Side) -->
+  <div id="menu-backdrop" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-40 opacity-0 pointer-events-none transition-opacity duration-300"></div>
+
+  <aside id="drawer-menu" class="fixed top-0 right-0 bottom-0 w-80 max-w-[85vw] bg-slate-900 border-l border-slate-800 z-50 transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col shadow-2xl">
+    <!-- Drawer Header -->
+    <div class="p-3.5 border-b border-slate-800 flex items-center justify-between bg-slate-900/90">
+      <div class="flex items-center gap-2">
+        <i class="fa-solid fa-list-ul text-sky-400"></i>
+        <h2 class="font-bold text-white text-sm">All Switches (14)</h2>
+      </div>
+      <button id="close-menu-btn" aria-label="Close Navigation Menu" class="w-8 h-8 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center transition">
+        <i class="fa-solid fa-xmark text-base"></i>
+      </button>
+    </div>
+
+    <!-- Search Bar -->
+    <div class="p-3 border-b border-slate-800 bg-slate-950/40">
+      <div class="relative">
+        <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-xs text-slate-500"></i>
+        <input type="text" id="menu-search" placeholder="Search switch type..." class="w-full bg-slate-800 text-slate-200 text-xs rounded-lg pl-8 pr-3 py-2 border border-slate-700 focus:outline-none focus:border-sky-500">
+      </div>
+    </div>
+
+    <!-- Switch Navigation List -->
+    <div class="flex-1 overflow-y-auto p-2 space-y-1" id="drawer-switch-list">
+      <!-- Dynamically Rendered -->
+    </div>
+
+    <!-- Drawer Footer -->
+    <div class="p-3 border-t border-slate-800 text-center text-[10px] text-slate-500 font-mono">
+      VoltVerse &middot; Electrical Switches
+    </div>
+  </aside>
+
+  <nav class="app-nav" aria-label="Main"><a href="index.html" class="nav-tab"><i class="fa-solid fa-house"></i><span>Home</span></a><a href="switches.html" class="nav-tab" aria-current="page"><i class="fa-solid fa-toggle-on"></i><span>Switches</span></a><a href="index.html#library" class="nav-tab"><i class="fa-solid fa-layer-group"></i><span>Library</span></a></nav>
+  <script src="js/switches-data.js"></script>
+  <script src="js/switches-engine.js"></script>
+  <script src="js/switches-nav.js"></script>
+  <!-- JAVASCRIPT LOGIC -->
+  <script>// Three.js Scene Variables
+    let scene, camera, renderer, controls;
+    let surfaceGroup, flushGroup, rockerMesh;
+    let isFlushMount = true; // Default: Flush modular switch
+    let isSwitchOn = false;
+    let isWireframe = false;
+    let autoRotate = true;
+
+    // Materials Palette
+    const mats = {
+      faceplateWhite: new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.25, metalness: 0.05 }),
+      rockerWhite: new THREE.MeshStandardMaterial({ color: 0xe2e8f0, roughness: 0.3, metalness: 0.05 }),
+      surfaceBoxPVC: new THREE.MeshStandardMaterial({ color: 0xcbcfd6, roughness: 0.5, metalness: 0.0 }),
+      wallTileBacking: new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.8, metalness: 0.1 }),
+      conduitPipe: new THREE.MeshStandardMaterial({ color: 0x64748b, roughness: 0.4, metalness: 0.2 }),
+      brassTerminal: new THREE.MeshStandardMaterial({ color: 0xf59e0b, roughness: 0.3, metalness: 0.8 }),
+      screwSteel: new THREE.MeshStandardMaterial({ color: 0x94a3b8, roughness: 0.2, metalness: 0.9 }),
+      indicatorOn: new THREE.MeshStandardMaterial({ color: 0x10b981, roughness: 0.2, metalness: 0.1, emissive: 0x059669, emissiveIntensity: 0.9 }),
+      indicatorOff: new THREE.MeshStandardMaterial({ color: 0xef4444, roughness: 0.2, metalness: 0.1, emissive: 0xb91c1c, emissiveIntensity: 0.7 })
+    };
+
+    function initThree() {
+      const E = SWE.create({ camera: [0, 2.5, 4.5], gridY: -1.2, maxDistance: 8, minDistance: 1.5 });
+      scene = E.scene; camera = E.camera; renderer = E.renderer; controls = E.controls;
+      buildSurfaceAndFlushModels();
+      SWE.start(function (dt) {
+        // Smooth Rocker Pivot Animation on X-Axis
+      if (rockerMesh) {
+        const targetAngle = isSwitchOn ? -0.22 : 0.22; // Tilt top in for ON, tilt bottom in for OFF
+        rockerMesh.rotation.x += (targetAngle - rockerMesh.rotation.x) * SWE.k(0.2);
+      }
+      }, function () { return autoRotate; });
+    }
+
+    // Build 3D Models for Surface Mount Box and Flush Mount Modular Switch
+    function buildSurfaceAndFlushModels() {
+      // 1. FLUSH MOUNT MODEL GROUP
+      flushGroup = new THREE.Group();
+
+      // Recessed Wall Panel Tile
+      const wallGeo = new THREE.BoxGeometry(3.6, 3.6, 0.15);
+      const wallMesh = new THREE.Mesh(wallGeo, mats.wallTileBacking);
+      wallMesh.position.z = -0.1;
+      flushGroup.add(wallMesh);
+
+      // Modular Switch Faceplate
+      const faceGeo = new THREE.BoxGeometry(2.4, 2.4, 0.2);
+      const faceplate = new THREE.Mesh(faceGeo, mats.faceplateWhite);
+      flushGroup.add(faceplate);
+
+      // Beveled Frame Trim
+      const trimGeo = new THREE.BoxGeometry(2.5, 2.5, 0.08);
+      const trim = new THREE.Mesh(trimGeo, mats.faceplateWhite);
+      trim.position.z = -0.05;
+      flushGroup.add(trim);
+
+      // Modular Bezel Inner Cutout Border
+      const bezelGeo = new THREE.BoxGeometry(1.2, 1.6, 0.22);
+      const bezel = new THREE.Mesh(bezelGeo, mats.wallTileBacking);
+      bezel.position.z = 0.02;
+      flushGroup.add(bezel);
+
+      // Pivot Rocker Actuator Lever
+      const rockerGeo = new THREE.BoxGeometry(1.0, 1.4, 0.24);
+      rockerMesh = new THREE.Mesh(rockerGeo, mats.rockerWhite);
+      rockerMesh.position.set(0, 0, 0.12);
+      flushGroup.add(rockerMesh);
+
+      // Red Indicator Dot on Rocker
+      const dotGeo = new THREE.CylinderGeometry(0.06, 0.06, 0.26, 16);
+      dotGeo.rotateX(Math.PI / 2);
+      const dotMesh = new THREE.Mesh(dotGeo, mats.indicatorOff);
+      dotMesh.position.set(0, -0.45, 0.12);
+      rockerMesh.add(dotMesh);
+
+      scene.add(flushGroup);
+
+      // 2. SURFACE MOUNT MODEL GROUP
+      surfaceGroup = new THREE.Group();
+      surfaceGroup.position.set(0, 0, 0);
+
+      // Surface PVC Backing Box
+      const boxGeo = new THREE.BoxGeometry(2.5, 2.5, 1.2);
+      const boxMesh = new THREE.Mesh(boxGeo, mats.surfaceBoxPVC);
+      boxMesh.position.z = -0.6;
+      surfaceGroup.add(boxMesh);
+
+      // Top PVC Conduit Entry Pipe
+      const pipeGeo = new THREE.CylinderGeometry(0.2, 0.2, 1.2, 16);
+      const pipeMesh = new THREE.Mesh(pipeGeo, mats.conduitPipe);
+      pipeMesh.position.set(0, 1.8, -0.6);
+      surfaceGroup.add(pipeMesh);
+
+      // Front Faceplate screwed onto Surface Box
+      const sFaceGeo = new THREE.BoxGeometry(2.4, 2.4, 0.18);
+      const sFace = new THREE.Mesh(sFaceGeo, mats.faceplateWhite);
+      sFace.position.z = 0.05;
+      surfaceGroup.add(sFace);
+
+      // Mounting Corner Screws
+      const sScrewGeo = new THREE.CylinderGeometry(0.05, 0.05, 0.2, 12);
+      sScrewGeo.rotateX(Math.PI / 2);
+      
+      const sc1 = new THREE.Mesh(sScrewGeo, mats.screwSteel);
+      sc1.position.set(-0.9, 0.9, 0.12);
+      surfaceGroup.add(sc1);
+
+      const sc2 = new THREE.Mesh(sScrewGeo, mats.screwSteel);
+      sc2.position.set(0.9, 0.9, 0.12);
+      surfaceGroup.add(sc2);
+
+      surfaceGroup.visible = false; // Initially set to Flush Mode
+      scene.add(surfaceGroup);
+    }
+
+    // Toggle Rocker Switch ON/OFF State
+    function toggleSwitchState() {
+      isSwitchOn = !isSwitchOn;
+      const btnText = document.getElementById('switch-btn-text');
+      const badge = document.getElementById('circuit-status-badge');
+
+      if (isSwitchOn) {
+        btnText.innerText = "Action: Press OFF";
+        badge.className = "px-2 py-0.5 text-[10px] rounded-full border font-mono font-semibold bg-emerald-500/10 text-emerald-400 border-emerald-500/30";
+        badge.innerText = "STATE: CLOSED (ON)";
+      } else {
+        btnText.innerText = "Action: Press ON";
+        badge.className = "px-2 py-0.5 text-[10px] rounded-full border font-mono font-semibold bg-red-500/10 text-red-400 border-red-500/30";
+        badge.innerText = "STATE: OPEN (OFF)";
+      }
+    }
+
+    // Switch Mount Variant (Flush Modular vs Surface PVC Box)
+    function toggleMountVariant() {
+      isFlushMount = !isFlushMount;
+      const mountLabel = document.getElementById('mount-type-label');
+
+      if (isFlushMount) {
+        flushGroup.visible = true;
+        surfaceGroup.visible = false;
+        mountLabel.innerText = "Mount: Flush Modular";
+      } else {
+        flushGroup.visible = false;
+        surfaceGroup.visible = true;
+        mountLabel.innerText = "Mount: Surface Box";
+      }
+    }
+
+
+
+    // Viewport Controls
+    document.getElementById('btn-reset').addEventListener('click', () => {
+      SWE.reset();
+    });
+
+    document.getElementById('btn-autorotate').addEventListener('click', (e) => {
+      autoRotate = !autoRotate;
+      e.currentTarget.classList.toggle('bg-sky-500/20');
+      e.currentTarget.classList.toggle('text-sky-400');
+    });
+
+    document.getElementById('btn-wireframe').addEventListener('click', (e) => {
+      isWireframe = !isWireframe;
+      scene.traverse((child) => {
+        if (child.isMesh && child.material) {
+          child.material.wireframe = isWireframe;
+        }
+      });
+      e.currentTarget.classList.toggle('bg-sky-500/20');
+      e.currentTarget.classList.toggle('text-sky-400');
+    });
+
+    document.getElementById('btn-switch-variant').addEventListener('click', toggleMountVariant);
+    document.getElementById('btn-toggle-state').addEventListener('click', toggleSwitchState);
+
+    // Tab Switching Logic
+    const tabs = ['overview', 'construction', 'lab', 'symbol'];
+    tabs.forEach(tabKey => {
+      document.getElementById(`tab-${tabKey}`).addEventListener('click', (e) => {
+        tabs.forEach(k => {
+          document.getElementById(`content-${k}`).classList.add('hidden');
+          const tabBtn = document.getElementById(`tab-${k}`);
+          tabBtn.classList.remove('text-sky-400', 'border-b-2', 'border-sky-400');
+          tabBtn.classList.add('text-slate-400');
+        });
+
+        document.getElementById(`content-${tabKey}`).classList.remove('hidden');
+        e.currentTarget.classList.remove('text-slate-400');
+        e.currentTarget.classList.add('text-sky-400', 'border-b-2', 'border-sky-400');
+      });
+    });
+
+    // Window Load Initialization
+    window.onload = function() {
+      try { initThree(); } catch (err) {
+        console.error('3D view unavailable:', err);
+        const cc = document.getElementById('canvas-container');
+        if (cc) cc.insertAdjacentHTML('beforeend', '<div class="absolute inset-0 flex items-center justify-center p-4 text-center text-xs text-slate-400">The 3D view needs WebGL, which is not available on this device. The description tabs below still work.</div>');
+      }
+      SWMenu.init('flush');
+    };
+  </script>
+</body>
+</html>

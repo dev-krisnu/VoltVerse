@@ -21,6 +21,12 @@ window.VOLTVERSE_LIBRARY = [
       { title: '3D Induction Motor', href: 'induction-motor.html', tag: '3D model', icon: 'fa-fan',
         desc: 'A cast-iron TEFC motor cut in half: squirrel cage and slip ring constructions, exploded view and the rotating field.' }
     ] },
+  { id: 'switches', title: 'Switches', accent: 'amber', icon: 'fa-toggle-on',
+    blurb: 'Fourteen interactive switch labs, from the knife switch to the MCB.',
+    tools: [
+      { title: 'Electrical Switches', href: 'switches.html', tag: '14 3D labs', icon: 'fa-toggle-on',
+        desc: 'Knife, toggle, push button, rotary, float, limit, centrifugal, SPST, SPDT, DPST, DPDT, flush, intermediate and MCB, each with a 3D model and a circuit symbol.' }
+    ] },
   { id: 'practice', title: 'Practice', accent: 'sky', icon: 'fa-graduation-cap',
     blurb: 'Check what you remember after exploring.',
     tools: [

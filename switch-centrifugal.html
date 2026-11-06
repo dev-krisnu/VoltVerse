@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-950 text-slate-100">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Centrifugal Switch | Electrical Switches | VoltVerse</title>
+  <meta name="description" content="Shaft-mounted speed-sensitive automatic starter winding disconnector">
+
+  <meta name="theme-color" content="#020617">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="vendor/fonts/inter-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="css/tailwind.css">
+  <link rel="stylesheet" href="css/app.css">
+  <link rel="stylesheet" href="css/fa/fa.css">
+  <script src="vendor/three.min.js"></script>
+  <script src="vendor/OrbitControls.js"></script>
+  <style>
+    /* Custom Smooth Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(15, 23, 42, 0.6);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(245, 158, 11, 0.3);
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(245, 158, 11, 0.6);
+    }
+    canvas {
+      outline: none;
+    }
+  </style>
+<style>.vp-h{height:45vh;height:45dvh}@media (min-width:1024px){.vp-h{height:100%}}html,body{height:100%}body{height:100vh;height:100dvh}.app-nav{position:relative}</style>
+</head>
+<body class="h-full flex flex-col font-sans antialiased overflow-x-hidden bg-slate-950">
+
+  <!-- TOP HEADER NAVBAR -->
+  <header class="h-14 lg:h-16 border-b border-slate-800 bg-slate-900/90 backdrop-blur-md px-4 lg:px-8 flex items-center justify-between z-30 sticky top-0 shrink-0">
+    <!-- Brand Logo & Title -->
+    <div class="flex items-center space-x-3">
+      <a href="index.html" aria-label="VoltVerse home" class="h-9 w-9 lg:h-10 lg:w-10 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-white shadow-lg shadow-cyan-500/20"><i class="fa-solid fa-bolt text-lg lg:text-xl"></i></a>
+      <div>
+        <h1 class="text-base lg:text-lg font-bold tracking-tight text-white flex items-center gap-2">
+          <a href="switches.html" class="hover:text-cyan-300 transition">Switches</a> <span class="text-[10px] lg:text-xs px-2 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/30 font-mono">#7 of 14</span>
+        </h1>
+        <p class="text-[11px] text-slate-400 hidden sm:block">VoltVerse: interactive 3D electrical switches</p>
+      </div>
+    </div>
+
+    <!-- Right Controls / Hamburger Menu Button -->
+    <div class="flex items-center gap-3">
+      <div class="hidden md:flex items-center text-xs text-slate-400 bg-slate-800/80 px-3 py-1 rounded-lg border border-slate-700">
+        <span class="inline-block w-2 h-2 rounded-full bg-amber-400 animate-pulse mr-2"></span>
+        <span>Switch #7: Centrifugal Switch</span>
+      </div>
+
+      <!-- Hamburger Menu Button (Square with 3 lines) -->
+      <button id="menu-btn" aria-label="Toggle Navigation Menu" class="w-10 h-10 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 flex items-center justify-center transition focus:outline-none focus:ring-2 focus:ring-amber-500">
+        <i class="fa-solid fa-bars text-lg"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER (Viewport + Study Info Panel) -->
+  <main class="flex-1 flex flex-col lg:flex-row overflow-hidden relative">
+
+    <!-- 3D VIEWPORT CONTAINER -->
+    <div class="w-full lg:w-7/12 xl:w-2/3 vp-h lg:h-full relative bg-slate-950 flex flex-col border-b lg:border-b-0 lg:border-r border-slate-800 shrink-0 lg:shrink">
+      
+      <!-- Canvas Container -->
+      <div id="canvas-container" class="w-full flex-1 relative overflow-hidden cursor-grab active:cursor-grabbing">
+        <canvas id="three-canvas" class="w-full h-full block"></canvas>
+
+        <!-- Floating View Controls & Mechanical Actuator Bar -->
+        <div class="absolute bottom-3 left-3 right-3 flex items-center justify-between pointer-events-none z-10">
+          <div class="flex items-center gap-1.5 bg-slate-900/85 backdrop-blur-md p-1.5 rounded-xl border border-slate-800 pointer-events-auto shadow-xl">
+            <button id="btn-reset" title="Reset Camera View" class="w-8 h-8 rounded-lg hover:bg-slate-800 text-slate-300 hover:text-white flex items-center justify-center transition">
+              <i class="fa-solid fa-rotate text-xs"></i>
+            </button>
+            <button id="btn-autorotate" title="Toggle Auto Rotation" class="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-400 hover:bg-amber-500/30 flex items-center justify-center transition">
+              <i class="fa-solid fa-arrows-spin text-xs"></i>
+            </button>
+            <button id="btn-wireframe" title="Toggle Wireframe Mode" class="w-8 h-8 rounded-lg hover:bg-slate-800 text-slate-300 hover:text-white flex items-center justify-center transition">
+              <i class="fa-solid fa-border-all text-xs"></i>
+            </button>
+            <button id="btn-toggle-motor" title="Toggle Motor Speed Acceleration" class="px-3 h-8 rounded-lg bg-amber-500/20 border border-amber-500/40 text-amber-400 hover:bg-amber-500/30 text-xs font-semibold flex items-center gap-1.5 transition">
+              <i class="fa-solid fa-gauge-high text-xs"></i> <span id="motor-btn-text">Start Motor (Accelerate)</span>
+            </button>
+          </div>
+
+          <div class="hidden sm:flex items-center gap-2 text-[11px] text-slate-400 bg-slate-900/70 backdrop-blur-md px-3 py-1.5 rounded-xl border border-slate-800">
+            <i class="fa-solid fa-arrows-up-down-left-right text-amber-400"></i>
+            <span>Drag to rotate | Scroll to zoom</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DESCRIPTION & DIPLOMA TECHNICAL PANEL (Scrollable) -->
+    <div class="w-full lg:w-5/12 xl:w-1/3 flex-1 lg:h-full bg-slate-900 flex flex-col overflow-hidden min-h-0">
+      
+      <!-- Panel Header / Compact Title Sub-header -->
+      <div class="p-3.5 border-b border-slate-800 bg-slate-900/95 backdrop-blur shrink-0">
+        <div class="flex items-center justify-between mb-1">
+          <span class="px-2 py-0.5 text-[10px] font-semibold rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20">
+            Speed-Actuated Mechanical Switch
+          </span>
+          <span id="circuit-status-badge" class="px-2 py-0.5 text-[10px] rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-mono font-semibold">
+            0% SPEED: CLOSED (START WINDING ACTIVE)
+          </span>
+        </div>
+        
+        <!-- Compact Title -->
+        <h2 class="text-sm md:text-base font-bold text-white tracking-tight">Switch #7: Centrifugal Switch</h2>
+        <p class="text-[11px] text-slate-400 mt-0.5">Shaft-mounted speed-sensitive automatic starter winding disconnector</p>
+
+        <!-- Navigation Tabs -->
+        <div class="flex border-b border-slate-800 mt-2.5 -mb-3 gap-3 text-xs font-medium">
+          <button id="tab-overview" class="pb-2 text-amber-400 border-b-2 border-amber-400 transition tab-btn">Overview</button>
+          <button id="tab-construction" class="pb-2 text-slate-400 hover:text-slate-200 transition tab-btn">Construction</button>
+          <button id="tab-lab" class="pb-2 text-slate-400 hover:text-slate-200 transition tab-btn">Diploma Lab</button>
+          <button id="tab-symbol" class="pb-2 text-slate-400 hover:text-slate-200 transition tab-btn">Schematic Symbol</button>
+        </div>
+      </div>
+
+      <!-- Tab Content Area (Smooth Scrollable) -->
+      <div class="flex-1 overflow-y-auto p-4 space-y-4 scroll-smooth">
+        
+        <!-- SECTION 1: OVERVIEW -->
+        <div id="content-overview" class="tab-content space-y-3.5">
+          <div class="bg-slate-800/40 p-3.5 rounded-xl border border-slate-800/80">
+            <h3 class="text-[11px] font-semibold uppercase tracking-wider text-slate-300 mb-1.5 flex items-center gap-1.5">
+              <i class="fa-solid fa-circle-info text-amber-400"></i> Operational Purpose
+            </h3>
+            <p class="text-xs text-slate-300 leading-relaxed">
+              A <strong>Centrifugal Switch</strong> is an automatic, speed-sensitive electromechanical device mounted on the rotor shaft of single-phase induction motors (such as split-phase or capacitor-start motors). Its primary function is to keep the high-torque auxiliary (starting) winding energized at standstill and disconnect it once the rotor reaches approximately <strong>75% to 80% of rated synchronous speed</strong>.
+            </p>
+          </div>
+
+          <div class="bg-slate-800/40 p-3.5 rounded-xl border border-slate-800/80">
+            <h3 class="text-[11px] font-semibold uppercase tracking-wider text-slate-300 mb-1.5 flex items-center gap-1.5">
+              <i class="fa-solid fa-atom text-amber-400"></i> Centrifugal Force Physics Principle
+            </h3>
+            <p class="text-xs text-slate-300 leading-relaxed mb-2">
+              The switch operates based on classical rotational dynamics:
+            </p>
+            <div class="p-2.5 rounded bg-slate-950 border border-slate-800 font-mono text-[11px] text-amber-400 text-center">
+              F<sub>c</sub> = m · ω<sup>2</sup> · r
+            </div>
+            <p class="text-[11px] text-slate-400 mt-2 leading-relaxed">
+              As motor shaft angular velocity (&omega;) increases, centrifugal force overcomes the holding spring tension, flinging flyweights outward and sliding the contact plate back to open electrical contacts.
+            </p>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2">
+            <div class="bg-slate-800/50 p-2.5 rounded-lg border border-slate-800">
+              <span class="text-[10px] text-slate-400 uppercase tracking-wider block mb-0.5">Cut-off Threshold</span>
+              <span class="text-xs font-mono font-semibold text-white">75% - 80% N<sub>s</sub></span>
+            </div>
+            <div class="bg-slate-800/50 p-2.5 rounded-lg border border-slate-800">
+              <span class="text-[10px] text-slate-400 uppercase tracking-wider block mb-0.5">Contact Configuration</span>
+              <span class="text-xs font-mono font-semibold text-white">Normally Closed (At Rest)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 2: CONSTRUCTION -->
+        <div id="content-construction" class="tab-content hidden space-y-3.5">
+          <div class="bg-slate-800/40 p-3.5 rounded-xl border border-slate-800">
+            <h3 class="text-[11px] font-semibold text-slate-200 mb-2 flex items-center gap-1.5 uppercase tracking-wider">
+              <i class="fa-solid fa-gears text-amber-400"></i> Assembly & Structural Parts
+            </h3>
+            <ul class="space-y-2 text-xs text-slate-300">
+              <li class="flex items-start gap-2 bg-slate-800/50 p-2 rounded border border-slate-800">
+                <span class="text-amber-400 font-bold">•</span>
+                <div><strong>Rotating Governor Mechanism:</strong> Steel collar keyed to motor rotor shaft carrying hinged flyweights and calibrated tension springs.</div>
+              </li>
+              <li class="flex items-start gap-2 bg-slate-800/50 p-2 rounded border border-slate-800">
+                <span class="text-amber-400 font-bold">•</span>
+                <div><strong>Spring-Loaded Flyweights:</strong> Calibrated metal counterweights that pivot radially outward under centrifugal acceleration.</div>
+              </li>
+              <li class="flex items-start gap-2 bg-slate-800/50 p-2 rounded border border-slate-800">
+                <span class="text-amber-400 font-bold">•</span>
+                <div><strong>Sliding Contact Spool / Collar:</strong> Bakelite insulating cylinder sliding axially along the shaft to push or release contact arms.</div>
+              </li>
+              <li class="flex items-start gap-2 bg-slate-800/50 p-2 rounded border border-slate-800">
+                <span class="text-amber-400 font-bold">•</span>
+                <div><strong>Stationary Contact Plate:</strong> Fixed housing mounted inside motor end-bell carrying silver-alloy contact points wired to auxiliary winding.</div>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- SECTION 3: DIPLOMA LAB PRACTICAL -->
+        <div id="content-lab" class="tab-content hidden space-y-3.5">
+          <div class="bg-slate-800/40 p-3.5 rounded-xl border border-slate-800">
+            <h3 class="text-[11px] font-semibold text-slate-200 mb-2 flex items-center gap-1.5 uppercase tracking-wider">
+              <i class="fa-solid fa-flask text-emerald-400"></i> Laboratory Experiments & Fault Diagnosis
+            </h3>
+            <div class="space-y-2.5 text-xs text-slate-300">
+              <div class="p-2.5 rounded bg-slate-800/60 border border-slate-700/50">
+                <span class="font-semibold text-amber-400 block mb-1">Capacitor-Start Motor Test Routine:</span>
+                Observe motor current spike during startup. Verify sharp "click" sound at ~75% speed indicating centrifugal switch opening and drop in line current.
+              </div>
+              <div class="p-2.5 rounded bg-slate-800/60 border border-slate-700/50">
+                <span class="font-semibold text-rose-400 block mb-1">Fault 1: Contacts Stuck CLOSED</span>
+                Starting winding and capacitor remain continuously energized, causing severe overheating, high humming noise, and winding burnout within minutes.
+              </div>
+              <div class="p-2.5 rounded bg-slate-800/60 border border-slate-700/50">
+                <span class="font-semibold text-amber-300 block mb-1">Fault 2: Contacts Stuck OPEN</span>
+                Motor fails to produce starting torque, hums loudly without rotating, and trips main line circuit breaker / thermal overload.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 4: SCHEMATIC SYMBOL -->
+        <div id="content-symbol" class="tab-content hidden space-y-3.5">
+          <div class="bg-slate-800/40 p-3.5 rounded-xl border border-slate-800 text-center flex flex-col items-center justify-center min-h-[140px]">
+            <div class="w-full max-w-[260px] h-36 flex items-center justify-center bg-slate-950 rounded-lg border border-slate-800 p-2">
+              <!-- Single Phase Motor Wiring Schematic SVG -->
+              <svg viewBox="0 0 200 100" class="w-48 h-24 stroke-amber-400 fill-none stroke-2">
+                <!-- Main Line Terminals -->
+                <line x1="10" y1="20" x2="40" y2="20" />
+                <line x1="10" y1="80" x2="40" y2="80" />
+
+                <!-- Main Winding Branch -->
+                <path d="M 40 20 L 70 20 Q 80 10 90 20 Q 100 30 110 20 Q 120 10 130 20 L 160 20 L 160 80 L 10 80" stroke="#38bdf8" fill="none" />
+                <text x="85" y="12" fill="#38bdf8" font-size="8" stroke="none">Main Winding</text>
+
+                <!-- Starting Winding Branch -->
+                <line x1="40" y1="20" x2="40" y2="50" />
+                <path d="M 40 50 L 55 50 Q 65 40 75 50 Q 85 60 95 50 L 110 50" stroke="#f59e0b" fill="none" />
+                <text x="50" y="42" fill="#f59e0b" font-size="8" stroke="none">Start Winding</text>
+
+                <!-- Capacitor -->
+                <line x1="110" y1="42" x2="110" y2="58" stroke="#a855f7" />
+                <line x1="116" y1="42" x2="116" y2="58" stroke="#a855f7" />
+                <line x1="116" y1="50" x2="135" y2="50" stroke="#f59e0b" />
+
+                <!-- Centrifugal Switch Contact Symbol -->
+                <circle cx="138" cy="50" r="2" fill="#f59e0b" />
+                <line x1="138" y1="50" x2="155" y2="40" stroke="#f59e0b" stroke-width="2" />
+                <!-- Centrifugal Arrow Indicator -->
+                <path d="M 148 42 Q 155 42 155 35" stroke="#fbbf24" fill="none" stroke-dasharray="1,1" />
+                <circle cx="160" cy="50" r="2" fill="#f59e0b" />
+                <line x1="160" y1="50" x2="160" y2="80" />
+
+                <text x="125" y="66" fill="#fbbf24" font-size="7" stroke="none">Centrifugal Sw.</text>
+              </svg>
+            </div>
+            <p class="text-[10px] text-slate-400 mt-2 font-mono">Single-Phase Motor Circuit Diagram with Centrifugal Switch (CS)</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- SLIDE-OVER DRAWER MENU (Right Side) -->
+  <div id="menu-backdrop" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-40 opacity-0 pointer-events-none transition-opacity duration-300"></div>
+
+  <aside id="drawer-menu" class="fixed top-0 right-0 bottom-0 w-80 max-w-[85vw] bg-slate-900 border-l border-slate-800 z-50 transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col shadow-2xl">
+    <!-- Drawer Header -->
+    <div class="p-3.5 border-b border-slate-800 flex items-center justify-between bg-slate-900/90">
+      <div class="flex items-center gap-2">
+        <i class="fa-solid fa-list-ul text-amber-400"></i>
+        <h2 class="font-bold text-white text-sm">All Switches (14)</h2>
+      </div>
+      <button id="close-menu-btn" aria-label="Close Navigation Menu" class="w-8 h-8 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center transition">
+        <i class="fa-solid fa-xmark text-base"></i>
+      </button>
+    </div>
+
+    <!-- Search Bar -->
+    <div class="p-3 border-b border-slate-800 bg-slate-950/40">
+      <div class="relative">
+        <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-xs text-slate-500"></i>
+        <input type="text" id="menu-search" placeholder="Search switch type..." class="w-full bg-slate-800 text-slate-200 text-xs rounded-lg pl-8 pr-3 py-2 border border-slate-700 focus:outline-none focus:border-amber-500">
+      </div>
+    </div>
+
+    <!-- Switch Navigation List -->
+    <div class="flex-1 overflow-y-auto p-2 space-y-1" id="drawer-switch-list">
+      <!-- Dynamically Rendered -->
+    </div>
+
+    <!-- Drawer Footer -->
+    <div class="p-3 border-t border-slate-800 text-center text-[10px] text-slate-500 font-mono">
+      VoltVerse &middot; Electrical Switches
+    </div>
+  </aside>
+
+  <nav class="app-nav" aria-label="Main"><a href="index.html" class="nav-tab"><i class="fa-solid fa-house"></i><span>Home</span></a><a href="switches.html" class="nav-tab" aria-current="page"><i class="fa-solid fa-toggle-on"></i><span>Switches</span></a><a href="index.html#library" class="nav-tab"><i class="fa-solid fa-layer-group"></i><span>Library</span></a></nav>
+  <script src="js/switches-data.js"></script>
+  <script src="js/switches-engine.js"></script>
+  <script src="js/switches-nav.js"></script>
+  <!-- JAVASCRIPT LOGIC -->
+  <script>// Three.js Scene Variables
+    let scene, camera, renderer, controls;
+    let shaftGroup, governorGroup, flyweightLeft, flyweightRight, slidingSpool;
+    let stationaryContactLeft, stationaryContactRight;
+    let isMotorRunning = false;
+    let currentRPMSpeed = 0;
+    let isWireframe = false;
+    let autoRotate = true;
+
+    // Materials Palette
+    const mats = {
+      shaftSteel: new THREE.MeshStandardMaterial({ color: 0x94a3b8, roughness: 0.2, metalness: 0.9 }),
+      hubCast: new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.5, metalness: 0.6 }),
+      weightBrass: new THREE.MeshStandardMaterial({ color: 0xd97706, roughness: 0.3, metalness: 0.8 }),
+      springGold: new THREE.MeshStandardMaterial({ color: 0xf59e0b, roughness: 0.3, metalness: 0.9 }),
+      spoolBakelite: new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.6, metalness: 0.2 }),
+      contactCopper: new THREE.MeshStandardMaterial({ color: 0xb45309, roughness: 0.2, metalness: 0.9 }),
+      housingFrame: new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.7, metalness: 0.3, wireframe: false })
+    };
+
+    function initThree() {
+      const E = SWE.create({ camera: [3.8, 2.2, 4.2], gridY: -1.4, maxDistance: 10, minDistance: 1.8 });
+      scene = E.scene; camera = E.camera; renderer = E.renderer; controls = E.controls;
+      buildCentrifugalSwitchModel();
+      SWE.start(function (dt) {
+        // Speed Acceleration / Deceleration Loop
+      if (isMotorRunning) {
+        if (currentRPMSpeed < 1.0) currentRPMSpeed += 0.015 * SWE.s;
+      } else {
+        if (currentRPMSpeed > 0.0) currentRPMSpeed -= 0.015 * SWE.s;
+      }
+      currentRPMSpeed = Math.max(0, Math.min(1, currentRPMSpeed));
+
+      // Rotate Shaft based on Speed
+      if (shaftGroup) {
+        shaftGroup.rotation.x += currentRPMSpeed * 0.4 * SWE.s;
+      }
+
+      // Calculate Centrifugal Displacement (Occurs at ~75% speed = 0.75 threshold)
+      const centrifugalFactor = Math.max(0, (currentRPMSpeed - 0.25) / 0.75);
+      
+      // Flyweights swing outward
+      if (flyweightLeft && flyweightRight) {
+        flyweightLeft.rotation.z = centrifugalFactor * 0.45;
+        flyweightRight.rotation.z = -centrifugalFactor * 0.45;
+      }
+
+      // Sliding Spool moves axially inward (away from contacts)
+      if (slidingSpool) {
+        slidingSpool.position.x = 0.2 - (centrifugalFactor * 0.35);
+      }
+
+      // Stationary Contacts Spring Open when Spool retracts past 75% speed
+      const isSwitchOpen = currentRPMSpeed >= 0.75;
+      if (stationaryContactLeft && stationaryContactRight) {
+        const contactAngle = isSwitchOpen ? 0.2 : -0.15;
+        stationaryContactLeft.rotation.z = contactAngle;
+        stationaryContactRight.rotation.z = -contactAngle;
+      }
+
+      // Update UI Status Badges based on real-time speed threshold
+      const badge = document.getElementById('circuit-status-badge');
+      if (isSwitchOpen) {
+        badge.className = "px-2 py-0.5 text-[10px] rounded-full border font-mono font-semibold bg-rose-500/10 text-rose-400 border-rose-500/30";
+        badge.innerText = `${Math.round(currentRPMSpeed * 100)}% SPEED: OPEN (START WINDING CUT OFF)`;
+      } else {
+        badge.className = "px-2 py-0.5 text-[10px] rounded-full border font-mono font-semibold bg-emerald-500/10 text-emerald-400 border-emerald-500/30";
+        badge.innerText = `${Math.round(currentRPMSpeed * 100)}% SPEED: CLOSED (START WINDING ACTIVE)`;
+      }
+      }, function () { return autoRotate; });
+    }
+
+    // Build Centrifugal Switch Model on Rotor Shaft
+    function buildCentrifugalSwitchModel() {
+      const mainGroup = new THREE.Group();
+
+      // 1. Central Rotor Steel Shaft (Horizontally aligned along X-axis)
+      const shaftGeo = new THREE.CylinderGeometry(0.35, 0.35, 4.8, 32);
+      shaftGeo.rotateZ(Math.PI / 2);
+      const shaftMesh = new THREE.Mesh(shaftGeo, mats.shaftSteel);
+      mainGroup.add(shaftMesh);
+
+      // Shaft Group rotates together when motor starts
+      shaftGroup = new THREE.Group();
+
+      // 2. Main Governor Hub Collar (Keyed to Shaft)
+      const hubGeo = new THREE.CylinderGeometry(0.55, 0.55, 0.4, 24);
+      hubGeo.rotateZ(Math.PI / 2);
+      const hubMesh = new THREE.Mesh(hubGeo, mats.hubCast);
+      hubMesh.position.x = -0.8;
+      shaftGroup.add(hubMesh);
+
+      // 3. Hinged Governor Weights (Flyweights) & Springs
+      governorGroup = new THREE.Group();
+
+      // Left Flyweight
+      flyweightLeft = new THREE.Group();
+      flyweightLeft.position.set(-0.8, 0.55, 0);
+      const weightGeoLeft = new THREE.BoxGeometry(0.4, 0.3, 0.5);
+      const weightMeshLeft = new THREE.Mesh(weightGeoLeft, mats.weightBrass);
+      weightMeshLeft.position.set(0, 0.15, 0);
+      flyweightLeft.add(weightMeshLeft);
+      governorGroup.add(flyweightLeft);
+
+      // Right Flyweight (Opposite side for mechanical balance)
+      flyweightRight = new THREE.Group();
+      flyweightRight.position.set(-0.8, -0.55, 0);
+      const weightGeoRight = new THREE.BoxGeometry(0.4, 0.3, 0.5);
+      const weightMeshRight = new THREE.Mesh(weightGeoRight, mats.weightBrass);
+      weightMeshRight.position.set(0, -0.15, 0);
+      flyweightRight.add(weightMeshRight);
+      governorGroup.add(flyweightRight);
+
+      // Extension Springs (Yellow helices between weights)
+      const springGeo = new THREE.CylinderGeometry(0.06, 0.06, 1.1, 12);
+      const spring1 = new THREE.Mesh(springGeo, mats.springGold);
+      spring1.position.set(-0.8, 0, 0.22);
+      shaftGroup.add(spring1);
+
+      const spring2 = new THREE.Mesh(springGeo, mats.springGold);
+      spring2.position.set(-0.8, 0, -0.22);
+      shaftGroup.add(spring2);
+
+      shaftGroup.add(governorGroup);
+
+      // 4. Sliding Bakelite Contact Spool (Moves axially along X-axis under governor push)
+      const spoolGeo = new THREE.CylinderGeometry(0.7, 0.7, 0.6, 32);
+      spoolGeo.rotateZ(Math.PI / 2);
+      slidingSpool = new THREE.Mesh(spoolGeo, mats.spoolBakelite);
+      slidingSpool.position.x = 0.2; // Resting position (pushing contacts CLOSED)
+      shaftGroup.add(slidingSpool);
+
+      // Copper Ring on Spool
+      const ringGeo = new THREE.TorusGeometry(0.72, 0.05, 16, 32);
+      ringGeo.rotateY(Math.PI / 2);
+      const ringMesh = new THREE.Mesh(ringGeo, mats.contactCopper);
+      slidingSpool.add(ringMesh);
+
+      mainGroup.add(shaftGroup);
+
+      // 5. Stationary Contact Plate Assembly (Fixed to motor end-bell, non-rotating)
+      const stationaryGroup = new THREE.Group();
+
+      const plateGeo = new THREE.RingGeometry(0.75, 1.3, 32);
+      plateGeo.rotateY(Math.PI / 2);
+      const plateMesh = new THREE.Mesh(plateGeo, mats.housingFrame);
+      plateMesh.position.x = 0.55;
+      stationaryGroup.add(plateMesh);
+
+      // Stationary Copper Spring Contact Fingers
+      const fingerGeo = new THREE.BoxGeometry(0.5, 0.08, 0.15);
+      
+      stationaryContactLeft = new THREE.Mesh(fingerGeo, mats.contactCopper);
+      stationaryContactLeft.position.set(0.35, 0.68, 0);
+      stationaryContactLeft.rotation.z = -0.15; // Touching spool in rest state
+      stationaryGroup.add(stationaryContactLeft);
+
+      stationaryContactRight = new THREE.Mesh(fingerGeo, mats.contactCopper);
+      stationaryContactRight.position.set(0.35, -0.68, 0);
+      stationaryContactRight.rotation.z = 0.15; // Touching spool in rest state
+      stationaryGroup.add(stationaryContactRight);
+
+      mainGroup.add(stationaryGroup);
+      scene.add(mainGroup);
+    }
+
+    // Toggle Shaft Acceleration Logic
+    function toggleMotorAcceleration() {
+      isMotorRunning = !isMotorRunning;
+
+      const badge = document.getElementById('circuit-status-badge');
+      const btnText = document.getElementById('motor-btn-text');
+
+      if (isMotorRunning) {
+        btnText.innerText = "Stop Motor (Decelerate)";
+      } else {
+        btnText.innerText = "Start Motor (Accelerate)";
+      }
+    }
+
+
+
+    // Viewport Controls
+    document.getElementById('btn-reset').addEventListener('click', () => {
+      SWE.reset();
+    });
+
+    document.getElementById('btn-autorotate').addEventListener('click', (e) => {
+      autoRotate = !autoRotate;
+      e.currentTarget.classList.toggle('bg-amber-500/20');
+      e.currentTarget.classList.toggle('text-amber-400');
+    });
+
+    document.getElementById('btn-wireframe').addEventListener('click', (e) => {
+      isWireframe = !isWireframe;
+      scene.traverse((child) => {
+        if (child.isMesh && child.material) {
+          child.material.wireframe = isWireframe;
+        }
+      });
+      e.currentTarget.classList.toggle('bg-amber-500/20');
+      e.currentTarget.classList.toggle('text-amber-400');
+    });
+
+    document.getElementById('btn-toggle-motor').addEventListener('click', toggleMotorAcceleration);
+
+    // Tab Switching Logic
+    const tabs = ['overview', 'construction', 'lab', 'symbol'];
+    tabs.forEach(tabKey => {
+      document.getElementById(`tab-${tabKey}`).addEventListener('click', (e) => {
+        tabs.forEach(k => {
+          document.getElementById(`content-${k}`).classList.add('hidden');
+          const tabBtn = document.getElementById(`tab-${k}`);
+          tabBtn.classList.remove('text-amber-400', 'border-b-2', 'border-amber-400');
+          tabBtn.classList.add('text-slate-400');
+        });
+
+        document.getElementById(`content-${tabKey}`).classList.remove('hidden');
+        e.currentTarget.classList.remove('text-slate-400');
+        e.currentTarget.classList.add('text-amber-400', 'border-b-2', 'border-amber-400');
+      });
+    });
+
+    // Window Load Initialization
+    window.onload = function() {
+      try { initThree(); } catch (err) {
+        console.error('3D view unavailable:', err);
+        const cc = document.getElementById('canvas-container');
+        if (cc) cc.insertAdjacentHTML('beforeend', '<div class="absolute inset-0 flex items-center justify-center p-4 text-center text-xs text-slate-400">The 3D view needs WebGL, which is not available on this device. The description tabs below still work.</div>');
+      }
+      SWMenu.init('centrifugal');
+    };
+  </script>
+</body>
+</html>
