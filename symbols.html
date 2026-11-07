@@ -1,0 +1,1224 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Electrical & Electronics Symbols Reference Guide - Diploma Course</title>
+    <link rel="icon" href="favicon.svg" type="image/svg+xml"><meta name="theme-color" content="#080c14"><link rel="stylesheet" href="css/tailwind.css"><link rel="stylesheet" href="css/app.css"><link rel="stylesheet" href="css/fa/fa.css"><script src="vendor/lucide.min.js"></script>
+    <!-- Tailwind CSS CDN -->
+    <!-- Google Fonts -->
+    <!-- Lucide Icons CDN -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .symbol-svg {
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 2.2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+        /* Custom scrollbars */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.05);
+        }
+        .dark ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(156, 163, 175, 0.5);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(107, 114, 128, 0.8);
+        }
+    </style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-screen transition-colors duration-200 flex flex-col">
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 px-4 py-3 rounded-xl shadow-2xl flex items-center space-x-3 border border-slate-700 dark:border-slate-300">
+        <i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-400 dark:text-emerald-600"></i>
+        <span id="toast-message" class="text-sm font-medium">Copied to clipboard!</span>
+    </div>
+
+    <!-- Header -->
+    <header class="sticky top-0 z-30 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16 sm:h-20">
+                <!-- Branding -->
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-xl bg-amber-500/10 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center border border-amber-500/30">
+                        <i data-lucide="zap" class="w-6 h-6 fill-current"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-lg sm:text-xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
+                            Electrical & Electronics Symbols
+                            <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 hidden sm:inline-block">Diploma Engineering</span>
+                        </h1>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 hidden sm:block">Comprehensive IEEE/IEC Standard Reference & Interactive Quiz</p>
+                    </div>
+                </div>
+
+                <!-- Right Actions -->
+                <div class="flex items-center space-x-2 sm:space-x-4">
+                    <button id="quiz-btn" onclick="openQuiz()" class="px-3.5 py-2 text-xs sm:text-sm font-semibold rounded-xl bg-amber-500/10 text-amber-700 dark:text-amber-300 hover:bg-amber-500/20 border border-amber-500/30 transition-all flex items-center gap-1.5 cursor-pointer">
+                        <i data-lucide="brain-circuit" class="w-4 h-4"></i>
+                        <span class="hidden sm:inline">Practice Quiz</span>
+                        <span class="sm:hidden">Quiz</span>
+                    </button>
+
+                    <button id="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme" class="p-2.5 rounded-xl text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 transition-colors cursor-pointer">
+                        <i data-lucide="sun" class="w-5 h-5 hidden dark:block"></i>
+                        <i data-lucide="moon" class="w-5 h-5 block dark:hidden"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 flex-grow w-full">
+        
+        <!-- Controls & Search -->
+        <div class="space-y-6 mb-8">
+            <!-- Search Bar -->
+            <div class="relative max-w-2xl mx-auto">
+                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
+                    <i data-lucide="search" class="w-5 h-5"></i>
+                </div>
+                <input 
+                    type="text" 
+                    id="search-input" 
+                    oninput="handleSearch()"
+                    placeholder="Search transistors, logic gates, diodes, meters, or tags..." 
+                    class="w-full pl-11 pr-10 py-3.5 text-sm sm:text-base rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 transition-all"
+                >
+                <button id="clear-search" onclick="clearSearch()" class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hidden cursor-pointer">
+                    <i data-lucide="x-circle" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <!-- Category Filter Tabs -->
+            <div class="flex items-center justify-start md:justify-center overflow-x-auto pb-2 pt-1 gap-2 scrollbar-none border-b border-slate-200 dark:border-slate-800 md:border-none" id="category-tabs">
+                <!-- JS dynamic category tabs -->
+            </div>
+        </div>
+
+        <!-- Symbol Count Header -->
+        <div class="flex items-center justify-between mb-6 px-1">
+            <p id="symbol-count" class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium">
+                Showing all symbols
+            </p>
+            <div class="flex items-center gap-2 text-xs text-slate-400 dark:text-slate-500">
+                <span class="inline-block w-2 h-2 rounded-full bg-emerald-500"></span>
+                IEC 60617 & ANSI Y32.2 Standard Vectors
+            </div>
+        </div>
+
+        <!-- Symbols Grid -->
+        <div id="symbols-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+            <!-- JS dynamic cards -->
+        </div>
+
+        <!-- Empty State -->
+        <div id="empty-state" class="hidden text-center py-16 px-4">
+            <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400">
+                <i data-lucide="search-x" class="w-8 h-8"></i>
+            </div>
+            <h3 class="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-1">No symbols found</h3>
+            <p class="text-sm text-slate-500 dark:text-slate-400 max-w-sm mx-auto mb-4">Try searching with a different term or resetting your category filter.</p>
+            <button onclick="resetFilters()" class="px-4 py-2 text-xs font-semibold rounded-xl bg-blue-600 text-white hover:bg-blue-700 transition-colors cursor-pointer">
+                Reset All Filters
+            </button>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 py-6 mt-12">
+        <div class="max-w-7xl mx-auto px-4 text-center text-xs text-slate-500 dark:text-slate-400 space-y-1">
+            <p class="font-medium text-slate-700 dark:text-slate-300">Electrical & Basic Electronics Symbols Chart — Diploma Course</p>
+            <p class="text-slate-400 dark:text-slate-500">Electrical • Electronics • Telecommunication • Robotics • Automation Lab Standard</p>
+        </div>
+    </footer>
+
+    <!-- Symbol Detail Modal -->
+    <div id="modal-backdrop" class="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300 flex items-center justify-center p-4 sm:p-6" onclick="closeModal(event)">
+        <div id="modal-card" class="bg-white dark:bg-slate-900 rounded-2xl max-w-2xl w-full border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden transform scale-95 transition-all duration-300 text-slate-900 dark:text-white" onclick="event.stopPropagation()">
+            
+            <!-- Modal Header with BACK/CLOSE Cross Button -->
+            <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50">
+                <div class="flex items-center gap-2">
+                    <span id="modal-category-badge" class="px-2.5 py-1 text-xs font-semibold rounded-md bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300">
+                        Category
+                    </span>
+                    <span id="modal-tag-badge" class="px-2 py-1 text-xs font-mono rounded-md bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+                        TAG
+                    </span>
+                </div>
+                <button type="button" id="modal-close-btn" onclick="closeModal(event)" aria-label="Close detail view" class="p-2 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100 transition-colors cursor-pointer flex items-center justify-center">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <!-- Modal Content -->
+            <div class="p-6 space-y-6 max-h-[80vh] overflow-y-auto">
+                <!-- SVG Diagram Display Frame -->
+                <div class="bg-slate-50 dark:bg-slate-950 rounded-xl p-8 border border-slate-200 dark:border-slate-800 flex items-center justify-center min-h-[170px]">
+                    <div id="modal-svg-container" class="w-52 h-32 text-slate-900 dark:text-slate-100 flex items-center justify-center">
+                        <!-- Dynamic SVG -->
+                    </div>
+                </div>
+
+                <div>
+                    <h3 id="modal-title" class="text-xl font-bold tracking-tight mb-2">Symbol Name</h3>
+                    <div class="grid grid-cols-2 gap-4 my-4 p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 text-xs border border-slate-100 dark:border-slate-800">
+                        <div>
+                            <span class="text-slate-400 dark:text-slate-500 block mb-0.5">Terminals / Pins</span>
+                            <span id="modal-terminals" class="font-semibold text-slate-700 dark:text-slate-200">-</span>
+                        </div>
+                        <div>
+                            <span class="text-slate-400 dark:text-slate-500 block mb-0.5">Parameter / Standard</span>
+                            <span id="modal-unit" class="font-semibold text-slate-700 dark:text-slate-200">-</span>
+                        </div>
+                    </div>
+                    <p id="modal-description" class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+                        Detailed description text.
+                    </p>
+                </div>
+
+                <!-- Diploma Lab Application Note -->
+                <div class="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs space-y-1">
+                    <div class="flex items-center gap-1.5 font-bold text-amber-700 dark:text-amber-400">
+                        <i data-lucide="book-open" class="w-4 h-4"></i>
+                        <span>Diploma Exam & Practical Lab Note</span>
+                    </div>
+                    <p id="modal-lab-note" class="text-slate-700 dark:text-slate-300 leading-relaxed">
+                        Lab note content.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="px-6 py-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50 flex justify-end gap-3">
+                <button type="button" onclick="copyTagToClipboard()" class="px-4 py-2 text-xs font-semibold rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-700 transition-colors flex items-center gap-1.5 cursor-pointer">
+                    <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                    Copy Symbol Tag
+                </button>
+                <button type="button" onclick="closeModal(event)" class="px-4 py-2 text-xs font-semibold rounded-xl bg-blue-600 text-white hover:bg-blue-700 transition-colors cursor-pointer">
+                    Back to List
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Practice Quiz Modal -->
+    <div id="quiz-backdrop" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300 flex items-center justify-center p-4" onclick="closeQuiz(event)">
+        <div id="quiz-card" class="bg-white dark:bg-slate-900 rounded-2xl max-w-lg w-full border border-slate-200 dark:border-slate-800 shadow-2xl p-6 overflow-hidden transform scale-95 transition-all duration-300 text-slate-900 dark:text-white" onclick="event.stopPropagation()">
+            
+            <!-- Quiz Header with Direct Cross Button -->
+            <div class="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800 mb-6">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="award" class="w-5 h-5 text-amber-500"></i>
+                    <h3 class="font-bold text-lg">Symbol Practice Quiz</h3>
+                </div>
+                <button type="button" id="quiz-close-btn" onclick="closeQuiz(event)" aria-label="Close Quiz" class="p-2 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100 transition-colors cursor-pointer flex items-center justify-center">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <!-- Quiz Dynamic Body -->
+            <div id="quiz-body">
+                <!-- JS dynamic quiz content -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Script Implementation -->
+    <script>
+        // Data Store containing all requested categories
+        const symbolsData = [
+            // 1. BASIC ELECTRONICS & SEMICONDUCTORS (Diodes & Transistors)
+            {
+                id: 'npn-transistor',
+                name: 'NPN Transistor (BJT)',
+                category: 'Semiconductors & Electronics',
+                tag: 'Q / BJT',
+                terminals: 'Base (B), Collector (C), Emitter (E)',
+                unit: 'hFE / Current Gain (β)',
+                desc: 'Bipolar junction transistor where a small base current controls a larger current flowing from collector to emitter.',
+                labNote: 'Emitter arrow points OUTWARD ("NPN = Not Pointing in"). Standard for CE amplifier experiments.',
+                svg: `<svg viewBox="0 0 100 60" class="symbol-svg w-full h-full"><circle cx="50" cy="30" r="22" stroke-dasharray="2 2" opacity="0.4"/><line x1="10" y1="30" x2="38" y2="30"/><line x1="38" y1="16" x2="38" y2="44" stroke-width="3"/><line x1="38" y1="22" x2="65" y2="10"/><line x1="38" y1="38" x2="65" y2="50"/><path d="M54 41 L65 50 L52 49" fill="currentColor"/></svg>`
+            },
+            {
+                id: 'pnp-transistor',
+                name: 'PNP Transistor (BJT)',
+                category: 'Semiconductors & Electronics',
+                tag: 'Q / BJT',
+                terminals: 'Base (B), Collector (C), Emitter (E)',
+                unit: 'hFE / Current Gain (β)',
+                desc: 'Bipolar junction transistor activated when base voltage is pulled lower than emitter voltage.',
+                labNote: 'Emitter arrow points INWARD towards the base ("PNP = Points iN-Side").',
+                svg: `<svg viewBox="0 0 100 60" class="symbol-svg w-full h-full"><circle cx="50" cy="30" r="22" stroke-dasharray="2 2" opacity="0.4"/><line x1="10" y1="30" x2="38" y2="30"/><line x1="38" y1="16" x2="38" y2="44" stroke-width="3"/><line x1="38" y1="22" x2="65" y2="10"/><line x1="38" y1="38" x2="65" y2="50"/><path d="M49 31 L38 38 L47 41" fill="currentColor"/></svg>`
+            },
+            {
+                id: 'n-channel-mosfet',
+                name: 'N-Channel MOSFET (Enhancement)',
+                category: 'Semiconductors & Electronics',
+                tag: 'Q / MOSFET',
+                terminals: 'Gate (G), Drain (D), Source (S)',
+                unit: 'Vgs Threshold / Rds(on)',
+                desc: 'Voltage-controlled field effect transistor with insulated gate, commonly used for high-speed switching.',
+                labNote: 'Drawn with a broken vertical channel line and an inward arrow on the substrate pin.',
+                svg: `<svg viewBox="0 0 100 60" class="symbol-svg w-full h-full"><line x1="20" y1="30" x2="35" y2="30"/><line x1="35" y1="15" x2="35" y2="45" stroke-width="2.5"/><line x1="42" y1="15" x2="42" y2="23"/><line x1="42" y1="26" x2="42" y2="34"/><line x1="42" y1="37" x2="42" y2="45"/><line x1="42" y1="18" x2="65" y2="18"/><line x1="42" y1="42" x2="65" y2="42"/><line x1="42" y1="30" x2="65" y2="30"/><path d="M42 30 L52 26 L52 34 Z" fill="currentColor"/><line x1="65" y1="18" x2="65" y2="10"/><line x1="65" y1="42" x2="65" y2="50"/><line x1="65" y1="30" x2="65" y2="42"/></svg>`
+            },
+            {
+                id: 'p-channel-mosfet',
+                name: 'P-Channel MOSFET (Enhancement)',
+                category: 'Semiconductors & Electronics',
+                tag: 'Q / MOSFET',
+                terminals: 'Gate (G), Drain (D), Source (S)',
+                unit: 'Vgs Threshold',
+                desc: 'P-channel field effect switch conducting current between source and drain when gate voltage is pulled low.',
+                labNote: 'Features an outward pointing arrow on the central substrate terminal.',
+                svg: `<svg viewBox="0 0 100 60" class="symbol-svg w-full h-full"><line x1="20" y1="30" x2="35" y2="30"/><line x1="35" y1="15" x2="35" y2="45" stroke-width="2.5"/><line x1="42" y1="15" x2="42" y2="23"/><line x1="42" y1="26" x2="42" y2="34"/><line x1="42" y1="37" x2="42" y2="45"/><line x1="42" y1="18" x2="65" y2="18"/><line x1="42" y1="42" x2="65" y2="42"/><line x1="42" y1="30" x2="65" y2="30"/><path d="M54 30 L44 26 L44 34 Z" fill="currentColor"/><line x1="65" y1="18" x2="65" y2="10"/><line x1="65" y1="42" x2="65" y2="50"/><line x1="65" y1="30" x2="65" y2="42"/></svg>`
+            },
+            {
+                id: 'n-jfet',
+                name: 'N-Channel JFET',
+                category: 'Semiconductors & Electronics',
+                tag: 'Q / JFET',
+                terminals: 'Gate (G), Drain (D), Source (S)',
+                unit: 'Vp (Pinch-off) / Idss',
+                desc: 'Junction Field Effect Transistor controlling current through an N-channel via reverse biased PN junction.',
+                labNote: 'Gate arrow points INWARD towards the channel.',
+                svg: `<svg viewBox="0 0 100 60" class="symbol-svg w-full h-full"><circle cx="50" cy="30" r="22" stroke-dasharray="2 2" opacity="0.4"/><line x1="42" y1="14" x2="42" y2="46" stroke-width="3"/><line x1="15" y1="38" x2="42" y2="38"/><path d="M30 38 L40 34 L40 42 Z" fill="currentColor"/><line x1="42" y1="20" x2="68" y2="20"/><line x1="68" y1="20" x2="68" y2="10"/><line x1="42" y1="40" x2="68" y2="40"/><line x1="68" y1="40" x2="68" y2="50"/></svg>`
+            },
+            {
+                id: 'p-jfet',
+                name: 'P-Channel JFET',
+                category: 'Semiconductors & Electronics',
+                tag: 'Q / JFET',
+                terminals: 'Gate (G), Drain (D), Source (S)',
+                unit: 'Vp (Pinch-off)',
+                desc: 'Junction Field Effect Transistor with a P-type channel controlled by gate voltage.',
+                labNote: 'Gate arrow points OUTWARD away from the channel line.',
+                svg: `<svg viewBox="0 0 100 60" class="symbol-svg w-full h-full"><circle cx="50" cy="30" r="22" stroke-dasharray="2 2" opacity="0.4"/><line x1="42" y1="14" x2="42" y2="46" stroke-width="3"/><line x1="15" y1="38" x2="42" y2="38"/><path d="M28 38 L18 34 L18 42 Z" fill="currentColor"/><line x1="42" y1="20" x2="68" y2="20"/><line x1="68" y1="20" x2="68" y2="10"/><line x1="42" y1="40" x2="68" y2="40"/><line x1="68" y1="40" x2="68" y2="50"/></svg>`
+            },
+            {
+                id: 'darlington-pair',
+                name: 'Darlington Transistor',
+                category: 'Semiconductors & Electronics',
+                tag: 'Q_DAR',
+                terminals: 'Base (B), Collector (C), Emitter (E)',
+                unit: 'Ultra-High β (hFE1 × hFE2)',
+                desc: 'Cascaded pair of BJTs providing extremely high current amplification in a single package.',
+                labNote: 'Drawn showing two NPN BJTs connected with combined collectors.',
+                svg: `<svg viewBox="0 0 100 60" class="symbol-svg w-full h-full"><line x1="10" y1="30" x2="28" y2="30"/><line x1="28" y1="18" x2="28" y2="42" stroke-width="2.5"/><line x1="28" y1="22" x2="48" y2="12"/><line x1="28" y1="38" x2="48" y2="48"/><line x1="48" y1="36" x2="48" y2="54" stroke-width="2.5"/><line x1="48" y1="40" x2="72" y2="28"/><line x1="48" y1="50" x2="72" y2="58"/><path d="M60 54 L70 57 L62 50" fill="currentColor"/><line x1="48" y1="12" x2="75" y2="12"/><line x1="72" y1="28" x2="75" y2="12"/></svg>`
+            },
+            {
+                id: 'pn-diode',
+                name: 'PN Junction Diode',
+                category: 'Semiconductors & Electronics',
+                tag: 'D',
+                terminals: '2 Leads (Anode, Cathode)',
+                unit: 'Vf (0.7V Si / 0.3V Ge)',
+                desc: 'A two-terminal semiconductor allowing electric current to flow in one forward direction only.',
+                labNote: 'Triangle points in forward current direction; vertical line represents Cathode (K).',
+                svg: `<svg viewBox="0 0 100 60" class="symbol-svg w-full h-full"><path d="M35 18 L35 42 L58 30 Z" fill="currentColor"/><line x1="58" y1="18" x2="58" y2="42"/><line x1="10" y1="30" x2="35" y2="30"/><line x1="58" y1="30" x2="90" y2="30"/></svg>`
+            },
+            {
+                id: 'zener-diode',
+                name: 'Zener Diode',
+                category: 'Semiconductors & Electronics',
+                tag: 'ZD',
+                terminals: '2 Leads (Anode, Cathode)',
+                unit: 'Zener Breakdown Voltage (Vz)',
+                desc: 'Specially doped diode operating safely in reverse breakdown mode to provide regulated DC voltage.',
+                labNote: 'Cathode bar features bent Z-shaped ends. Core component in voltage regulator labs.',
+                svg: `<svg viewBox="0 0 100 60" class="symbol-svg w-full h-full"><path d="M35 18 L35 42 L58 30 Z" fill="currentColor"/><line x1="58" y1="18" x2="58" y2="42"/><line x1="58" y1="18" x2="52" y2="18"/><line x1="58" y1="42" x2="64" y2="42"/><line x1="10" y1="30" x2="35" y2="30"/><line x1="58" y1="30" x2="90" y2="30"/></svg>`
+            },
+            {
+                id: 'led-diode',
+                name: 'Light Emitting Diode (LED)',
+                category: 'Semiconductors & Electronics',
+                tag: 'LED',
+                terminals: '2 Leads (Anode, Cathode)',
+                unit: 'Forward Voltage (Vf) / mcd',
+                desc: 'Semiconductor diode emitting photons (light) when forward biased.',
+                labNote: 'Drawn with two outward-pointing photon arrows.',
+                svg: `<svg viewBox="0 0 100 60" class="symbol-svg w-full h-full"><path d="M35 18 L35 42 L58 30 Z" fill="currentColor"/><line x1="58" y1="18" x2="58" y2="42"/><line x1="10" y1="30" x2="35" y2="30"/><line x1="58" y1="30" x2="90" y2="30"/><path d="M52 14 L64 4 M60 4 L64 4 L64 8"/><path d="M42 14 L54 4 M50 4 L54 4 L54 8"/></svg>`
+            },
+            {
+                id: 'schottky-diode',
+                name: 'Schottky Diode',
+                category: 'Semiconductors & Electronics',
+                tag: 'D_SCH',
+                terminals: '2 Leads (Anode, Cathode)',
+                unit: 'Vf (0.15 - 0.45V)',
+                desc: 'Metal-semiconductor diode with ultra-fast switching speed and very low forward voltage drop.',
+                labNote: 'Cathode bar features S-shaped bent flanges.',
+                svg: `<svg viewBox="0 0 100 60" class="symbol-svg w-full h-full"><path d="M35 18 L35 42 L58 30 Z" fill="currentColor"/><line x1="58" y1="18" x2="58" y2="42"/><path d="M58 18 L52 18 L52 24 M58 42 L64 42 L64 36"/><line x1="10" y1="30" x2="35" y2="30"/><line x1="58" y1="30" x2="90" y2="30"/></svg>`
+            },
+            {
+                id: 'tunnel-diode',
+                name: 'Tunnel Diode',
+                category: 'Semiconductors & Electronics',
+                tag: 'D_TUN',
+                terminals: '2 Leads (Anode, Cathode)',
+                unit: 'Negative Resistance',
+                desc: 'Heavily doped diode exhibiting quantum tunneling and negative differential resistance at low voltages.',
+                labNote: 'Cathode bar features square bracket inward folds.',
+                svg: `<svg viewBox="0 0 100 60" class="symbol-svg w-full h-full"><path d="M35 18 L35 42 L58 30 Z" fill="currentColor"/><line x1="58" y1="18" x2="58" y2="42"/><line x1="58" y1="18" x2="64" y2="18"/><line x1="58" y1="42" x2="64" y2="42"/><line x1="10" y1="30" x2="35" y2="30"/><line x1="58" y1="30" x2="90" y2="30"/></svg>`
+            },
+            {
+                id: 'varactor-diode',
+                name: 'Varactor Diode (Vartac)',
+                category: 'Semiconductors & Electronics',
+                tag: 'D_VAR',
+                terminals: '2 Leads (Anode, Cathode)',
+                unit: 'Capacitance (pF)',
+                desc: 'Reverse-biased semiconductor diode whose junction capacitance changes with applied DC bias voltage.',
+                labNote: 'Drawn with a parallel capacitor line adjacent to the cathode bar.',
+                svg: `<svg viewBox="0 0 100 60" class="symbol-svg w-full h-full"><path d="M30 18 L30 42 L50 30 Z" fill="currentColor"/><line x1="50" y1="18" x2="50" y2="42"/><line x1="58" y1="18" x2="58" y2="42"/><line x1="10" y1="30" x2="30" y2="30"/><line x1="58" y1="30" x2="90" y2="30"/></svg>`
+            },
+            {
+                id: 'photodiode',
+                name: 'Photodiode',
+                category: 'Semiconductors & Electronics',
+                tag: 'PD',
+                terminals: '2 Leads (Anode, Cathode)',
+                unit: 'Responsivity (A/W)',
+                desc: 'PN junction operating in reverse bias that generates photocurrent upon light absorption.',
+                labNote: 'Drawn with two inward arrows representing incoming light rays.',
+                svg: `<svg viewBox="0 0 100 60" class="symbol-svg w-full h-full"><path d="M35 18 L35 42 L58 30 Z" fill="currentColor"/><line x1="58" y1="18" x2="58" y2="42"/><line x1="10" y1="30" x2="35" y2="30"/><line x1="58" y1="30" x2="90" y2="30"/><path d="M64 4 L52 14 M52 10 L52 14 L56 14"/><path d="M54 4 L42 14 M42 10 L42 14 L46 14"/></svg>`
+            },
+            {
+                id: 'scr-thyristor',
+                name: 'SCR (Silicon Controlled Rectifier)',
+                category: 'Semiconductors & Electronics',
+                tag: 'SCR / TY',
+                terminals: '3 Leads (Anode, Cathode, Gate)',
+                unit: 'VDRM / IGT Trigger',
+                desc: 'Four-layer PNPN thyristor device acting as a controllable latching switch for AC power control.',
+                labNote: 'Diode symbol with a Gate (G) control line attached to the cathode side.',
+                svg: `<svg viewBox="0 0 100 60" class="symbol-svg w-full h-full"><path d="M35 18 L35 42 L58 30 Z" fill="currentColor"/><line x1="58" y1="18" x2="58" y2="42"/><line x1="10" y1="30" x2="35" y2="30"/><line x1="58" y1="30" x2="90" y2="30"/><line x1="58" y1="42" x2="42" y2="52"/></svg>`
+            },
+            {
+                id: 'diac-thyristor',
+                name: 'DIAC (Bidirectional Trigger Diode)',
+                category: 'Semiconductors & Electronics',
+                tag: 'DIAC',
+                terminals: '2 Terminals (A1, A2)',
+                unit: 'VBO (Breakover Volts)',
+                desc: 'Two-terminal bidirectional semiconductor switch used to trigger TRIAC power controllers.',
+                labNote: 'Drawn as two inverse parallel diodes facing opposite directions.',
+                svg: `<svg viewBox="0 0 100 60" class="symbol-svg w-full h-full"><path d="M30 18 L30 42 L50 30 Z" fill="currentColor"/><path d="M60 42 L60 18 L40 30 Z" fill="currentColor"/><line x1="10" y1="30" x2="30" y2="30"/><line x1="60" y1="30" x2="90" y2="30"/></svg>`
+            },
+            {
+                id: 'triac-thyristor',
+                name: 'TRIAC',
+                category: 'Semiconductors & Electronics',
+                tag: 'TRIAC',
+                terminals: '3 Terminals (MT1, MT2, Gate)',
+                unit: 'RMS Current Rating (A)',
+                desc: 'Bidirectional thyristor capable of conducting current in either direction when triggered by a gate signal.',
+                labNote: 'Inverse parallel diodes with a single Gate terminal connection.',
+                svg: `<svg viewBox="0 0 100 60" class="symbol-svg w-full h-full"><path d="M30 18 L30 42 L50 30 Z" fill="currentColor"/><path d="M60 42 L60 18 L40 30 Z" fill="currentColor"/><line x1="10" y1="30" x2="30" y2="30"/><line x1="60" y1="30" x2="90" y2="30"/><line x1="45" y1="35" x2="32" y2="52"/></svg>`
+            },
+
+            // 2. DIGITAL LOGIC GATES
+            {
+                id: 'and-gate',
+                name: 'AND Gate',
+                category: 'Digital Logic Gates',
+                tag: 'AND',
+                terminals: '2 Inputs (A, B), 1 Output (Y)',
+                unit: 'Logic Y = A · B',
+                desc: 'Outputs Logic HIGH (1) only when all inputs are HIGH.',
+                labNote: 'Flat back edge, rounded D-shaped front.',
+                svg: `<svg viewBox="0 0 100 60" class="symbol-svg w-full h-full"><path d="M30 15 L50 15 A15 15 0 0 1 50 45 L30 45 Z"/><line x1="10" y1="22" x2="30" y2="22"/><line x1="10" y1="38" x2="30" y2="38"/><line x1="65" y1="30" x2="90" y2="30"/></svg>`
+            },
+            {
+                id: 'or-gate',
+                name: 'OR Gate',
+                category: 'Digital Logic Gates',
+                tag: 'OR',
+                terminals: '2 Inputs (A, B), 1 Output (Y)',
+                unit: 'Logic Y = A + B',
+                desc: 'Outputs Logic HIGH (1) when at least one input is HIGH.',
+                labNote: 'Concave back edge, curved pointed front tip.',
+                svg: `<svg viewBox="0 0 100 60" class="symbol-svg w-full h-full"><path d="M30 15 Q42 30, 30 45 Q55 45, 70 30 Q55 15, 30 15 Z"/><line x1="10" y1="22" x2="34" y2="22"/><line x1="10" y1="38" x2="34" y2="38"/><line x1="70" y1="30" x2="90" y2="30"/></svg>`
+            },
+            {
+                id: 'not-gate',
+                name: 'NOT Gate (Inverter)',
+                category: 'Digital Logic Gates',
+                tag: 'NOT / INV',
+                terminals: '1 Input (A), 1 Output (Y)',
+                unit: 'Logic Y = A\'',
+                desc: 'Inverts the binary input state (0 becomes 1; 1 becomes 0).',
+                labNote: 'Triangle with an output inversion bubble circle.',
+                svg: `<svg viewBox="0 0 100 60" class="symbol-svg w-full h-full"><path d="M30 15 L60 30 L30 45 Z"/><circle cx="65" cy="30" r="4"/><line x1="10" y1="30" x2="30" y2="30"/><line x1="69" y1="30" x2="90" y2="30"/></svg>`
+            },
+            {
+                id: 'nand-gate',
+                name: 'NAND Gate',
+                category: 'Digital Logic Gates',
+                tag: 'NAND',
+                terminals: '2 Inputs, 1 Output',
+                unit: 'Logic Y = (A · B)\'',
+                desc: 'Universal logic gate; outputs LOW (0) only when all inputs are HIGH.',
+                labNote: 'AND gate body with an output inversion bubble.',
+                svg: `<svg viewBox="0 0 100 60" class="symbol-svg w-full h-full"><path d="M30 15 L50 15 A15 15 0 0 1 50 45 L30 45 Z"/><circle cx="69" cy="30" r="4"/><line x1="10" y1="22" x2="30" y2="22"/><line x1="10" y1="38" x2="30" y2="38"/><line x1="73" y1="30" x2="90" y2="30"/></svg>`
+            },
+            {
+                id: 'nor-gate',
+                name: 'NOR Gate',
+                category: 'Digital Logic Gates',
+                tag: 'NOR',
+                terminals: '2 Inputs, 1 Output',
+                unit: 'Logic Y = (A + B)\'',
+                desc: 'Universal logic gate; outputs HIGH (1) only when all inputs are LOW.',
+                labNote: 'OR gate body with an output inversion bubble.',
+                svg: `<svg viewBox="0 0 100 60" class="symbol-svg w-full h-full"><path d="M30 15 Q42 30, 30 45 Q55 45, 70 30 Q55 15, 30 15 Z"/><circle cx="74" cy="30" r="4"/><line x1="10" y1="22" x2="34" y2="22"/><line x1="10" y1="38" x2="34" y2="38"/><line x1="78" y1="30" x2="90" y2="30"/></svg>`
+            },
+            {
+                id: 'xor-gate',
+                name: 'XOR Gate (Exclusive OR)',
+                category: 'Digital Logic Gates',
+                tag: 'XOR',
+                terminals: '2 Inputs, 1 Output',
+                unit: 'Logic Y = A ⊕ B',
+                desc: 'Outputs HIGH (1) when inputs are different from each other.',
+                labNote: 'OR gate with an extra curved line on the input side.',
+                svg: `<svg viewBox="0 0 100 60" class="symbol-svg w-full h-full"><path d="M34 15 Q46 30, 34 45 Q59 45, 74 30 Q59 15, 34 15 Z"/><path d="M26 15 Q38 30, 26 45"/><line x1="10" y1="22" x2="28" y2="22"/><line x1="10" y1="38" x2="28" y2="38"/><line x1="74" y1="30" x2="90" y2="30"/></svg>`
+            },
+            {
+                id: 'xnor-gate',
+                name: 'XNOR Gate',
+                category: 'Digital Logic Gates',
+                tag: 'XNOR',
+                terminals: '2 Inputs, 1 Output',
+                unit: 'Logic Y = (A ⊕ B)\'',
+                desc: 'Outputs HIGH (1) when both inputs are identical.',
+                labNote: 'XOR gate with an inversion bubble tip.',
+                svg: `<svg viewBox="0 0 100 60" class="symbol-svg w-full h-full"><path d="M34 15 Q46 30, 34 45 Q59 45, 74 30 Q59 15, 34 15 Z"/><path d="M26 15 Q38 30, 26 45"/><circle cx="78" cy="30" r="4"/><line x1="10" y1="22" x2="28" y2="22"/><line x1="10" y1="38" x2="28" y2="38"/><line x1="82" y1="30" x2="90" y2="30"/></svg>`
+            },
+
+            // 3. BASIC COMPONENTS
+            {
+                id: 'fixed-resistor',
+                name: 'Fixed Resistor (ANSI/IEC)',
+                category: 'Basic Components',
+                tag: 'R',
+                terminals: '2 Leads',
+                unit: 'Ohms (Ω)',
+                desc: 'Limits electric current flow and drops voltage according to Ohm\'s Law.',
+                labNote: 'ANSI uses zigzag line; IEC uses rectangular box.',
+                svg: `<svg viewBox="0 0 100 60" class="symbol-svg w-full h-full"><path d="M10 30 L25 30 L30 18 L40 42 L50 18 L60 42 L70 18 L75 30 L90 30"/></svg>`
+            },
+            {
+                id: 'potentiometer',
+                name: 'Potentiometer',
+                category: 'Basic Components',
+                tag: 'POT / RV',
+                terminals: '3 Terminals (A, Wiper, B)',
+                unit: 'Ohms (Ω)',
+                desc: 'Three-terminal variable resistor functioning as an adjustable voltage divider.',
+                labNote: 'Terminal 2 arrow indicates the movable wiper contact.',
+                svg: `<svg viewBox="0 0 100 60" class="symbol-svg w-full h-full"><path d="M10 35 L25 35 L30 25 L40 45 L50 25 L60 45 L70 25 L75 35 L90 35"/><path d="M50 10 L50 21 M46 17 L50 21 L54 17"/></svg>`
+            },
+            {
+                id: 'rheostat',
+                name: 'Rheostat',
+                category: 'Basic Components',
+                tag: 'RH',
+                terminals: '2 Terminals',
+                unit: 'Ohms (Ω)',
+                desc: 'Variable resistor wired to control current magnitude in a branch.',
+                labNote: 'Drawn with a diagonal arrow across the body.',
+                svg: `<svg viewBox="0 0 100 60" class="symbol-svg w-full h-full"><path d="M10 30 L25 30 L30 18 L40 42 L50 18 L60 42 L70 18 L75 30 L90 30"/><path d="M30 48 L68 14 M62 14 L68 14 L68 20"/></svg>`
+            },
+            {
+                id: 'thermistor-comp',
+                name: 'Thermistor',
+                category: 'Basic Components',
+                tag: 'TH / NTC',
+                terminals: '2 Leads',
+                unit: 'Resistance @ Temp',
+                desc: 'Temperature-sensitive resistor used in thermal sensing circuits.',
+                labNote: 'Resistor with a step coefficient indicator line.',
+                svg: `<svg viewBox="0 0 100 60" class="symbol-svg w-full h-full"><rect x="30" y="22" width="40" height="16" rx="2"/><line x1="10" y1="30" x2="30" y2="30"/><line x1="70" y1="30" x2="90" y2="30"/><path d="M25 45 L40 45 L65 15"/></svg>`
+            },
+            {
+                id: 'ldr-photoresistor',
+                name: 'LDR (Photoresistor)',
+                category: 'Basic Components',
+                tag: 'LDR',
+                terminals: '2 Leads',
+                unit: 'Dark/Light Ohms',
+                desc: 'Light Dependent Resistor whose resistance drops as light intensity increases.',
+                labNote: 'Resistor inside a circle with incoming light arrows.',
+                svg: `<svg viewBox="0 0 100 60" class="symbol-svg w-full h-full"><circle cx="50" cy="30" r="22"/><path d="M32 30 L37 24 L43 36 L49 24 L55 36 L61 24 L68 30"/><line x1="10" y1="30" x2="32" y2="30"/><line x1="68" y1="30" x2="90" y2="30"/><path d="M25 12 L35 20 M33 20 L35 20 L34 17"/><path d="M18 19 L28 27 M26 27 L28 27 L27 24"/></svg>`
+            },
+            {
+                id: 'capacitor-nonpol',
+                name: 'Capacitor (Non-Polarized)',
+                category: 'Basic Components',
+                tag: 'C',
+                terminals: '2 Leads',
+                unit: 'Farads (µF / pF)',
+                desc: 'Stores electrical energy in an electrostatic field between parallel plates.',
+                labNote: 'Two parallel straight lines of equal length.',
+                svg: `<svg viewBox="0 0 100 60" class="symbol-svg w-full h-full"><line x1="10" y1="30" x2="44" y2="30"/><line x1="56" y1="30" x2="90" y2="30"/><line x1="44" y1="15" x2="44" y2="45"/><line x1="56" y1="15" x2="56" y2="45"/></svg>`
+            },
+            {
+                id: 'capacitor-pol',
+                name: 'Capacitor (Polarized)',
+                category: 'Basic Components',
+                tag: 'C / CP',
+                terminals: '2 Leads (+ / -)',
+                unit: 'Farads (µF)',
+                desc: 'Electrolytic capacitor requiring correct DC polarity connection.',
+                labNote: 'Curved plate represents negative terminal.',
+                svg: `<svg viewBox="0 0 100 60" class="symbol-svg w-full h-full"><line x1="10" y1="30" x2="44" y2="30"/><line x1="56" y1="30" x2="90" y2="30"/><line x1="44" y1="15" x2="44" y2="45"/><path d="M56 15 Q52 30, 56 45"/><text x="36" y="14" fill="currentColor" stroke="none" class="text-[10px] font-bold">+</text></svg>`
+            },
+            {
+                id: 'variable-capacitor',
+                name: 'Variable Capacitor',
+                category: 'Basic Components',
+                tag: 'CV',
+                terminals: '2 Leads',
+                unit: 'Farads (pF)',
+                desc: 'Capacitor whose capacitance can be manually tuned.',
+                labNote: 'Standard capacitor with a diagonal tuning arrow.',
+                svg: `<svg viewBox="0 0 100 60" class="symbol-svg w-full h-full"><line x1="10" y1="30" x2="44" y2="30"/><line x1="56" y1="30" x2="90" y2="30"/><line x1="44" y1="15" x2="44" y2="45"/><line x1="56" y1="15" x2="56" y2="45"/><path d="M30 48 L68 12 M62 12 L68 12 L68 18"/></svg>`
+            },
+            {
+                id: 'inductor-coil',
+                name: 'Inductor / Coil',
+                category: 'Basic Components',
+                tag: 'L',
+                terminals: '2 Leads',
+                unit: 'Henry (H / mH)',
+                desc: 'Stores energy in a magnetic field when current flows through its turns.',
+                labNote: 'Drawn as connected wire loops.',
+                svg: `<svg viewBox="0 0 100 60" class="symbol-svg w-full h-full"><path d="M10 30 L25 30 Q30 18, 35 30 Q40 18, 45 30 Q50 18, 55 30 Q60 18, 65 30 Q70 18, 75 30 L90 30"/></svg>`
+            },
+            {
+                id: 'transformer-core',
+                name: 'Transformer (Iron Core)',
+                category: 'Basic Components',
+                tag: 'T',
+                terminals: '4 Terminals',
+                unit: 'VA / Turn Ratio',
+                desc: 'Transfers electrical energy between circuits via electromagnetic induction.',
+                labNote: 'Two coils separated by parallel core lines.',
+                svg: `<svg viewBox="0 0 100 60" class="symbol-svg w-full h-full"><path d="M10 30 L25 30 Q28 20, 31 30 Q34 20, 37 30 Q40 20, 43 30 L43 30"/><path d="M57 30 L57 30 Q60 20, 63 30 Q66 20, 69 30 Q72 20, 75 30 L90 30"/><line x1="48" y1="18" x2="48" y2="42"/><line x1="52" y1="18" x2="52" y2="42"/></svg>`
+            },
+            {
+                id: 'safety-fuse',
+                name: 'Fuse',
+                category: 'Basic Components',
+                tag: 'F / FU',
+                terminals: '2 Pins',
+                unit: 'Amperes (A)',
+                desc: 'Overcurrent safety element that melts to open the circuit under overload.',
+                labNote: 'Wire running through a rectangular box.',
+                svg: `<svg viewBox="0 0 100 60" class="symbol-svg w-full h-full"><rect x="30" y="20" width="40" height="20" rx="3"/><line x1="10" y1="30" x2="90" y2="30"/></svg>`
+            },
+
+            // 4. SWITCHES & CONTACTS
+            {
+                id: 'spst-switch',
+                name: 'SPST Switch',
+                category: 'Switches & Contacts',
+                tag: 'SW / SPST',
+                terminals: '2 Terminals',
+                unit: 'ON / OFF',
+                desc: 'Single Pole Single Throw basic on/off mechanical switch.',
+                labNote: 'Standard single-contact toggle switch.',
+                svg: `<svg viewBox="0 0 100 60" class="symbol-svg w-full h-full"><circle cx="30" cy="35" r="3" fill="currentColor"/><circle cx="70" cy="35" r="3" fill="currentColor"/><line x1="10" y1="35" x2="27" y2="35"/><line x1="73" y1="35" x2="90" y2="35"/><line x1="30" y1="35" x2="68" y2="20"/></svg>`
+            },
+            {
+                id: 'spdt-switch',
+                name: 'SPDT Switch',
+                category: 'Switches & Contacts',
+                tag: 'SW / SPDT',
+                terminals: '3 Terminals',
+                unit: '2-Way Control',
+                desc: 'Single Pole Double Throw switch routing one terminal to two options.',
+                labNote: 'Key component in staircase wiring labs.',
+                svg: `<svg viewBox="0 0 100 60" class="symbol-svg w-full h-full"><circle cx="25" cy="30" r="3" fill="currentColor"/><circle cx="75" cy="18" r="3" fill="currentColor"/><circle cx="75" cy="42" r="3" fill="currentColor"/><line x1="10" y1="30" x2="22" y2="30"/><line x1="78" y1="18" x2="90" y2="18"/><line x1="78" y1="42" x2="90" y2="42"/><line x1="25" y1="30" x2="71" y2="15"/></svg>`
+            },
+            {
+                id: 'dpdt-switch',
+                name: 'DPDT Switch',
+                category: 'Switches & Contacts',
+                tag: 'SW / DPDT',
+                terminals: '6 Terminals',
+                unit: 'Dual Changeover',
+                desc: 'Double Pole Double Throw switch controlling two independent circuits simultaneously.',
+                labNote: 'Drawn as two mechanically linked SPDT switches.',
+                svg: `<svg viewBox="0 0 100 60" class="symbol-svg w-full h-full"><circle cx="25" cy="20" r="3" fill="currentColor"/><circle cx="75" cy="12" r="3" fill="currentColor"/><circle cx="75" cy="28" r="3" fill="currentColor"/><line x1="25" y1="20" x2="71" y2="10"/><circle cx="25" cy="44" r="3" fill="currentColor"/><circle cx="75" cy="36" r="3" fill="currentColor"/><circle cx="75" cy="52" r="3" fill="currentColor"/><line x1="25" y1="44" x2="71" y2="34"/><line x1="48" y1="15" x2="48" y2="39" stroke-dasharray="2 2"/></svg>`
+            },
+            {
+                id: 'push-button-no',
+                name: 'Push Button (NO)',
+                category: 'Switches & Contacts',
+                tag: 'PB-NO',
+                terminals: '2 Terminals',
+                unit: 'Momentary',
+                desc: 'Normally Open push button closing contacts when pressed.',
+                labNote: 'T-bar elevated above stationary contact dots.',
+                svg: `<svg viewBox="0 0 100 60" class="symbol-svg w-full h-full"><circle cx="30" cy="35" r="3" fill="currentColor"/><circle cx="70" cy="35" r="3" fill="currentColor"/><line x1="10" y1="35" x2="27" y2="35"/><line x1="73" y1="35" x2="90" y2="35"/><line x1="28" y1="24" x2="72" y2="24"/><line x1="50" y1="12" x2="50" y2="24"/></svg>`
+            },
+            {
+                id: 'push-button-nc',
+                name: 'Push Button (NC)',
+                category: 'Switches & Contacts',
+                tag: 'PB-NC',
+                terminals: '2 Terminals',
+                unit: 'Momentary Break',
+                desc: 'Normally Closed push button opening contacts when pressed.',
+                labNote: 'T-bar rests directly on contacts.',
+                svg: `<svg viewBox="0 0 100 60" class="symbol-svg w-full h-full"><circle cx="30" cy="35" r="3" fill="currentColor"/><circle cx="70" cy="35" r="3" fill="currentColor"/><line x1="10" y1="35" x2="27" y2="35"/><line x1="73" y1="35" x2="90" y2="35"/><line x1="28" y1="32" x2="72" y2="32"/><line x1="50" y1="16" x2="50" y2="32"/></svg>`
+            },
+            {
+                id: 'relay-spdt',
+                name: 'Relay (SPDT Electro-Magnetic)',
+                category: 'Switches & Contacts',
+                tag: 'K / RELAY',
+                terminals: '5 Terminals',
+                unit: 'Coil Volts',
+                desc: 'Electromechanical switch actuated by coil magnetic field.',
+                labNote: 'Coil inductor linked to changeover contact.',
+                svg: `<svg viewBox="0 0 100 60" class="symbol-svg w-full h-full"><path d="M20 18 Q23 8, 26 18 Q29 8, 32 18 Q35 8, 38 18 Q41 8, 44 18 Q47 8, 50 18"/><line x1="10" y1="18" x2="20" y2="18"/><line x1="50" y1="18" x2="60" y2="18"/><line x1="35" y1="22" x2="35" y2="42" stroke-dasharray="2 2"/><circle cx="70" cy="30" r="3" fill="currentColor"/><line x1="70" y1="30" x2="90" y2="20"/><circle cx="90" cy="45" r="3" fill="currentColor"/></svg>`
+            },
+
+            // 5. SOURCES & POWER SYSTEMS
+            {
+                id: 'ac-supply',
+                name: 'AC Voltage Source',
+                category: 'Sources & Power Systems',
+                tag: 'AC',
+                terminals: '2 Terminals',
+                unit: 'Volts / Hz',
+                desc: 'Alternating current source generating sinusoidal voltage.',
+                labNote: 'Circle enclosing a sine wave cycle.',
+                svg: `<svg viewBox="0 0 100 60" class="symbol-svg w-full h-full"><circle cx="50" cy="30" r="20"/><path d="M38 30 Q44 20, 50 30 T62 30"/><line x1="10" y1="30" x2="30" y2="30"/><line x1="70" y1="30" x2="90" y2="30"/></svg>`
+            },
+            {
+                id: 'dc-supply',
+                name: 'DC Voltage Source',
+                category: 'Sources & Power Systems',
+                tag: 'DC',
+                terminals: '2 Terminals (+ / -)',
+                unit: 'Volts (VDC)',
+                desc: 'Direct current source maintaining fixed potential.',
+                labNote: 'Long line is (+); short line is (-).',
+                svg: `<svg viewBox="0 0 100 60" class="symbol-svg w-full h-full"><line x1="10" y1="30" x2="42" y2="30"/><line x1="58" y1="30" x2="90" y2="30"/><line x1="42" y1="18" x2="42" y2="42"/><line x1="58" y1="24" x2="58" y2="36"/><text x="35" y="15" fill="currentColor" stroke="none" class="text-[10px] font-bold">+</text></svg>`
+            },
+            {
+                id: 'earth-ground',
+                name: 'Earth Ground',
+                category: 'Sources & Power Systems',
+                tag: 'GND',
+                terminals: '1 Node',
+                unit: '0V Potential',
+                desc: 'Direct connection to earth soil for fault path and safety.',
+                labNote: 'Stacked decreasing horizontal lines.',
+                svg: `<svg viewBox="0 0 100 60" class="symbol-svg w-full h-full"><line x1="50" y1="10" x2="50" y2="32"/><line x1="28" y1="32" x2="72" y2="32"/><line x1="36" y1="40" x2="64" y2="40"/><line x1="44" y1="48" x2="56" y2="48"/></svg>`
+            },
+            {
+                id: 'chassis-ground',
+                name: 'Chassis Ground',
+                category: 'Sources & Power Systems',
+                tag: 'FRAME_GND',
+                terminals: '1 Node',
+                unit: 'Metallic Enclosure',
+                desc: 'Connection to the metallic body or frame of an instrument.',
+                labNote: 'Rake-style diagonal hash marks under a bar.',
+                svg: `<svg viewBox="0 0 100 60" class="symbol-svg w-full h-full"><line x1="50" y1="12" x2="50" y2="32"/><line x1="26" y1="32" x2="74" y2="32"/><line x1="32" y1="32" x2="24" y2="46"/><line x1="50" y1="32" x2="42" y2="46"/><line x1="68" y1="32" x2="60" y2="46"/></svg>`
+            },
+            {
+                id: 'circuit-breaker',
+                name: 'Circuit Breaker',
+                category: 'Sources & Power Systems',
+                tag: 'CB',
+                terminals: '2 Terminals',
+                unit: 'Trip Current (A)',
+                desc: 'Automatic trip switch protecting grid lines from overloads.',
+                labNote: 'Switch symbol with tripping box mechanism.',
+                svg: `<svg viewBox="0 0 100 60" class="symbol-svg w-full h-full"><line x1="10" y1="30" x2="35" y2="30"/><line x1="65" y1="30" x2="90" y2="30"/><rect x="35" y="20" width="30" height="20" rx="2"/><path d="M42 26 L58 34 M58 26 L42 34"/></svg>`
+            },
+            {
+                id: 'current-transformer',
+                name: 'Current Transformer (CT)',
+                category: 'Sources & Power Systems',
+                tag: 'CT',
+                terminals: '4 Terminals',
+                unit: 'Ratio (e.g. 100/5A)',
+                desc: 'Instrument transformer producing a reduced secondary current proportional to primary current for metering.',
+                labNote: 'Single straight conductor line passing through a secondary toroidal coil.',
+                svg: `<svg viewBox="0 0 100 60" class="symbol-svg w-full h-full"><line x1="10" y1="30" x2="90" y2="30" stroke-width="3"/><circle cx="50" cy="30" r="16"/><path d="M50 46 L50 56"/></svg>`
+            },
+
+            // 6. MEASURING INSTRUMENTS & OUTPUT DEVICES
+            {
+                id: 'voltmeter-instrument',
+                name: 'Voltmeter',
+                category: 'Measuring Instruments & Output',
+                tag: 'V',
+                terminals: '2 Terminals',
+                unit: 'Volts (V)',
+                desc: 'Measures electric potential difference across a load.',
+                labNote: 'Always connected in PARALLEL.',
+                svg: `<svg viewBox="0 0 100 60" class="symbol-svg w-full h-full"><circle cx="50" cy="30" r="20"/><line x1="10" y1="30" x2="30" y2="30"/><line x1="70" y1="30" x2="90" y2="30"/><text x="50" y="37" text-anchor="middle" fill="currentColor" stroke="none" class="text-base font-bold">V</text></svg>`
+            },
+            {
+                id: 'ammeter-instrument',
+                name: 'Ammeter',
+                category: 'Measuring Instruments & Output',
+                tag: 'A',
+                terminals: '2 Terminals',
+                unit: 'Amperes (A)',
+                desc: 'Measures electric current flowing through a line.',
+                labNote: 'Always connected in SERIES.',
+                svg: `<svg viewBox="0 0 100 60" class="symbol-svg w-full h-full"><circle cx="50" cy="30" r="20"/><line x1="10" y1="30" x2="30" y2="30"/><line x1="70" y1="30" x2="90" y2="30"/><text x="50" y="37" text-anchor="middle" fill="currentColor" stroke="none" class="text-base font-bold">A</text></svg>`
+            },
+            {
+                id: 'wattmeter-instrument',
+                name: 'Wattmeter',
+                category: 'Measuring Instruments & Output',
+                tag: 'W',
+                terminals: '4 Terminals (M, L, C, V)',
+                unit: 'Watts (W)',
+                desc: 'Measures active electric power consumed in a circuit.',
+                labNote: 'Combines current coil and pressure potential coil.',
+                svg: `<svg viewBox="0 0 100 60" class="symbol-svg w-full h-full"><circle cx="50" cy="30" r="20"/><line x1="10" y1="30" x2="30" y2="30"/><line x1="70" y1="30" x2="90" y2="30"/><text x="50" y="37" text-anchor="middle" fill="currentColor" stroke="none" class="text-base font-bold">W</text></svg>`
+            },
+            {
+                id: 'multimeter-instrument',
+                name: 'Multimeter (DMM)',
+                category: 'Measuring Instruments & Output',
+                tag: 'DMM',
+                terminals: '2 Probes',
+                unit: 'V / A / Ω',
+                desc: 'All-in-one test instrument measuring voltage, current, and resistance.',
+                labNote: 'Represented by a meter circle marked "AVΩ".',
+                svg: `<svg viewBox="0 0 100 60" class="symbol-svg w-full h-full"><circle cx="50" cy="30" r="20"/><line x1="10" y1="30" x2="30" y2="30"/><line x1="70" y1="30" x2="90" y2="30"/><text x="50" y="35" text-anchor="middle" fill="currentColor" stroke="none" class="text-xs font-bold">AVΩ</text></svg>`
+            },
+            {
+                id: 'lamp-light',
+                name: 'Signal Lamp / Light',
+                category: 'Measuring Instruments & Output',
+                tag: 'LA',
+                terminals: '2 Leads',
+                unit: 'Watts (W)',
+                desc: 'Visual output indicator bulb.',
+                labNote: 'Circle containing crossed filament lines.',
+                svg: `<svg viewBox="0 0 100 60" class="symbol-svg w-full h-full"><circle cx="50" cy="30" r="20"/><line x1="10" y1="30" x2="30" y2="30"/><line x1="70" y1="30" x2="90" y2="30"/><line x1="36" y1="16" x2="64" y2="44"/><line x1="64" y1="16" x2="36" y2="44"/></svg>`
+            },
+            {
+                id: 'electric-bell',
+                name: 'Electric Bell',
+                category: 'Measuring Instruments & Output',
+                tag: 'BELL',
+                terminals: '2 Terminals',
+                unit: 'Audible Sound',
+                desc: 'Electromechanical ringer creating repetitive striking sound upon activation.',
+                labNote: 'Drawn as a dome-shaped gong symbol.',
+                svg: `<svg viewBox="0 0 100 60" class="symbol-svg w-full h-full"><path d="M30 35 A20 20 0 0 1 70 35 Z"/><line x1="30" y1="35" x2="70" y2="35"/><line x1="40" y1="35" x2="40" y2="50"/><line x1="60" y1="35" x2="60" y2="50"/></svg>`
+            },
+            {
+                id: 'buzzer-sound',
+                name: 'Buzzer',
+                category: 'Measuring Instruments & Output',
+                tag: 'BZ',
+                terminals: '2 Terminals',
+                unit: 'Audio Transducer',
+                desc: 'Electronic audio signaling transducer.',
+                labNote: 'Semi-circle bowl shape with downward leads.',
+                svg: `<svg viewBox="0 0 100 60" class="symbol-svg w-full h-full"><path d="M30 25 A20 20 0 0 0 70 25 Z"/><line x1="30" y1="25" x2="70" y2="25"/><line x1="40" y1="25" x2="40" y2="45"/><line x1="60" y1="25" x2="60" y2="45"/></svg>`
+            },
+            {
+                id: 'dc-motor',
+                name: 'DC Motor',
+                category: 'Measuring Instruments & Output',
+                tag: 'M',
+                terminals: '2 Terminals',
+                unit: 'RPM / HP',
+                desc: 'Converts electrical power into mechanical torque rotation.',
+                labNote: 'Circle marked "M" with DC designation bar.',
+                svg: `<svg viewBox="0 0 100 60" class="symbol-svg w-full h-full"><circle cx="50" cy="30" r="20"/><line x1="10" y1="30" x2="30" y2="30"/><line x1="70" y1="30" x2="90" y2="30"/><text x="50" y="37" text-anchor="middle" fill="currentColor" stroke="none" class="text-base font-bold">M</text></svg>`
+            }
+        ];
+
+        // Categories Filter List
+        const categories = [
+            'All',
+            'Semiconductors & Electronics',
+            'Digital Logic Gates',
+            'Basic Components',
+            'Switches & Contacts',
+            'Sources & Power Systems',
+            'Measuring Instruments & Output'
+        ];
+
+        // App State
+        let activeCategory = 'All';
+        let searchQuery = '';
+        let currentModalSymbol = null;
+
+        // Init App
+        window.onload = function() {
+            lucide.createIcons();
+            renderCategories();
+            renderSymbols();
+            initTheme();
+
+            // Keydown Listener for Escape Key to Close Modals
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    closeModal(e);
+                    closeQuiz(e);
+                }
+            });
+        };
+
+        // Render Filter Tabs
+        function renderCategories() {
+            const container = document.getElementById('category-tabs');
+            container.innerHTML = categories.map(cat => {
+                const isActive = cat === activeCategory;
+                return `
+                    <button 
+                        onclick="selectCategory('${cat}')"
+                        class="px-3.5 py-1.5 text-xs font-semibold rounded-xl whitespace-nowrap transition-all cursor-pointer ${
+                            isActive 
+                            ? 'bg-blue-600 text-white shadow-sm' 
+                            : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700/60 border border-slate-200 dark:border-slate-700/60'
+                        }">
+                        ${cat}
+                    </button>
+                `;
+            }).join('');
+        }
+
+        function selectCategory(cat) {
+            activeCategory = cat;
+            renderCategories();
+            renderSymbols();
+        }
+
+        function handleSearch() {
+            const input = document.getElementById('search-input');
+            const clearBtn = document.getElementById('clear-search');
+            searchQuery = input.value.trim().toLowerCase();
+            
+            if (searchQuery.length > 0) {
+                clearBtn.classList.remove('hidden');
+            } else {
+                clearBtn.classList.add('hidden');
+            }
+            renderSymbols();
+        }
+
+        function clearSearch() {
+            document.getElementById('search-input').value = '';
+            document.getElementById('clear-search').classList.add('hidden');
+            searchQuery = '';
+            renderSymbols();
+        }
+
+        function resetFilters() {
+            activeCategory = 'All';
+            clearSearch();
+            renderCategories();
+        }
+
+        // Render Symbol Grid Cards
+        function renderSymbols() {
+            const grid = document.getElementById('symbols-grid');
+            const emptyState = document.getElementById('empty-state');
+            const countLabel = document.getElementById('symbol-count');
+
+            const filtered = symbolsData.filter(symbol => {
+                const matchesCategory = (activeCategory === 'All') || (symbol.category === activeCategory);
+                const matchesQuery = searchQuery === '' || 
+                    symbol.name.toLowerCase().includes(searchQuery) ||
+                    symbol.tag.toLowerCase().includes(searchQuery) ||
+                    symbol.category.toLowerCase().includes(searchQuery) ||
+                    symbol.desc.toLowerCase().includes(searchQuery);
+
+                return matchesCategory && matchesQuery;
+            });
+
+            countLabel.textContent = `Showing ${filtered.length} of ${symbolsData.length} symbols`;
+
+            if (filtered.length === 0) {
+                grid.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            grid.innerHTML = filtered.map(symbol => `
+                <div 
+                    onclick="openModal('${symbol.id}')" 
+                    class="bg-white dark:bg-slate-800 rounded-2xl p-5 border border-slate-200 dark:border-slate-700/70 shadow-sm hover:shadow-md hover:border-blue-500 dark:hover:border-blue-400 transition-all cursor-pointer flex flex-col justify-between group">
+                    
+                    <div>
+                        <div class="flex items-center justify-between mb-3 text-[11px]">
+                            <span class="font-medium text-slate-400 dark:text-slate-500 truncate max-w-[130px]">
+                                ${symbol.category}
+                            </span>
+                            <span class="font-mono px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-bold">
+                                ${symbol.tag}
+                            </span>
+                        </div>
+
+                        <div class="bg-slate-50 dark:bg-slate-900 rounded-xl p-4 mb-4 border border-slate-100 dark:border-slate-800 flex items-center justify-center h-28 group-hover:scale-[1.02] transition-transform">
+                            <div class="w-32 h-20 text-slate-900 dark:text-slate-100 flex items-center justify-center">
+                                ${symbol.svg}
+                            </div>
+                        </div>
+
+                        <h3 class="font-bold text-slate-900 dark:text-white text-base group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                            ${symbol.name}
+                        </h3>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 mt-1">
+                            ${symbol.desc}
+                        </p>
+                    </div>
+
+                    <div class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-700/50 flex items-center justify-between text-xs font-semibold text-blue-600 dark:text-blue-400">
+                        <span>Study Details</span>
+                        <i data-lucide="arrow-right" class="w-4 h-4 transform group-hover:translate-x-1 transition-transform"></i>
+                    </div>
+                </div>
+            `).join('');
+
+            lucide.createIcons();
+        }
+
+        // Modal Logic
+        function openModal(symbolId) {
+            const symbol = symbolsData.find(s => s.id === symbolId);
+            if (!symbol) return;
+
+            currentModalSymbol = symbol;
+
+            document.getElementById('modal-category-badge').textContent = symbol.category;
+            document.getElementById('modal-tag-badge').textContent = symbol.tag;
+            document.getElementById('modal-svg-container').innerHTML = symbol.svg;
+            document.getElementById('modal-title').textContent = symbol.name;
+            document.getElementById('modal-terminals').textContent = symbol.terminals;
+            document.getElementById('modal-unit').textContent = symbol.unit;
+            document.getElementById('modal-description').textContent = symbol.desc;
+            document.getElementById('modal-lab-note').textContent = symbol.labNote;
+
+            const backdrop = document.getElementById('modal-backdrop');
+            const card = document.getElementById('modal-card');
+
+            backdrop.classList.remove('opacity-0', 'pointer-events-none');
+            backdrop.classList.add('opacity-100');
+            card.classList.remove('scale-95');
+            card.classList.add('scale-100');
+
+            document.body.style.overflow = 'hidden';
+            lucide.createIcons();
+        }
+
+        function closeModal(event) {
+            if (event) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            const backdrop = document.getElementById('modal-backdrop');
+            const card = document.getElementById('modal-card');
+
+            if (backdrop && card) {
+                backdrop.classList.add('opacity-0', 'pointer-events-none');
+                backdrop.classList.remove('opacity-100');
+                card.classList.remove('scale-100');
+                card.classList.add('scale-95');
+            }
+
+            document.body.style.overflow = '';
+            currentModalSymbol = null;
+        }
+
+        function copyTagToClipboard() {
+            if (!currentModalSymbol) return;
+            const textToCopy = `${currentModalSymbol.name} (Tag: ${currentModalSymbol.tag}) - ${currentModalSymbol.category}`;
+            
+            const tempInput = document.createElement('textarea');
+            tempInput.value = textToCopy;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempInput);
+
+            showToast(`Copied "${currentModalSymbol.tag}" tag info!`);
+        }
+
+        // Quiz Logic
+        let quizScore = 0;
+        let quizCurrentIndex = 0;
+        let quizQuestions = [];
+
+        function openQuiz() {
+            const shuffled = [...symbolsData].sort(() => 0.5 - Math.random());
+            quizQuestions = shuffled.slice(0, 5);
+            quizScore = 0;
+            quizCurrentIndex = 0;
+
+            const backdrop = document.getElementById('quiz-backdrop');
+            const card = document.getElementById('quiz-card');
+
+            backdrop.classList.remove('opacity-0', 'pointer-events-none');
+            backdrop.classList.add('opacity-100');
+            card.classList.remove('scale-95');
+            card.classList.add('scale-100');
+
+            document.body.style.overflow = 'hidden';
+            renderQuizQuestion();
+            lucide.createIcons();
+        }
+
+        function closeQuiz(event) {
+            if (event) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            const backdrop = document.getElementById('quiz-backdrop');
+            const card = document.getElementById('quiz-card');
+
+            if (backdrop && card) {
+                backdrop.classList.add('opacity-0', 'pointer-events-none');
+                backdrop.classList.remove('opacity-100');
+                card.classList.remove('scale-100');
+                card.classList.add('scale-95');
+            }
+
+            document.body.style.overflow = '';
+        }
+
+        function renderQuizQuestion() {
+            const container = document.getElementById('quiz-body');
+            
+            if (quizCurrentIndex >= quizQuestions.length) {
+                const percentage = Math.round((quizScore / quizQuestions.length) * 100);
+                container.innerHTML = `
+                    <div class="text-center py-6 space-y-4">
+                        <div class="w-16 h-16 mx-auto rounded-full bg-amber-500/20 text-amber-500 flex items-center justify-center">
+                            <i data-lucide="trophy" class="w-8 h-8"></i>
+                        </div>
+                        <h4 class="text-xl font-bold">Quiz Completed!</h4>
+                        <p class="text-sm text-slate-500 dark:text-slate-400">
+                            Your Score: <span class="font-bold text-amber-500 text-lg">${quizScore} / ${quizQuestions.length}</span> (${percentage}%)
+                        </p>
+                        <div class="pt-4 flex items-center justify-center gap-3">
+                            <button type="button" onclick="openQuiz()" class="px-4 py-2.5 rounded-xl bg-blue-600 text-white font-medium text-xs sm:text-sm hover:bg-blue-700 transition-colors cursor-pointer">
+                                Retry Quiz
+                            </button>
+                            <button type="button" onclick="closeQuiz(event)" class="px-4 py-2.5 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-medium text-xs sm:text-sm hover:bg-slate-300 dark:hover:bg-slate-700 transition-colors cursor-pointer">
+                                Back to Main List
+                            </button>
+                        </div>
+                    </div>
+                `;
+                lucide.createIcons();
+                return;
+            }
+
+            const current = quizQuestions[quizCurrentIndex];
+            const otherSymbols = symbolsData.filter(s => s.id !== current.id);
+            const wrongOptions = [...otherSymbols].sort(() => 0.5 - Math.random()).slice(0, 3);
+            const options = [current, ...wrongOptions].sort(() => 0.5 - Math.random());
+
+            container.innerHTML = `
+                <div class="space-y-5">
+                    <div class="flex items-center justify-between text-xs font-semibold text-slate-400">
+                        <span>QUESTION ${quizCurrentIndex + 1} OF ${quizQuestions.length}</span>
+                        <span class="text-amber-500">Score: ${quizScore}</span>
+                    </div>
+
+                    <div class="bg-slate-50 dark:bg-slate-950 rounded-xl p-4 border border-slate-200 dark:border-slate-800 flex items-center justify-center h-32">
+                        <div class="w-40 h-24 text-slate-900 dark:text-slate-100 flex items-center justify-center">
+                            ${current.svg}
+                        </div>
+                    </div>
+
+                    <p class="text-center font-medium text-sm text-slate-700 dark:text-slate-300">
+                        Identify the correct symbol diagram above:
+                    </p>
+
+                    <div class="grid grid-cols-1 gap-2.5">
+                        ${options.map(opt => `
+                            <button type="button" onclick="checkQuizAnswer('${opt.id}', '${current.id}')" class="w-full text-left p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50 hover:border-blue-500 dark:hover:border-blue-400 hover:bg-blue-50/50 dark:hover:bg-blue-900/20 text-sm font-medium transition-all flex items-center justify-between group cursor-pointer">
+                                <span>${opt.name}</span>
+                                <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400 group-hover:text-blue-500 transition-colors"></i>
+                            </button>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+            lucide.createIcons();
+        }
+
+        function checkQuizAnswer(selectedId, correctId) {
+            if (selectedId === correctId) {
+                quizScore++;
+                showToast('Correct answer!');
+            } else {
+                const correctObj = symbolsData.find(s => s.id === correctId);
+                showToast(`Incorrect! Correct: ${correctObj ? correctObj.name : ''}`);
+            }
+            quizCurrentIndex++;
+            renderQuizQuestion();
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toast-message');
+
+            toastMessage.textContent = message;
+            toast.classList.remove('opacity-0', 'translate-y-20', 'pointer-events-none');
+            toast.classList.add('opacity-100', 'translate-y-0');
+
+            setTimeout(() => {
+                toast.classList.remove('opacity-100', 'translate-y-0');
+                toast.classList.add('opacity-0', 'translate-y-20', 'pointer-events-none');
+            }, 2500);
+        }
+
+        function initTheme() {
+            if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        }
+
+        function toggleTheme() {
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+                localStorage.theme = 'light';
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.theme = 'dark';
+            }
+        }
+    </script>
+<nav class="app-nav app-nav-sticky" aria-label="Main"><a href="index.html" class="nav-tab"><i class="fa-solid fa-house"></i><span>Home</span></a><a href="insulators.html" class="nav-tab"><i class="fa-solid fa-plug-circle-bolt"></i><span>Insulators</span></a><a href="wire-directory.html" class="nav-tab"><i class="fa-solid fa-bezier-curve"></i><span>Wires</span></a><a href="symbols.html" class="nav-tab" aria-current="page"><i class="fa-solid fa-shapes"></i><span>Symbols</span></a><a href="index.html#library" class="nav-tab"><i class="fa-solid fa-layer-group"></i><span>Library</span></a></nav>
+</body>
+</html>

@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DC Generator 3D Cut-Section Explorer</title>
+    <link rel="icon" href="favicon.svg" type="image/svg+xml"><meta name="theme-color" content="#080c14"><link rel="stylesheet" href="css/tailwind.css"><link rel="stylesheet" href="css/app.css"><link rel="stylesheet" href="css/fa/fa.css"><script src="vendor/three.min.js"></script>
+    <!-- Tailwind CSS -->
+    <!-- FontAwesome & Inter Font -->
+    <!-- Three.js for 3D Cut-Section Rendering -->
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .font-display { font-family: inherit; }
+        .glow-blue { filter: drop-shadow(0 0 10px rgba(0, 240, 255, 0.5)); }
+        .glow-orange { filter: drop-shadow(0 0 10px rgba(255, 119, 0, 0.5)); }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #090d16; }
+        ::-webkit-scrollbar-thumb { background: #1f2937; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #374151; }
+    </style>
+</head>
+<body class="bg-darkBg text-slate-100 min-h-screen flex flex-col selection:bg-neonBlue selection:text-black">
+
+    <!-- Header -->
+    <header class="border-b border-slate-800 bg-cardBg/80 backdrop-blur-md sticky top-0 z-50 px-4 lg:px-8 py-4 flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-neonBlue to-blue-600 flex items-center justify-center shadow-lg shadow-neonBlue/20">
+                <i class="fa-solid fa-bolt text-black text-xl"></i>
+            </div>
+            <div>
+                <h1 class="font-display text-lg lg:text-xl font-bold tracking-wider text-white">DYNATECH <span class="text-neonBlue">DC-GEN</span></h1>
+                <p class="text-xs text-slate-400">Interactive 3D Cut-Section Engineering Explorer</p>
+            </div>
+        </div>
+        <div class="flex items-center space-x-3">
+            <button id="toggleAnimation" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-neonBlue text-xs font-semibold rounded-lg border border-slate-700 transition flex items-center space-x-2">
+                <i class="fa-solid fa-play"></i>
+                <span id="animBtnText">Pause Rotation</span>
+            </button>
+            <button id="resetCamera" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-lg border border-slate-700 transition">
+                <i class="fa-solid fa-arrows-rotate"></i> Reset View
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content Grid -->
+    <main class="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-4 p-4 lg:p-6 overflow-hidden max-w-[1700px] w-full mx-auto">
+        
+        <!-- Left Sidebar: Parts Directory -->
+        <section class="lg:col-span-3 bg-cardBg/90 border border-slate-800/80 rounded-2xl p-4 flex flex-col h-[calc(100vh-140px)] shadow-xl">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-800 mb-3">
+                <h2 class="font-display text-sm font-semibold tracking-wide text-neonBlue flex items-center gap-2">
+                    <i class="fa-solid fa-list-check"></i> Generator Components
+                </h2>
+                <span id="activeCount" class="text-xs px-2 py-0.5 rounded-full bg-neonBlue/10 text-neonBlue border border-neonBlue/30">Select Part</span>
+            </div>
+            <div class="relative mb-3">
+                <i class="fa-solid fa-search absolute left-3 top-3 text-slate-500 text-xs"></i>
+                <input type="text" id="partSearch" placeholder="Search part name..." class="w-full bg-slate-900 border border-slate-800 rounded-xl pl-9 pr-4 py-2 text-xs text-slate-200 focus:outline-none focus:border-neonBlue transition">
+            </div>
+            <div id="partsListContainer" class="flex-1 overflow-y-auto space-y-2 pr-1">
+                <!-- Populated dynamically via JS -->
+            </div>
+        </section>
+
+        <!-- Center: 3D Canvas & Interactive Viewport -->
+        <section class="lg:col-span-6 bg-cardBg/90 border border-slate-800/80 rounded-2xl flex flex-col relative h-[500px] lg:h-[calc(100vh-140px)] shadow-2xl overflow-hidden group">
+            
+            <!-- Floating Controls Overlay -->
+            <div class="absolute top-4 left-4 z-10 flex flex-wrap gap-2 pointer-events-auto">
+                <button id="cutToggle" type="button" aria-pressed="true" class="px-3 py-1.5 bg-black/60 backdrop-blur-md rounded-xl text-xs text-slate-200 border border-neonOrange/60 flex items-center gap-2 hover:bg-black/80">
+                    <span class="w-2 h-2 rounded-full bg-neonOrange"></span> <span id="cutLabel">Cut section: on</span>
+                </button>
+                <button id="explodeToggle" type="button" aria-pressed="false" class="px-3 py-1.5 bg-black/60 backdrop-blur-md rounded-xl text-xs text-slate-200 border border-slate-700 flex items-center gap-2 hover:bg-black/80">
+                    <i class="fa-solid fa-expand text-neonBlue"></i> <span id="explodeLabel">Exploded view</span>
+                </button>
+                <span class="px-3 py-1.5 bg-black/60 backdrop-blur-md rounded-xl text-xs text-slate-300 border border-slate-800 hidden sm:inline-block">
+                    <i class="fa-solid fa-computer-mouse text-neonBlue"></i> Drag to Rotate | Scroll to Zoom
+                </span>
+            </div>
+
+            <!-- 3D Canvas Element -->
+            <div id="canvasContainer" class="w-full h-full cursor-grab active:cursor-grabbing"></div>
+
+            <!-- Quick Legend Overlay -->
+            <div class="absolute bottom-4 left-4 right-4 bg-black/70 backdrop-blur-md border border-slate-800 p-3 rounded-xl flex items-center justify-between text-xs">
+                <div class="flex items-center gap-3">
+                    <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-red-600 inline-block"></span> Field Poles</div>
+                    <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-amber-600 inline-block"></span> Armature Core</div>
+                    <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-yellow-500 inline-block"></span> Commutator</div>
+                    <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-sky-400 inline-block"></span> Brushes</div>
+                </div>
+                <div class="text-slate-400 hidden md:block">Click any 3D model part to inspect</div>
+            </div>
+        </section>
+
+        <!-- Right Panel: Part Details & Educational Overview -->
+        <section class="lg:col-span-3 bg-cardBg/90 border border-slate-800/80 rounded-2xl p-4 flex flex-col h-[calc(100vh-140px)] shadow-xl overflow-hidden">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-800 mb-3">
+                <h2 class="font-display text-sm font-semibold tracking-wide text-neonOrange flex items-center gap-2">
+                    <i class="fa-solid fa-circle-info"></i> Component Inspector
+                </h2>
+                <button id="clearSelection" class="text-xs text-slate-400 hover:text-white transition">Reset Selection</button>
+            </div>
+
+            <div id="inspectorContent" class="flex-1 overflow-y-auto space-y-4 pr-1">
+                <!-- Default State Instruction -->
+                <div class="text-center py-12 px-4 space-y-3">
+                    <div class="w-16 h-16 mx-auto rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-center text-neonOrange text-2xl shadow-inner">
+                        <i class="fa-solid fa-cube animate-bounce"></i>
+                    </div>
+                    <h3 class="font-display text-sm font-bold text-white">No Component Selected</h3>
+                    <p class="text-xs text-slate-400 leading-relaxed">
+                        Click on any part in the 3D cut-section view or select from the components directory on the left to explore its engineering specifications, materials, and working principle.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Quick Info Banner -->
+            <div class="mt-3 pt-3 border-t border-slate-800">
+                <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-3">
+                    <h4 class="text-xs font-semibold text-neonBlue mb-1 flex items-center gap-1.5">
+                        <i class="fa-solid fa-lightbulb"></i> Principle of Operation
+                    </h4>
+                    <p class="text-[11px] text-slate-400 leading-relaxed">
+                        A DC generator converts mechanical energy into electrical energy based on Faraday's Law of Electromagnetic Induction. Rotation of the armature inside the magnetic field induces alternating EMF, converted to direct current via the commutator.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Custom Notification/Message Box Modal -->
+    <div id="modalOverlay" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-cardBg border border-slate-800 rounded-2xl p-6 max-w-md w-full shadow-2xl relative">
+            <h3 id="modalTitle" class="font-display text-base font-bold text-white mb-2">Notification</h3>
+            <p id="modalBody" class="text-xs text-slate-300 leading-relaxed mb-5">Message details here.</p>
+            <button id="modalClose" class="w-full py-2.5 bg-neonBlue text-black font-semibold text-xs rounded-xl hover:bg-neonBlue/90 transition shadow-lg shadow-neonBlue/20">Got it</button>
+        </div>
+    </div>
+
+    <!-- Application Script -->
+    <script>
+        // Component Database with Rich Engineering Data
+        const generatorParts = [
+            {
+                id: 'yoke',
+                name: 'Yoke / Frame',
+                category: 'Static Structure',
+                material: 'Cast Iron or Cast Steel',
+                function: 'Provides mechanical support for the outer poles and protects inner rotating assemblies from external moisture and dust. It also acts as part of the magnetic return path.',
+                specs: 'Outer magnetic housing; high permeability magnetic steel.',
+                color: 0x334155
+            },
+            {
+                id: 'poles',
+                name: 'Pole Cores',
+                category: 'Magnetic System',
+                material: 'Silicon Steel Laminations & Copper Windings',
+                function: 'Creates the main static magnetic field (flux) across which the armature conductors rotate. Pole shoes spread the magnetic flux uniformly across the air gap.',
+                specs: 'Laminated to minimize eddy current losses; wound with insulated electrolytic copper wire.',
+                color: 0xdc2626
+            },
+            {
+                id: 'pole_shoe',
+                name: 'Pole Shoe',
+                category: 'Magnetic System',
+                material: 'Laminated silicon steel, bolted to the pole core',
+                function: 'The wide curved face of each pole. It spreads the flux evenly over the armature surface and holds the field coil in place on the pole core.',
+                specs: 'Curved to follow the armature so the air gap is the same everywhere. Typical air gap: 1 to 5 mm.',
+                color: 0xdc2626
+            },
+            {
+                id: 'field_windings',
+                name: 'Field Windings',
+                category: 'Magnetic System',
+                material: 'Insulated copper wire wound on a former',
+                function: 'Carries the field current that magnetises the poles. In a separately excited machine it comes from a small DC supply; in a self-excited one, from the armature itself.',
+                specs: 'Shunt field: many turns of thin wire. Series field: few turns of thick wire. Poles are wound so that N and S alternate.',
+                color: 0xd97706
+            },
+            {
+                id: 'armature_winding',
+                name: 'Armature Winding',
+                category: 'Rotating Assembly',
+                material: 'Insulated copper conductors in the armature slots',
+                function: 'The conductors that cut the flux as the armature turns. An EMF is induced in each conductor; the commutator connects them so the output is DC.',
+                specs: 'Lap or wave wound. E = (P x Phi x Z x N) / (60 x A) volts.',
+                color: 0xd97706
+            },
+            {
+                id: 'air_gap',
+                name: 'Air Gap',
+                category: 'Magnetic System',
+                material: 'Air (shown in cyan)',
+                function: 'The small clearance between the pole shoes and the armature. The flux crosses it, and it is also what lets the armature turn freely.',
+                specs: 'As small as practical, because the gap has high reluctance and most of the field MMF is used to push flux across it.',
+                color: 0x22d3ee
+            },
+            {
+                id: 'fan',
+                name: 'Cooling Fan',
+                category: 'Cooling',
+                material: 'Aluminium or moulded plastic blades on a hub',
+                function: 'Mounted on the shaft, so it turns with the armature and pulls air through the machine to carry away the copper and iron losses.',
+                specs: 'Fan speed follows the machine speed, so cooling falls if the machine runs slowly under heavy load.',
+                color: 0x6d5ccf
+            },
+            {
+                id: 'armature',
+                name: 'Armature Core',
+                category: 'Rotating Assembly',
+                material: 'Silicon Steel Laminated Drums & Copper Coils',
+                function: 'Houses the armature conductors in slots. As it rotates mechanically via the prime mover, conductors cut magnetic flux lines, inducing electromotive force (EMF).',
+                specs: 'Slotted cylindrical drum; laminated core to reduce core losses.',
+                color: 0xd97706
+            },
+            {
+                id: 'commutator',
+                name: 'Commutator Segments',
+                category: 'Rectification System',
+                material: 'Hard-Drawn Copper Segments with Mica Insulation',
+                function: 'Converts alternating current (AC) generated in the armature windings into unidirectional direct current (DC) in the external circuit through mechanical rectification.',
+                specs: 'Cylindrical assembly of wedge-shaped copper segments insulated by high-grade mica sheets.',
+                color: 0xeab308
+            },
+            {
+                id: 'brushes',
+                name: 'Carbon Brushes',
+                category: 'Current Collection',
+                material: 'Electro-Graphitic Carbon or Copper-Graphite',
+                function: 'Rides smoothly on the rotating commutator surface to collect electrical current and transfer it reliably to external terminals.',
+                specs: 'Low friction coefficient, high current density capacity, spring-loaded holders.',
+                color: 0x38bdf8
+            },
+            {
+                id: 'shaft',
+                name: 'Main Drive Shaft',
+                category: 'Mechanical Support',
+                material: 'Forged Alloy Steel (EN24 / 42CrMo4)',
+                function: 'Transmits mechanical torque from the prime mover (turbine/motor) to the rotating armature core.',
+                specs: 'High tensile strength, precision machined to withstand torsional stresses.',
+                color: 0x94a3b8
+            },
+            {
+                id: 'bearings',
+                name: 'Sealed Ball Bearings',
+                category: 'Support & Alignment',
+                material: 'Chrome Steel with Precision Cages',
+                function: 'Supports the rotating shaft, minimizes friction between stationary and rotating elements, and maintains precise air-gap clearance.',
+                specs: 'Sealed deep groove ball bearings, packed with high-temperature grease for life; the rubber seals keep dirt out and grease in.',
+                color: 0x64748b
+            }
+        ];
+
+        // Custom Notification Function (replaces alert)
+        function showNotification(title, message) {
+            document.getElementById('modalTitle').innerText = title;
+            document.getElementById('modalBody').innerText = message;
+            document.getElementById('modalOverlay').classList.remove('hidden');
+        }
+
+        document.getElementById('modalClose').addEventListener('click', () => {
+            document.getElementById('modalOverlay').classList.add('hidden');
+        });
+
+        // Populate Left Sidebar List
+        const partsListContainer = document.getElementById('partsListContainer');
+        function renderPartsList(filter = '') {
+            partsListContainer.innerHTML = '';
+            const filtered = generatorParts.filter(p => p.name.toLowerCase().includes(filter.toLowerCase()) || p.category.toLowerCase().includes(filter.toLowerCase()));
+            
+            document.getElementById('activeCount').innerText = `${filtered.length} Parts`;
+
+            filtered.forEach(part => {
+                const item = document.createElement('div');
+                item.className = `p-3 rounded-xl border border-slate-800 bg-slate-900/60 hover:bg-slate-800/80 cursor-pointer transition flex items-center justify-between group part-list-item`;
+                item.setAttribute('data-id', part.id);
+                item.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center text-neonBlue group-hover:bg-neonBlue group-hover:text-black transition">
+                            <i class="fa-solid fa-gears text-xs"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-xs font-semibold text-white">${part.name}</h4>
+                            <span class="text-[10px] text-slate-400">${part.category}</span>
+                        </div>
+                    </div>
+                    <i class="fa-solid fa-chevron-right text-xs text-slate-600 group-hover:text-neonBlue transition"></i>
+                `;
+                item.addEventListener('click', () => {
+                    selectPart(part.id);
+                });
+                partsListContainer.appendChild(item);
+            });
+        }
+        renderPartsList();
+
+        document.getElementById('partSearch').addEventListener('input', (e) => {
+            renderPartsList(e.target.value);
+        });
+
+        // Three.js 3D Cut-Section Setup
+        let scene, camera, renderer, controls;
+        let meshMap = {}; // Maps part id to an array of 3D objects
+        let explodeItems = [], explode = 0, explodeTarget = 0, cutMode = true, generatorGroup = null, camDist = 15.5;
+        let isAnimating = true;
+        let selectedPartId = null;
+
+        // ---------- 3D model: DC machine, built from the reference cutaways (axis = X, commutator end at -X, shaft at +X) ----------
+        function buildGenerator(cut) {
+            const T = THREE, TAU = Math.PI * 2, D = Math.PI / 180, half = !!cut;
+            const g = new T.Group(); g.name = 'generatorGroup';
+            const rotor = new T.Group(); rotor.name = 'rotor'; g.add(rotor);
+            meshMap = {}; explodeItems = [];
+            const M = (c, m, r, o) => new T.MeshStandardMaterial(Object.assign({ color: c, metalness: m, roughness: r, side: T.DoubleSide }, o || {}));
+            const cutMat = () => M(0xe58a22, 0.2, 0.6, { emissive: 0x4a2600, emissiveIntensity: 0.3 });
+            const P = (x, r, th) => new T.Vector3(x, r * Math.sin(th), -r * Math.cos(th));
+            const inHalf = th => { th = Math.atan2(Math.sin(th), Math.cos(th)); return !half || Math.abs(th) < Math.PI / 2 - 1e-6; };
+            const box = (w, h, d, mat, x, y, z) => { const m = new T.Mesh(new T.BoxGeometry(w, h, d), mat); m.position.set(x, y, z); return m; };
+            const cylX = (r, len, mat, x, seg) => { const m = new T.Mesh(new T.CylinderGeometry(r, r, len, seg || 32), mat); m.rotation.z = Math.PI / 2; m.position.x = x; return m; };
+            const radial = (m, th) => { m.rotation.x = th - Math.PI / 2; return m; };
+            function revolve(pts, mat, segs, whole) {
+                const grp = new T.Group(), h = half && !whole, v = pts.map(p => new T.Vector2(p[0], p[1]));
+                v.push(v[0].clone());
+                const lathe = new T.Mesh(new T.LatheGeometry(v, segs || 64, h ? Math.PI / 2 : 0, h ? Math.PI : TAU), mat);
+                lathe.rotation.z = -Math.PI / 2; grp.add(lathe);
+                if (h) [1, -1].forEach(s => { const sh = new T.Shape(); pts.forEach((p, i) => i ? sh.lineTo(p[1], s * p[0]) : sh.moveTo(p[1], s * p[0])); grp.add(new T.Mesh(new T.ShapeGeometry(sh), cutMat())); });
+                return grp;
+            }
+            function shell(r, a0, a1, mat, segs) {
+                const l = new T.Mesh(new T.LatheGeometry([new T.Vector2(r, a0), new T.Vector2(r, a1)], segs || 64, half ? Math.PI / 2 : 0, half ? Math.PI : TAU), mat);
+                l.rotation.z = -Math.PI / 2; return l;
+            }
+            function reg(id, obj, o) {
+                o = o || {};
+                (o.spin ? rotor : g).add(obj);
+                obj.userData.id = id;
+                obj.traverse(c => { if (c.material) c.material = c.material.clone(); });
+                (meshMap[id] = meshMap[id] || []).push(obj);
+                explodeItems.push({ obj, base: obj.position.clone(), off: o.off || new T.Vector3() });
+            }
+            const V = (x, y, z) => new T.Vector3(x, y, z);
+
+            // Yoke (frame): shell, mounting feet and the two end shields
+            const green = M(0x3f6b57, 0.5, 0.5), dark = M(0x1f2937, 0.4, 0.6);
+            const yk = revolve([[2.45, -3.3], [3.0, -3.3], [3.0, 3.3], [2.45, 3.3]], green, 96);
+            const feet = new T.Group(); feet.add(box(4.4, 0.5, 3.4, green, 0, -3.1, 0));
+            [-1.5, 1.5].forEach(x => [-1.05, 1.05].forEach(z => feet.add(box(0.5, 0.52, 0.5, dark, x, -3.1, z))));
+            yk.add(feet); reg('yoke', yk);
+            [-1, 1].forEach(sg => reg('yoke', revolve([[0.62, sg * 3.3], [3.0, sg * 3.3], [3.0, sg * 3.55], [0.95, sg * 3.55], [0.95, sg * 3.75], [0.62, sg * 3.75]], green, 96), { off: V(sg * 1.5, 0, 0) }));
+
+            // Field system: 4 poles (core, shoe, coil), the back half only when cut
+            const iron = M(0x8b97ab, 0.7, 0.4), cu = M(0xd97706, 0.85, 0.3), shoeMat = M(0xdc2626, 0.5, 0.4, { emissive: 0x330606, emissiveIntensity: 0.4 });
+            [45, 135, 225, 315].forEach(deg => {
+                const th = deg * D, th0 = th, dir = P(0, 1, th0);
+                if (!inHalf(th)) return;
+                const stem = radial(box(2.4, 0.84, 0.9, iron, 0, 0, 0), th); stem.position.copy(P(0, 2.03, th));
+                reg('poles', stem, { off: dir.clone().multiplyScalar(1.4) });
+                const sh = new T.Shape(), steps = 20, w = 38 * D;
+                for (let i = 0; i <= steps; i++) { const a = th - w + 2 * w * i / steps; i ? sh.lineTo(1.36 * Math.cos(a), 1.36 * Math.sin(a)) : sh.moveTo(1.36 * Math.cos(a), 1.36 * Math.sin(a)); }
+                for (let i = steps; i >= 0; i--) { const a = th - w + 2 * w * i / steps; sh.lineTo(1.62 * Math.cos(a), 1.62 * Math.sin(a)); }
+                const sg = new T.ExtrudeGeometry(sh, { depth: 2.9, bevelEnabled: false, curveSegments: 8 });
+                sg.rotateY(Math.PI / 2); sg.translate(-1.45, 0, 0);
+                reg('pole_shoe', new T.Mesh(sg, shoeMat), { off: dir.clone().multiplyScalar(0.7) });
+                const outer = new T.Shape(); outer.moveTo(-1.45, -0.68); outer.lineTo(1.45, -0.68); outer.lineTo(1.45, 0.68); outer.lineTo(-1.45, 0.68); outer.lineTo(-1.45, -0.68);
+                const hole = new T.Path(); hole.moveTo(-1.23, -0.48); hole.lineTo(-1.23, 0.48); hole.lineTo(1.23, 0.48); hole.lineTo(1.23, -0.48); hole.lineTo(-1.23, -0.48); outer.holes.push(hole);
+                const cg = new T.ExtrudeGeometry(outer, { depth: 0.72, bevelEnabled: true, bevelSize: 0.05, bevelThickness: 0.05, bevelSegments: 2 });
+                cg.rotateX(-Math.PI / 2);
+                const coil = radial(new T.Mesh(cg, cu), th); coil.position.copy(P(0, 1.65, th));
+                reg('field_windings', coil, { off: dir.clone().multiplyScalar(1.0) });
+            });
+
+            // Armature: laminated core, slot wedges, copper winding
+            const core = new T.Group(); { const N = 34, len = 2.6, pitch = len / N, geo = new T.CylinderGeometry(1.25, 1.25, pitch * 0.92, 56); geo.rotateZ(Math.PI / 2);
+                const im = new T.InstancedMesh(geo, M(0xffffff, 0.75, 0.4), N), mt = new T.Matrix4(), c1 = new T.Color(0x8b97ab), c2 = new T.Color(0x727f94);
+                for (let i = 0; i < N; i++) { mt.makeTranslation(-len / 2 + pitch * (i + 0.5), 0, 0); im.setMatrixAt(i, mt); im.setColorAt(i, i % 2 ? c1 : c2); }
+                core.add(im); for (let k = 0; k < 36; k++) { const th = k * TAU / 36, w = radial(box(2.6, 0.012, 0.05, dark, 0, 0, 0), th); w.position.copy(P(0, 1.252, th)); core.add(w); } }
+            reg('armature', core, { spin: true });
+            const wnd = new T.Group();
+            for (let k = 0; k < 36; k++) {
+                const a0 = k * TAU / 36, dl = 5 * TAU / 36, a1 = a0 + dl, am = a0 + dl / 2;
+                const rod = cylX(0.03, 2.6, cu, 0, 6); rod.position.copy(P(0, 1.27, a0)); wnd.add(rod);
+                [-1, 1].forEach(s => wnd.add(new T.Mesh(new T.TubeGeometry(new T.CatmullRomCurve3([P(s * 1.28, 1.24, a0), P(s * 1.5, 1.14, a0 + 0.25 * dl), P(s * 1.62, 1.0, am), P(s * 1.5, 1.14, a1 - 0.25 * dl), P(s * 1.28, 1.24, a1)]), 14, 0.028, 5, false), cu)));
+            }
+            reg('armature_winding', wnd, { spin: true, off: V(0, 0, 0) });
+            reg('air_gap', shell(1.31, -1.45, 1.45, M(0x22d3ee, 0, 0.5, { transparent: true, opacity: 0.28, emissive: 0x0891b2, emissiveIntensity: 0.7, depthWrite: false }), 64));
+
+            // Commutator: 24 copper bars on a mica core, V-rings
+            const com = new T.Group(), brass = M(0xe8a33d, 0.9, 0.25);
+            com.add(cylX(0.62, 0.9, M(0x2b2f3a, 0.2, 0.7), -2.1, 40));
+            for (let k = 0; k < 24; k++) { const th = k * TAU / 24, b = radial(box(0.9, 0.14, 0.15, brass, 0, 0, 0), th); b.position.copy(P(-2.1, 0.7, th)); com.add(b); }
+            [-2.58, -1.62].forEach(x => com.add(cylX(0.74, 0.08, M(0x2b2f3a, 0.2, 0.7), x, 40)));
+            reg('commutator', com, { spin: true, off: V(-1.3, 0, 0) });
+
+            // Carbon brushes, holders and springs
+            const gear = new T.Group(), carbon = M(0x15171c, 0.1, 0.8), hold = M(0x8a6f2c, 0.7, 0.4), spr = M(0xcbd5e1, 0.9, 0.3);
+            [-35, 35].forEach(deg => {
+                const th = deg * D;
+                const br = radial(box(0.4, 0.44, 0.3, carbon, 0, 0, 0), th); br.position.copy(P(-2.1, 0.92, th)); gear.add(br);
+                const hd = radial(box(0.5, 0.42, 0.4, hold, 0, 0, 0), th); hd.position.copy(P(-2.1, 1.3, th)); gear.add(hd);
+                const arm = radial(box(0.1, 1.0, 0.1, hold, 0, 0, 0), th); arm.position.copy(P(-2.1, 1.95, th)); gear.add(arm);
+                const rad = new T.Vector3(0, Math.sin(th), -Math.cos(th)), side = new T.Vector3(1, 0, 0), up = new T.Vector3().crossVectors(rad, side).normalize(), sp = [];
+                for (let q = 0; q <= 36; q++) { const f = q / 36, an = f * 6 * TAU; sp.push(rad.clone().multiplyScalar(1.02 + 0.2 * f).add(side.clone().multiplyScalar(0.05 * Math.cos(an))).add(up.clone().multiplyScalar(0.05 * Math.sin(an))).add(V(-2.1, 0, 0))); }
+                gear.add(new T.Mesh(new T.TubeGeometry(new T.CatmullRomCurve3(sp), 36, 0.01, 4, false), spr));
+            });
+            reg('brushes', gear, { off: V(-1.3, 0, 0) });
+
+            // Shaft with step shoulders and key
+            const sh2 = revolve([[0, -3.9], [0.26, -3.9], [0.26, 3.9], [0.3, 3.9], [0.3, 4.2], [0.26, 4.2], [0.26, 5.0], [0, 5.0]], M(0xaab4c3, 0.95, 0.18), 40, true);
+            sh2.add(box(0.7, 0.05, 0.08, M(0x9a7b2f, 0.8, 0.3), 4.6, 0.27, 0));
+            reg('shaft', sh2, { spin: true, off: V(1.0, 0, 0) });
+
+            // Sealed ball bearings
+            [-1, 1].forEach(sg => {
+                const a = sg * 3.52, hw = 0.17, bg = new T.Group(), steel = M(0xc3ccd9, 0.95, 0.2), rubber = M(0x1b1d24, 0.1, 0.8);
+                bg.add(revolve([[0.46, a - hw], [0.6, a - hw], [0.6, a + hw], [0.46, a + hw]], steel, 48, true));
+                bg.add(revolve([[0.28, a - hw], [0.36, a - hw], [0.36, a + hw], [0.28, a + hw]], steel, 48, true));
+                [-1, 1].forEach(s2 => bg.add(revolve([[0.36, a + s2 * hw], [0.46, a + s2 * hw], [0.46, a + s2 * (hw + 0.025)], [0.36, a + s2 * (hw + 0.025)]], rubber, 48, true)));
+                for (let k = 0; k < 9; k++) { const bl = new T.Mesh(new T.SphereGeometry(0.05, 12, 10), M(0xe5e7eb, 1, 0.1)); bl.position.copy(P(a, 0.41, k * TAU / 9)); bg.add(bl); }
+                reg('bearings', bg, { off: V(sg * 2.0, 0, 0) });
+            });
+
+            // Cooling fan on the shaft, commutator end
+            const fan = new T.Group(), fm = M(0x6d5ccf, 0.2, 0.35, { emissive: 0x20164a, emissiveIntensity: 0.3 });
+            fan.add(cylX(0.3, 0.22, M(0x4c3fb0, 0.4, 0.4), -2.85, 24));
+            fan.add(revolve([[0.3, -2.96], [1.05, -2.96], [1.05, -2.92], [0.3, -2.92]], fm, 48, true));
+            for (let k = 0; k < 10; k++) { const th = k * TAU / 10, bl = box(0.22, 0.62, 0.04, fm, 0, 0, 0); bl.position.copy(P(-2.8, 0.7, th)); bl.rotation.x = th - Math.PI / 2; bl.rotation.y = 0.4; fan.add(bl); }
+            reg('fan', fan, { spin: true, off: V(-2.2, 0, 0) });
+            return g;
+        }
+
+        function init3D() {
+            const container = document.getElementById('canvasContainer');
+            scene = new THREE.Scene();
+
+            camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
+            camera.position.set(0.5, 0.2, camDist);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.shadowMap.enabled = true;
+            container.appendChild(renderer.domElement);
+
+            // Lighting
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+            scene.add(ambientLight);
+
+            const dirLight1 = new THREE.DirectionalLight(0xffffff, 1.2);
+            dirLight1.position.set(15, 20, 15);
+            scene.add(dirLight1);
+
+            const dirLight2 = new THREE.DirectionalLight(0x00f0ff, 0.6);
+            dirLight2.position.set(-15, -10, -15);
+            scene.add(dirLight2);
+
+            generatorGroup = buildGenerator(cutMode); generatorGroup.rotation.y = -0.55; generatorGroup.rotation.x = 0.08; scene.add(generatorGroup);
+            camera.position.set(0.5, 0.2, camDist); camera.lookAt(0.5, 0, 0);
+
+            // Raycasting for interactive click/hover
+            const raycaster = new THREE.Raycaster();
+            const mouse = new THREE.Vector2();
+
+            container.addEventListener('click', (event) => {
+                const rect = renderer.domElement.getBoundingClientRect();
+                mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+                mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+                raycaster.setFromCamera(mouse, camera);
+                const intersects = raycaster.intersectObjects(generatorGroup.children, true);
+
+                if (intersects.length > 0) {
+                    let obj = intersects[0].object;
+                    while (obj && !obj.userData.id && obj.parent) {
+                        obj = obj.parent;
+                    }
+                    if (obj && obj.userData && obj.userData.id) {
+                        selectPart(obj.userData.id);
+                    }
+                }
+            });
+
+            // Orbit controls simulation via mouse drag
+            let isDragging = false;
+            let previousMousePosition = { x: 0, y: 0 };
+
+            container.addEventListener('mousedown', (e) => {
+                isDragging = true;
+                previousMousePosition = { x: e.clientX, y: e.clientY };
+            });
+
+            container.addEventListener('mousemove', (e) => {
+                if (!isDragging) return;
+                const deltaX = e.clientX - previousMousePosition.x;
+                const deltaY = e.clientY - previousMousePosition.y;
+
+                generatorGroup.rotation.y += deltaX * 0.008;
+                generatorGroup.rotation.x += deltaY * 0.008;
+
+                previousMousePosition = { x: e.clientX, y: e.clientY };
+            });
+
+            window.addEventListener('mouseup', () => { isDragging = false; });
+
+            // Touch support
+            container.addEventListener('touchstart', (e) => {
+                if (e.touches.length === 1) {
+                    isDragging = true;
+                    previousMousePosition = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+                }
+            });
+
+            container.addEventListener('touchmove', (e) => {
+                if (!isDragging || e.touches.length !== 1) return;
+                const deltaX = e.touches[0].clientX - previousMousePosition.x;
+                const deltaY = e.touches[0].clientY - previousMousePosition.y;
+
+                generatorGroup.rotation.y += deltaX * 0.008;
+                generatorGroup.rotation.x += deltaY * 0.008;
+
+                previousMousePosition = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+            });
+
+            window.addEventListener('touchend', () => { isDragging = false; });
+
+            // Zoom: mouse wheel and two-finger pinch
+            const setZoom = d => { camDist = Math.min(30, Math.max(8, d)); camera.position.set(0.5, 0.2, camDist); camera.lookAt(0.5, 0, 0); };
+            container.addEventListener('wheel', e => { e.preventDefault(); setZoom(camDist * (1 + Math.sign(e.deltaY) * 0.08)); }, { passive: false });
+            let pinch = 0;
+            container.addEventListener('touchstart', e => { if (e.touches.length === 2) { isDragging = false; pinch = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY); } }, { passive: true });
+            container.addEventListener('touchmove', e => { if (e.touches.length === 2 && pinch) { const d = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY); setZoom(camDist * pinch / d); pinch = d; } }, { passive: true });
+            window.setGeneratorZoom = setZoom;
+
+            // Cut section on/off and exploded view
+            document.getElementById('cutToggle').addEventListener('click', e => {
+                cutMode = !cutMode; const r = generatorGroup.rotation.clone();
+                scene.remove(generatorGroup); generatorGroup = buildGenerator(cutMode); generatorGroup.rotation.copy(r); scene.add(generatorGroup);
+                e.currentTarget.setAttribute('aria-pressed', cutMode); document.getElementById('cutLabel').textContent = 'Cut section: ' + (cutMode ? 'on' : 'off');
+                if (selectedPartId) selectPart(selectedPartId);
+            });
+            document.getElementById('explodeToggle').addEventListener('click', e => {
+                explodeTarget = explodeTarget ? 0 : 1; e.currentTarget.setAttribute('aria-pressed', !!explodeTarget);
+                document.getElementById('explodeLabel').textContent = explodeTarget ? 'Assemble' : 'Exploded view';
+            });
+
+            // Resize handler
+            window.addEventListener('resize', () => {
+                camera.aspect = container.clientWidth / container.clientHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(container.clientWidth, container.clientHeight);
+            });
+        }
+
+        // Animation Loop
+        function animate3D() {
+            requestAnimationFrame(animate3D);
+            if (isAnimating) {
+                const rt = generatorGroup && generatorGroup.getObjectByName('rotor');
+                if (rt) rt.rotation.x += 0.05;
+            }
+            explode += (explodeTarget - explode) * 0.08;
+            explodeItems.forEach(it => it.obj.position.copy(it.base).addScaledVector(it.off, explode));
+            renderer.render(scene, camera);
+        }
+
+        init3D();
+        animate3D();
+
+        // Selection & Inspector Logic
+        function selectPart(partId) {
+            selectedPartId = partId;
+            const partData = generatorParts.find(p => p.id === partId);
+            if (!partData) return;
+
+            // Highlight in sidebar list
+            document.querySelectorAll('.part-list-item').forEach(el => {
+                if (el.getAttribute('data-id') === partId) {
+                    el.classList.add('border-neonBlue', 'bg-slate-800/90');
+                } else {
+                    el.classList.remove('border-neonBlue', 'bg-slate-800/90');
+                }
+            });
+
+            // Highlight 3D parts
+            Object.keys(meshMap).forEach(id => {
+                (meshMap[id] || []).forEach(obj => obj.traverse(m => {
+                    if (!m.material || m.geometry.type === 'ShapeGeometry') return;
+                    if (m.material.emissive) { m.material.userData.e0 = m.material.userData.e0 === undefined ? m.material.emissive.getHex() : m.material.userData.e0; m.material.userData.i0 = m.material.userData.i0 === undefined ? m.material.emissiveIntensity : m.material.userData.i0;
+                        if (id === partId) { m.material.emissive.setHex(0x00f0ff); m.material.emissiveIntensity = 0.55; } else { m.material.emissive.setHex(m.material.userData.e0); m.material.emissiveIntensity = m.material.userData.i0; } }
+                }));
+            });
+
+            // Render Inspector Details
+            const inspector = document.getElementById('inspectorContent');
+            inspector.innerHTML = `
+                <div class="space-y-4 animate-fadeIn">
+                    <div class="p-4 rounded-xl bg-slate-900 border border-slate-800 relative overflow-hidden">
+                        <div class="absolute -right-6 -bottom-6 w-24 h-24 bg-neonBlue/10 rounded-full blur-xl"></div>
+                        <span class="text-[10px] uppercase tracking-widest px-2 py-1 rounded bg-neonBlue/10 text-neonBlue font-semibold border border-neonBlue/30">${partData.category}</span>
+                        <h3 class="font-display text-base font-bold text-white mt-2">${partData.name}</h3>
+                        <p class="text-xs text-slate-300 mt-2 leading-relaxed">${partData.function}</p>
+                    </div>
+
+                    <div class="space-y-2">
+                        <h4 class="text-xs font-semibold text-neonOrange flex items-center gap-1.5">
+                            <i class="fa-solid fa-flask"></i> Material & Construction
+                        </h4>
+                        <div class="p-3 bg-slate-900/60 border border-slate-800 rounded-xl text-xs text-slate-300">
+                            ${partData.material}
+                        </div>
+                    </div>
+
+                    <div class="space-y-2">
+                        <h4 class="text-xs font-semibold text-neonBlue flex items-center gap-1.5">
+                            <i class="fa-solid fa-gear"></i> Engineering Specs
+                        </h4>
+                        <div class="p-3 bg-slate-900/60 border border-slate-800 rounded-xl text-xs text-slate-300">
+                            ${partData.specs}
+                        </div>
+                    </div>
+
+                    <div class="pt-2">
+                        <button onclick="showNotification('${partData.name}', 'Engineered for high efficiency and minimal core losses in industrial power applications.')" class="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-neonBlue text-xs font-semibold rounded-xl border border-slate-700 transition flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-circle-info"></i> View Detailed Specs
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Control button listeners
+        const toggleBtn = document.getElementById('toggleAnimation');
+        const animBtnText = document.getElementById('animBtnText');
+        toggleBtn.addEventListener('click', () => {
+            isAnimating = !isAnimating;
+            if (isAnimating) {
+                animBtnText.innerText = "Pause Rotation";
+                toggleBtn.querySelector('i').className = "fa-solid fa-pause";
+            } else {
+                animBtnText.innerText = "Resume Rotation";
+                toggleBtn.querySelector('i').className = "fa-solid fa-play";
+            }
+        });
+
+        document.getElementById('resetCamera').addEventListener('click', () => {
+            window.setGeneratorZoom(15.5);
+            if (generatorGroup) generatorGroup.rotation.set(0.08, -0.55, 0);
+            showNotification("Camera Reset", "3D viewport camera and rotation have been reset to default angles.");
+        });
+
+        document.getElementById('clearSelection').addEventListener('click', () => {
+            selectedPartId = null;
+            document.querySelectorAll('.part-list-item').forEach(el => {
+                el.classList.remove('border-neonBlue', 'bg-slate-800/90');
+            });
+            Object.values(meshMap).forEach(mesh => {
+                if (mesh && mesh.material) {
+                    mesh.material.emissive = new THREE.Color(0x000000);
+                    mesh.material.emissiveIntensity = 0;
+                }
+            });
+            document.getElementById('inspectorContent').innerHTML = `
+                <div class="text-center py-12 px-4 space-y-3">
+                    <div class="w-16 h-16 mx-auto rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-center text-neonOrange text-2xl shadow-inner">
+                        <i class="fa-solid fa-cube animate-bounce"></i>
+                    </div>
+                    <h3 class="font-display text-sm font-bold text-white">No Component Selected</h3>
+                    <p class="text-xs text-slate-400 leading-relaxed">
+                        Click on any part in the 3D cut-section view or select from the components directory on the left to explore its engineering specifications, materials, and working principle.
+                    </p>
+                </div>
+            `;
+        });
+    </script>
+<nav class="app-nav app-nav-sticky" aria-label="Main"><a href="index.html" class="nav-tab"><i class="fa-solid fa-house"></i><span>Home</span></a><a href="dc-generator.html" class="nav-tab" aria-current="page"><i class="fa-solid fa-bolt"></i><span>Generator</span></a><a href="dc-motor.html" class="nav-tab"><i class="fa-solid fa-gears"></i><span>DC Motor</span></a><a href="index.html#library" class="nav-tab"><i class="fa-solid fa-layer-group"></i><span>Library</span></a></nav>
+</body>
+</html>

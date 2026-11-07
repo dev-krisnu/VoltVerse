@@ -1,0 +1,1235 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-950 text-slate-100">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>3D Electrical Insulator Explorer</title>
+    <link rel="icon" href="favicon.svg" type="image/svg+xml"><meta name="theme-color" content="#080c14"><link rel="stylesheet" href="css/tailwind.css"><link rel="stylesheet" href="css/app.css"><link rel="stylesheet" href="css/fa/fa.css"><script src="vendor/three.min.js"></script><script src="vendor/OrbitControls.js"></script><script src="vendor/lucide.min.js"></script>
+  <!-- Tailwind CSS -->
+  <!-- Three.js & OrbitControls -->
+  <!-- Lucide Icons -->
+  <!-- Font Family -->
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+    .font-mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(15, 23, 42, 0.6);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(51, 65, 85, 0.8);
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(71, 85, 105, 1);
+    }
+    /* Dynamic canvas overlay styling */
+    .annotation-label {
+      pointer-events: auto;
+      transition: opacity 0.2s ease, transform 0.1s ease-out;
+      will-change: transform, opacity;
+    }
+  </style>
+</head>
+<body class="h-full flex flex-col overflow-hidden bg-slate-950 text-slate-100 selection:bg-cyan-500 selection:text-slate-950">
+
+  <!-- TOP HEADER -->
+  <header class="flex-none border-b border-slate-800/80 bg-slate-900/90 backdrop-blur px-4 py-3 sm:px-6 flex items-center justify-between z-20 shadow-lg">
+    <div class="flex items-center space-x-3">
+      <div class="p-2 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600 text-slate-950 font-bold shadow-md shadow-cyan-500/20">
+        <i data-lucide="zap" class="w-5 h-5"></i>
+      </div>
+      <div>
+        <h1 class="text-lg sm:text-xl font-bold tracking-tight text-white flex items-center gap-2">
+          3D Electrical Insulator Visualizer
+          <span class="text-xs font-mono font-normal px-2 py-0.5 rounded border border-cyan-500/30 bg-cyan-500/10 text-cyan-400">T&D Eng v2.4</span>
+        </h1>
+        <p class="text-xs text-slate-400 hidden sm:block">Interactive 3D mechanical & electrical CAD models with spatial annotations</p>
+      </div>
+    </div>
+
+    <!-- Stats & Reset Controls -->
+    <div class="flex items-center space-x-2">
+      <button id="resetCamBtn" class="flex items-center space-x-1.5 px-3 py-1.5 rounded-md text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition shadow-sm">
+        <i data-lucide="rotate-ccw" class="w-3.5 h-3.5 text-cyan-400"></i>
+        <span class="hidden sm:inline">Reset Camera</span>
+      </button>
+      <button id="toggleWireframeBtn" class="flex items-center space-x-1.5 px-3 py-1.5 rounded-md text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition shadow-sm">
+        <i data-lucide="box" class="w-3.5 h-3.5 text-amber-400"></i>
+        <span class="hidden sm:inline">Wireframe</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT CONTAINER -->
+  <div class="flex-1 flex flex-col lg:flex-row overflow-hidden relative">
+
+    <!-- LEFT / TOP CONTROLS SIDEBAR -->
+    <aside class="flex-none w-full lg:w-80 border-b lg:border-b-0 lg:border-r border-slate-800 bg-slate-900/50 backdrop-blur p-4 flex flex-col space-y-4 overflow-y-auto max-h-[35vh] lg:max-h-none z-10">
+      
+      <!-- Insulator Category Selector -->
+      <div>
+        <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+          <i data-lucide="layers" class="w-3.5 h-3.5 text-cyan-400"></i>
+          Insulator Category
+        </label>
+        <div class="grid grid-cols-2 lg:grid-cols-1 gap-1.5" id="categoryContainer">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- Insulator Sub-Type Selector -->
+      <div>
+        <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+          <i data-lucide="git-fork" class="w-3.5 h-3.5 text-emerald-400"></i>
+          Sub-Type / Voltage Variant
+        </label>
+        <div class="space-y-1.5" id="subTypeContainer">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- Quick Interactive Tip -->
+      <div class="hidden lg:block mt-auto p-3 rounded-xl bg-slate-900/90 border border-slate-800 text-xs text-slate-400 space-y-1.5">
+        <div class="font-semibold text-slate-300 flex items-center gap-1">
+          <i data-lucide="mouse-pointer" class="w-3.5 h-3.5 text-cyan-400"></i> 3D Navigation Tip
+        </div>
+        <p>• <strong>Left Click + Drag:</strong> Rotate Model</p>
+        <p>• <strong>Right Click + Drag:</strong> Pan View</p>
+        <p>• <strong>Scroll Wheel:</strong> Zoom In/Out</p>
+        <p class="text-[11px] text-cyan-400/90 pt-1 border-t border-slate-800">Labels stay clear of the model dynamically.</p>
+      </div>
+    </aside>
+
+    <!-- MIDDLE VIEWPORT & BOTTOM PANEL WRAPPER -->
+    <main class="flex-1 flex flex-col relative overflow-hidden bg-slate-950">
+
+      <!-- 3D VIEWPORT CANVAS CONTAINER -->
+      <div id="canvasContainer" class="flex-1 relative cursor-grab active:cursor-grabbing w-full h-full min-h-[300px]">
+        
+        <!-- Render Target Canvas -->
+        <canvas id="threeCanvas" class="w-full h-full block"></canvas>
+
+        <!-- Dynamic 2D SVG Line Canvas for Label Connections -->
+        <svg id="svgOverlay" class="absolute inset-0 w-full h-full pointer-events-none z-10 overflow-visible">
+          <!-- Line paths created dynamically -->
+        </svg>
+
+        <!-- HTML Dynamic Annotations Container (Floating Outside Model) -->
+        <div id="labelsContainer" class="absolute inset-0 pointer-events-none z-10 overflow-hidden">
+          <!-- Floating Label elements inserted dynamically -->
+        </div>
+
+        <!-- Watermark / HUD Badge -->
+        <div class="absolute top-3 right-3 pointer-events-none bg-slate-900/80 backdrop-blur border border-slate-800 text-slate-300 px-3 py-1.5 rounded-lg text-xs font-mono flex items-center gap-2 shadow-lg">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          <span id="activeModelTitle">Pin Type Insulator</span>
+        </div>
+      </div>
+
+      <!-- BOTTOM COLLAPSIBLE & SCROLLABLE DESCRIPTION PANEL -->
+      <div id="descPanel" class="flex-none bg-slate-900/95 border-t border-slate-800 transition-all duration-300 ease-in-out z-20 flex flex-col">
+        
+        <!-- Toggle Header Bar -->
+        <button id="toggleDescBtn" class="w-full px-4 py-2.5 bg-slate-900 hover:bg-slate-850 flex items-center justify-between border-b border-slate-800/80 cursor-pointer transition select-none">
+          <div class="flex items-center space-x-2">
+            <i data-lucide="file-text" class="w-4 h-4 text-cyan-400"></i>
+            <span class="font-semibold text-sm text-slate-200" id="descPanelHeaderTitle">Technical Specifications & Engineering Description</span>
+            <span class="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-400 font-mono hidden sm:inline-block" id="voltageBadge">11 kV - 33 kV</span>
+          </div>
+          <div class="flex items-center space-x-2 text-xs text-slate-400">
+            <span class="hidden sm:inline" id="toggleText">Hide Details</span>
+            <i id="toggleIcon" data-lucide="chevron-down" class="w-4 h-4 transition-transform duration-300"></i>
+          </div>
+        </button>
+
+        <!-- Scrollable Detail Content -->
+        <div id="descContent" class="p-4 sm:p-6 overflow-y-auto max-h-[35vh] lg:max-h-[300px] space-y-6 text-sm text-slate-300">
+          
+          <!-- Top Grid: Overview & Principle -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="bg-slate-950/60 p-4 rounded-xl border border-slate-800">
+              <h3 class="text-xs font-bold font-mono text-cyan-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                <i data-lucide="info" class="w-3.5 h-3.5"></i> Technical Overview
+              </h3>
+              <p id="descOverview" class="leading-relaxed text-slate-300">
+                Loading overview...
+              </p>
+            </div>
+            
+            <div class="bg-slate-950/60 p-4 rounded-xl border border-slate-800">
+              <h3 class="text-xs font-bold font-mono text-emerald-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                <i data-lucide="activity" class="w-3.5 h-3.5"></i> Working Principle & Performance
+              </h3>
+              <p id="descPrinciple" class="leading-relaxed text-slate-300">
+                Loading working principle...
+              </p>
+            </div>
+          </div>
+
+          <!-- Bottom Grid: Mechanical Specs & Key Parts -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            
+            <!-- Electrical & Mechanical Data Matrix -->
+            <div class="md:col-span-1 bg-slate-950/60 p-4 rounded-xl border border-slate-800">
+              <h3 class="text-xs font-bold font-mono text-amber-400 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+                <i data-lucide="sliders" class="w-3.5 h-3.5"></i> Rating & Specs
+              </h3>
+              <dl class="space-y-2 text-xs" id="specsList">
+                <!-- Dynamic key-value pairs -->
+              </dl>
+            </div>
+
+            <!-- Key Components Breakdown -->
+            <div class="md:col-span-2 bg-slate-950/60 p-4 rounded-xl border border-slate-800">
+              <h3 class="text-xs font-bold font-mono text-purple-400 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+                <i data-lucide="cpu" class="w-3.5 h-3.5"></i> Annotated Components Breakdown
+              </h3>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="partsBreakdownGrid">
+                <!-- Dynamic parts info -->
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Typical Applications -->
+          <div class="bg-slate-950/40 p-3.5 rounded-xl border border-slate-800/80 flex flex-wrap items-center gap-2">
+            <span class="text-xs font-bold font-mono text-slate-400 uppercase tracking-wider mr-2">Target Deployment:</span>
+            <div id="applicationsBadgeList" class="flex flex-wrap gap-1.5">
+              <!-- Dynamic Badges -->
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </main>
+
+  </div>
+
+  <!-- APPLICATION DATA & LOGIC SCRIPTS -->
+  <script>
+    // =========================================================================
+    // INSULATOR DATABASE & SPECIFICATIONS
+    // =========================================================================
+    const INSULATOR_DATA = [
+      {
+        id: "pin",
+        name: "Pin Insulator",
+        icon: "pin",
+        subtypes: [
+          {
+            id: "pin-single",
+            name: "Single-Petticoat (11kV)",
+            voltage: "11 kV",
+            overview: "A single-shed porcelain pin insulator mounted on a threaded galvanized steel pin. Ideal for lower voltage distribution runs where minimal creepage path is required.",
+            principle: "The top groove holds the conductor while a soft aluminum binding wire holds it rigid. Flashover distance is governed by the single umbrella shed.",
+            specs: {
+              "Creepage Distance": "230 mm",
+              "Dry Flashover Voltage": "55 kV",
+              "Wet Flashover Voltage": "35 kV",
+              "Cantilever Strength": "5 kN - 10 kN",
+              "Standard Standard": "IEC 60383 / IS 731"
+            },
+            apps: ["11kV Distribution Lines", "Rural Electrification", "Straight Pole Supports"],
+            parts: [
+              { name: "Top Conductor Groove", pos: [0, 1.8, 0], desc: "Holds main conductor cable tied with binding wire" },
+              { name: "Shed / Petticoat", pos: [0, 0.9, 0], desc: "Shades lower surface from wet weather, lengthening flashover path" },
+              { name: "Porcelain Body", pos: [0, 0.2, 0], desc: "High dielectric strength glazed electrical porcelain core" },
+              { name: "Galvanized Steel Pin", pos: [0, -1.2, 0], desc: "Secures insulator structurally to the cross-arm of the pole" }
+            ]
+          },
+          {
+            id: "pin-multi",
+            name: "Multi-Petticoat (33kV)",
+            voltage: "33 kV",
+            overview: "Multi-petticoat pin insulators use stacked cascading rain sheds to prevent water continuity down the body, allowing operation up to 33 kV safely.",
+            principle: "Multiple petticoats create dry zones under the rain skirts during storm conditions, keeping leakage currents low across high potential gradients.",
+            specs: {
+              "Creepage Distance": "840 mm",
+              "Dry Flashover Voltage": "105 kV",
+              "Wet Flashover Voltage": "75 kV",
+              "Cantilever Strength": "10.8 kN",
+              "Standard": "IEC 60383"
+            },
+            apps: ["33kV Feeder Lines", "Substation Take-offs", "Primary Distribution"],
+            parts: [
+              { name: "Conductor Saddle", pos: [0, 2.3, 0], desc: "Deep groove design for heavy conductor binding" },
+              { name: "Upper Rain Shed", pos: [0, 1.4, 0], desc: "Primary water shield shedding heavy rainfall" },
+              { name: "Lower Rain Sheds", pos: [0, 0.4, 0], desc: "Secondary dry zones preventing flashover continuity" },
+              { name: "Cemented Metal Socket", pos: [0, -0.6, 0], desc: "Portland cement joint securing internal steel pin base" }
+            ]
+          }
+        ]
+      },
+      {
+        id: "suspension",
+        name: "Suspension Insulator",
+        icon: "layers",
+        subtypes: [
+          {
+            id: "suspension-single",
+            name: "Disc Unit (Cap & Pin)",
+            voltage: "11 kV per disc",
+            overview: "Individual disc unit equipped with a malleable iron cap and steel pin. Multiple discs are strung together in series for high voltage lines.",
+            principle: "Each disc handles around 11kV operating voltage. Cap and ball-socket fittings allow flexibility while insulating high tensile loads.",
+            specs: {
+              "Disc Diameter": "255 mm",
+              "Unit Spacing": "146 mm",
+              "Electromechanical Failing Load": "70 kN - 160 kN",
+              "Puncture Voltage": "110 kV",
+              "Standard": "IEC 60305"
+            },
+            apps: ["High Voltage Transmission Strings", "Substation Bus Supports"],
+            parts: [
+              { name: "Malleable Iron Cap", pos: [0, 0.9, 0], desc: "Top socket attachment for connecting upper string units" },
+              { name: "Toughened Glass/Porcelain Disc", pos: [0, 0.3, 0], desc: "High insulation disc umbrella providing creepage path" },
+              { name: "Galvanized Steel Pin", pos: [0, -0.6, 0], desc: "Bottom ball connection fitting into next unit socket" }
+            ]
+          },
+          {
+            id: "suspension-string",
+            name: "EHV String Assembly (132kV)",
+            voltage: "132 kV",
+            overview: "A vertical string assembly composed of multiple disc units joined flexibly with ball-and-socket joints, hanging from transmission tower arms.",
+            principle: "Voltage drops across each disc non-linearly (highest across the bottom disc near conductor). Stringing provides mechanical flexibility under wind swing.",
+            specs: {
+              "Disc Count": "9 to 10 units",
+              "Total Creepage": "2900 mm",
+              "Impulse Withstand (BIL)": "650 kV peak",
+              "Tensile Rating": "120 kN",
+              "Standard": "IEEE 998 / IEC 60383"
+            },
+            apps: ["132kV Transmission Lines", "Suspension Steel Lattice Towers"],
+            parts: [
+              { name: "Tower Anchor Shackle", pos: [0, 3.8, 0], desc: "Attaches upper string hardware to cross-arm steel" },
+              { name: "Insulator Disc String", pos: [0, 0.5, 0], desc: "Series chain of 9 porcelain units isolating high potential" },
+              { name: "Corona Shield Ring", pos: [0, -2.6, 0], desc: "Smooths electric field gradient near lower line hardware" },
+              { name: "Suspension Conductor Clamp", pos: [0, -3.4, 0], desc: "Supports phase conductor cable without pinching strain" }
+            ]
+          }
+        ]
+      },
+      {
+        id: "strain",
+        name: "Strain / Tension Insulator",
+        icon: "git-commit",
+        subtypes: [
+          {
+            id: "strain-horizontal",
+            name: "Horizontal Strain String",
+            voltage: "66 kV - 220 kV",
+            overview: "Arranged horizontally at line terminations, angle turns, or long river crossings to bear extreme mechanical line tension alongside high voltage isolation.",
+            principle: "Discs are placed under direct pull tension rather than gravity hanging. Hardware includes heavy-duty strain clamps and extension links.",
+            specs: {
+              "Mechanical Failing Load": "160 kN - 300 kN",
+              "Creepage Path": "3200 mm",
+              "Max Line Angle": "90 Degrees / Dead-End",
+              "Standard": "IEC 60383-2"
+            },
+            apps: ["Dead-end Transmission Towers", "River & Highway Spans", "Sharp Line Turns"],
+            parts: [
+              { name: "Tower Attachment Link", pos: [-3.5, 0, 0], desc: "Heavy steel clevis anchor to tower structure" },
+              { name: "Tension Disc Assembly", pos: [0, 0, 0], desc: "Horizontal string of high mechanical strength porcelain discs" },
+              { name: "Arcing Horns", pos: [2.5, 0.8, 0], desc: "Diverts flashover arcs away from disc surfaces" },
+              { name: "Dead-end Strain Clamp", pos: [3.4, 0, 0], desc: "Secures high-tension conductor end mechanically" }
+            ]
+          }
+        ]
+      },
+      {
+        id: "shackle",
+        name: "Shackle Insulator",
+        icon: "circle-dot",
+        subtypes: [
+          {
+            id: "shackle-spool",
+            name: "Low Voltage Spool Insulator",
+            voltage: "< 1.1 kV",
+            overview: "Compact spool-shaped porcelain insulator for low-voltage secondary distribution lines, house service drops, and distribution poles.",
+            principle: "Mounted horizontally or vertically using a metal D-iron bolt. The conductor cable wraps around the smooth outer middle groove.",
+            specs: {
+              "Working Voltage": "415V / 1100V",
+              "Dry Flashover": "25 kV",
+              "Wet Flashover": "10 kV",
+              "Transverse Strength": "11.5 kN",
+              "Standard": "IS 1445 / IEC 60383"
+            },
+            apps: ["Low Voltage Street Mains", "Consumer Service Drops", "Pole End Dead-ends"],
+            parts: [
+              { name: "Central Bolt Hole", pos: [0, 1.4, 0], desc: "Passage for heavy mounting pin/bolt to D-iron bracket" },
+              { name: "Tapered Glazed Body", pos: [0, 0.3, 0], desc: "Smooth ceramic spool body resistant to surface tracking" },
+              { name: "Conductor Wrapping Groove", pos: [0, -0.2, 0], desc: "Curved central channel holding low voltage phase/neutral wire" },
+              { name: "Base Support Flange", pos: [0, -1.2, 0], desc: "Rests securely against structural pole metal plate" }
+            ]
+          }
+        ]
+      },
+      {
+        id: "post",
+        name: "Post Insulator",
+        icon: "column",
+        subtypes: [
+          {
+            id: "post-substation",
+            name: "Station Bus Post (132kV)",
+            voltage: "132 kV",
+            overview: "Rigid column post insulator designed to support substation busbars, high-voltage isolator switches, and switchgear terminals against high bending moments.",
+            principle: "Solid core design with high mechanical bending resistance. Does not use internal cement pockets subject to thermal expansion cracking.",
+            specs: {
+              "Bending Moment": "8 kN.m - 12 kN.m",
+              "Torsional Load": "3.5 kN.m",
+              "Impulse Voltage (BIL)": "650 kV",
+              "Height": "1450 mm",
+              "Standard": "IEC 60273 / ANSI C29.9"
+            },
+            apps: ["Outdoor Substation Busbars", "Air-Break Disconnect Switches", "Transformer Terminals"],
+            parts: [
+              { name: "Top Busbar Clamp Flange", pos: [0, 2.7, 0], desc: "Bolted metal plate securing rigid aluminum busbar tubes" },
+              { name: "Solid Ceramic Column", pos: [0, 1.0, 0], desc: "High strength porcelain core designed for bending stiffness" },
+              { name: "Alternating Rain Sheds", pos: [0, -0.5, 0], desc: "Optimized shed profiles for uniform field distribution" },
+              { name: "Base Fixing Flange", pos: [0, -2.6, 0], desc: "Heavy cast iron flange bolted to substation steel gantry" }
+            ]
+          }
+        ]
+      },
+      {
+        id: "polymer",
+        name: "Polymer / Composite",
+        icon: "shield-alert",
+        subtypes: [
+          {
+            id: "polymer-longrod",
+            name: "Silicone Rubber Long-Rod (220kV)",
+            voltage: "220 kV",
+            overview: "Modern lightweight composite insulator featuring a fiberglass core rod encased in hydrophobic silicone rubber weather sheds with crimped metal end fittings.",
+            principle: "Hydrophobic silicone sheds repel moisture droplets, preventing continuous conductive wet films in highly polluted or coastal salt spray environments.",
+            specs: {
+              "Weight Reduction": "70% - 80% lighter than glass",
+              "Specified Tensile Load": "120 kN - 210 kN",
+              "Creepage Distance": "6800 mm",
+              "Hydrophobicity Class": "HC1 - HC2 (STRI Standard)",
+              "Standard": "IEC 61109"
+            },
+            apps: ["Heavy Pollution & Coastal Areas", "EHV & UHV Transmission", "Vandal-Prone Overhead Lines"],
+            parts: [
+              { name: "Top Steel Clevis Fitting", pos: [0, 3.4, 0], desc: "Forged steel end fitting crimped directly onto internal rod" },
+              { name: "Silicone Weather Sheds", pos: [0, 0.8, 0], desc: "High hydrophobicity skirts repelling salt and dust pollution" },
+              { name: "FRP Core Rod", pos: [0, -0.6, 0], desc: "Internal Fiberglass Reinforced Polymer rod giving high tensile strength" },
+              { name: "Bottom Line Fitting", pos: [0, -3.2, 0], desc: "Line-side hardware clamp with integrated grading ring" }
+            ]
+          }
+        ]
+      }
+    ];
+
+    // =========================================================================
+    // GLOBAL APP STATE & THREE.JS VARIABLES
+    // =========================================================================
+    let currentCategory = INSULATOR_DATA[0];
+    let currentSubType = INSULATOR_DATA[0].subtypes[0];
+    let isWireframe = false;
+
+    // ThreeJS Globals
+    let scene, camera, renderer, controls;
+    let currentModelGroup = null;
+    let floatingLabelElements = [];
+    let annotationData = []; // [{ element, line, targetPos3D, labelPos2D }]
+
+    // DOM Elements
+    const canvasContainer = document.getElementById('canvasContainer');
+    const threeCanvas = document.getElementById('threeCanvas');
+    const svgOverlay = document.getElementById('svgOverlay');
+    const labelsContainer = document.getElementById('labelsContainer');
+
+    // =========================================================================
+    // THREE.JS INITIALIZATION
+    // =========================================================================
+    function initThreeJS() {
+      // Scene
+      scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x030712); // Tailwind slate-950
+      scene.fog = new THREE.FogExp2(0x030712, 0.035);
+
+      // Camera
+      camera = new THREE.PerspectiveCamera(45, canvasContainer.clientWidth / canvasContainer.clientHeight, 0.1, 100);
+      camera.position.set(5, 3, 7);
+
+      // Renderer
+      renderer = new THREE.WebGLRenderer({ canvas: threeCanvas, antialias: true, alpha: false });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.setSize(canvasContainer.clientWidth, canvasContainer.clientHeight);
+      renderer.shadowMap.enabled = true;
+      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.1;
+
+      // Orbit Controls
+      controls = new THREE.OrbitControls(camera, renderer.domElement);
+      controls.enableDamping = true;
+      controls.dampingFactor = 0.05;
+      controls.maxPolarAngle = Math.PI - 0.05;
+      controls.minDistance = 2;
+      controls.maxDistance = 25;
+
+      // Lighting Setup
+      const ambientLight = new THREE.AmbientLight(0xdbeafe, 0.7);
+      scene.add(ambientLight);
+
+      const mainDirLight = new THREE.DirectionalLight(0xffffff, 1.3);
+      mainDirLight.position.set(8, 12, 10);
+      mainDirLight.castShadow = true;
+      mainDirLight.shadow.mapSize.width = 2048;
+      mainDirLight.shadow.mapSize.height = 2048;
+      mainDirLight.shadow.bias = -0.0001;
+      scene.add(mainDirLight);
+
+      const blueRimLight = new THREE.DirectionalLight(0x38bdf8, 1.2);
+      blueRimLight.position.set(-10, 5, -8);
+      scene.add(blueRimLight);
+
+      const warmFillLight = new THREE.DirectionalLight(0xf59e0b, 0.4);
+      warmFillLight.position.set(0, -5, 5);
+      scene.add(warmFillLight);
+
+      // Ground Grid & Shadow Receiver Plane
+      const gridHelper = new THREE.GridHelper(20, 20, 0x1e293b, 0x0f172a);
+      gridHelper.position.y = -3.8;
+      scene.add(gridHelper);
+
+      const shadowPlaneGeo = new THREE.PlaneGeometry(30, 30);
+      const shadowPlaneMat = new THREE.ShadowMaterial({ opacity: 0.4 });
+      const shadowPlane = new THREE.Mesh(shadowPlaneGeo, shadowPlaneMat);
+      shadowPlane.rotation.x = -Math.PI / 2;
+      shadowPlane.position.y = -3.801;
+      shadowPlane.receiveShadow = true;
+      scene.add(shadowPlane);
+
+      // Resize Listener
+      window.addEventListener('resize', onWindowResize);
+
+      // Start Render Loop
+      animate();
+    }
+
+    function onWindowResize() {
+      if (!canvasContainer || !renderer || !camera) return;
+      const w = canvasContainer.clientWidth;
+      const h = canvasContainer.clientHeight;
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+      renderer.setSize(w, h);
+    }
+
+    // =========================================================================
+    // PROCEDURAL 3D INSULATOR GEOMETRY GENERATORS
+    // =========================================================================
+
+    // Shared Engineering Materials
+    const porcelainMat = new THREE.MeshPhysicalMaterial({
+      color: 0x8b5cf6, // Default purple glaze
+      roughness: 0.15,
+      metalness: 0.1,
+      clearcoat: 0.8,
+      clearcoatRoughness: 0.1
+    });
+
+    const steelMat = new THREE.MeshStandardMaterial({
+      color: 0x94a3b8,
+      roughness: 0.3,
+      metalness: 0.85
+    });
+
+    const siliconeMat = new THREE.MeshStandardMaterial({
+      color: 0xf43f5e, // Reddish composite silicone
+      roughness: 0.6,
+      metalness: 0.05
+    });
+
+    const frpRodMat = new THREE.MeshStandardMaterial({
+      color: 0x0284c7,
+      roughness: 0.4,
+      metalness: 0.2
+    });
+
+    function createSinglePinModel() {
+      const group = new THREE.Group();
+      porcelainMat.color.setHex(0xa855f7); // Deep glazed porcelain
+
+      // Main Glazed Body (Revolved Profile)
+      const points = [];
+      points.push(new THREE.Vector2(0.3, 2.0));
+      points.push(new THREE.Vector2(0.6, 1.8));
+      points.push(new THREE.Vector2(0.7, 1.6));
+      points.push(new THREE.Vector2(1.5, 1.1)); // Outer shed lip
+      points.push(new THREE.Vector2(1.4, 0.9));
+      points.push(new THREE.Vector2(0.5, 0.9)); // Under shed groove
+      points.push(new THREE.Vector2(0.6, 0.2));
+      points.push(new THREE.Vector2(0.4, -0.5));
+      const bodyGeo = new THREE.LatheGeometry(points, 32);
+      const bodyMesh = new THREE.Mesh(bodyGeo, porcelainMat);
+      bodyMesh.castShadow = true;
+      bodyMesh.receiveShadow = true;
+      group.add(bodyMesh);
+
+      // Top Conductor Cutout Groove
+      const grooveGeo = new THREE.CylinderGeometry(0.65, 0.65, 0.25, 32);
+      const grooveMesh = new THREE.Mesh(grooveGeo, porcelainMat);
+      grooveMesh.position.y = 1.8;
+      group.add(grooveMesh);
+
+      // Galvanized Pin
+      const pinGeo = new THREE.CylinderGeometry(0.18, 0.22, 1.8, 16);
+      const pinMesh = new THREE.Mesh(pinGeo, steelMat);
+      pinMesh.position.y = -1.2;
+      pinMesh.castShadow = true;
+      group.add(pinMesh);
+
+      const pinBaseGeo = new THREE.CylinderGeometry(0.4, 0.4, 0.15, 6);
+      const pinBaseMesh = new THREE.Mesh(pinBaseGeo, steelMat);
+      pinBaseMesh.position.y = -1.9;
+      group.add(pinBaseMesh);
+
+      return group;
+    }
+
+    function createMultiPinModel() {
+      const group = new THREE.Group();
+      porcelainMat.color.setHex(0x9333ea);
+
+      // Top Saddle Body
+      const topPoints = [];
+      topPoints.push(new THREE.Vector2(0.35, 2.4));
+      topPoints.push(new THREE.Vector2(0.7, 2.2));
+      topPoints.push(new THREE.Vector2(1.8, 1.4)); // Large upper shed
+      topPoints.push(new THREE.Vector2(1.6, 1.2));
+      topPoints.push(new THREE.Vector2(0.6, 1.2));
+      const topGeo = new THREE.LatheGeometry(topPoints, 36);
+      const topMesh = new THREE.Mesh(topGeo, porcelainMat);
+      topMesh.castShadow = true;
+      group.add(topMesh);
+
+      // Middle Petticoat
+      const midPoints = [];
+      midPoints.push(new THREE.Vector2(0.65, 1.2));
+      midPoints.push(new THREE.Vector2(1.4, 0.5));
+      midPoints.push(new THREE.Vector2(1.2, 0.35));
+      midPoints.push(new THREE.Vector2(0.55, 0.35));
+      const midGeo = new THREE.LatheGeometry(midPoints, 36);
+      const midMesh = new THREE.Mesh(midGeo, porcelainMat);
+      midMesh.castShadow = true;
+      group.add(midMesh);
+
+      // Lower Petticoat
+      const lowPoints = [];
+      lowPoints.push(new THREE.Vector2(0.55, 0.35));
+      lowPoints.push(new THREE.Vector2(1.1, -0.2));
+      lowPoints.push(new THREE.Vector2(0.9, -0.35));
+      lowPoints.push(new THREE.Vector2(0.45, -0.5));
+      const lowGeo = new THREE.LatheGeometry(lowPoints, 36);
+      const lowMesh = new THREE.Mesh(lowGeo, porcelainMat);
+      lowMesh.castShadow = true;
+      group.add(lowMesh);
+
+      // Pin & Socket Base
+      const socketGeo = new THREE.CylinderGeometry(0.45, 0.35, 0.6, 16);
+      const socketMesh = new THREE.Mesh(socketGeo, steelMat);
+      socketMesh.position.y = -0.7;
+      group.add(socketMesh);
+
+      const pinGeo = new THREE.CylinderGeometry(0.2, 0.22, 1.4, 16);
+      const pinMesh = new THREE.Mesh(pinGeo, steelMat);
+      pinMesh.position.y = -1.4;
+      group.add(pinMesh);
+
+      return group;
+    }
+
+    function createDiscUnitModel() {
+      const group = new THREE.Group();
+
+      // Toughened Glass / Porcelain Disc Profile
+      const points = [];
+      points.push(new THREE.Vector2(0.35, 0.8));
+      points.push(new THREE.Vector2(0.6, 0.7));
+      points.push(new THREE.Vector2(1.8, 0.3)); // Wide disc outer flare
+      points.push(new THREE.Vector2(1.75, 0.15));
+      points.push(new THREE.Vector2(0.5, 0.35));
+      points.push(new THREE.Vector2(0.3, 0.1));
+      const discGeo = new THREE.LatheGeometry(points, 36);
+      const discMat = new THREE.MeshPhysicalMaterial({
+        color: 0x0284c7, // Toughened green/blue glass
+        roughness: 0.1,
+        transmission: 0.6,
+        opacity: 0.9,
+        transparent: true,
+        ior: 1.5
+      });
+      const discMesh = new THREE.Mesh(discGeo, discMat);
+      discMesh.position.y = 0.1;
+      discMesh.castShadow = true;
+      group.add(discMesh);
+
+      // Iron Cap (Top)
+      const capGeo = new THREE.CylinderGeometry(0.45, 0.55, 0.5, 16);
+      const capMesh = new THREE.Mesh(capGeo, steelMat);
+      capMesh.position.y = 0.9;
+      capMesh.castShadow = true;
+      group.add(capMesh);
+
+      const capEyeGeo = new THREE.TorusGeometry(0.2, 0.08, 12, 16);
+      const capEyeMesh = new THREE.Mesh(capEyeGeo, steelMat);
+      capEyeMesh.position.y = 1.25;
+      group.add(capEyeMesh);
+
+      // Steel Ball Pin (Bottom)
+      const pinGeo = new THREE.CylinderGeometry(0.18, 0.18, 0.6, 16);
+      const pinMesh = new THREE.Mesh(pinGeo, steelMat);
+      pinMesh.position.y = -0.3;
+      group.add(pinMesh);
+
+      const ballGeo = new THREE.SphereGeometry(0.28, 16, 16);
+      const ballMesh = new THREE.Mesh(ballGeo, steelMat);
+      ballMesh.position.y = -0.65;
+      group.add(ballMesh);
+
+      return group;
+    }
+
+    function createStringSuspensionModel() {
+      const group = new THREE.Group();
+      const numDiscs = 7;
+      const spacing = 0.95;
+      const startY = 3.2;
+
+      // Top Hardware
+      const topShackleGeo = new THREE.TorusGeometry(0.3, 0.09, 12, 16);
+      const topShackle = new THREE.Mesh(topShackleGeo, steelMat);
+      topShackle.position.y = startY + 0.6;
+      group.add(topShackle);
+
+      // Stack Discs
+      for (let i = 0; i < numDiscs; i++) {
+        const discUnit = createDiscUnitModel();
+        discUnit.position.y = startY - (i * spacing);
+        discUnit.scale.set(0.85, 0.85, 0.85);
+        group.add(discUnit);
+      }
+
+      const bottomY = startY - (numDiscs * spacing) + 0.3;
+
+      // Corona Shield Ring
+      const ringGeo = new THREE.TorusGeometry(1.4, 0.07, 16, 40);
+      const ringMesh = new THREE.Mesh(ringGeo, steelMat);
+      ringMesh.rotation.x = Math.PI / 2;
+      ringMesh.position.y = bottomY;
+      group.add(ringMesh);
+
+      // Suspension Clamp Hardware
+      const clampGeo = new THREE.BoxGeometry(1.6, 0.25, 0.3);
+      const clampMesh = new THREE.Mesh(clampGeo, steelMat);
+      clampMesh.position.y = bottomY - 0.5;
+      group.add(clampMesh);
+
+      // Conductor Cable Tube
+      const cableGeo = new THREE.CylinderGeometry(0.12, 0.12, 5, 16);
+      const cableMesh = new THREE.Mesh(cableGeo, steelMat);
+      cableMesh.rotation.z = Math.PI / 2;
+      cableMesh.position.y = bottomY - 0.65;
+      group.add(cableMesh);
+
+      return group;
+    }
+
+    function createHorizontalStrainModel() {
+      const group = createStringSuspensionModel();
+      // Rotate string horizontally
+      group.rotation.z = -Math.PI / 2;
+      group.position.set(-0.5, 0, 0);
+      return group;
+    }
+
+    function createShackleModel() {
+      const group = new THREE.Group();
+      porcelainMat.color.setHex(0xc084fc);
+
+      // Spool Lathe Profile
+      const points = [];
+      points.push(new THREE.Vector2(0.8, 1.4));
+      points.push(new THREE.Vector2(0.9, 1.2));
+      points.push(new THREE.Vector2(0.45, 0.6));
+      points.push(new THREE.Vector2(0.4, 0.0)); // Deep central groove center
+      points.push(new THREE.Vector2(0.45, -0.6));
+      points.push(new THREE.Vector2(0.9, -1.2));
+      points.push(new THREE.Vector2(0.8, -1.4));
+      points.push(new THREE.Vector2(0.3, -1.4));
+      points.push(new THREE.Vector2(0.3, 1.4));
+      const spoolGeo = new THREE.LatheGeometry(points, 32);
+      const spoolMesh = new THREE.Mesh(spoolGeo, porcelainMat);
+      spoolMesh.castShadow = true;
+      group.add(spoolMesh);
+
+      // Center Mounting Bolt Hole Inner Tube
+      const holeGeo = new THREE.CylinderGeometry(0.28, 0.28, 2.9, 16);
+      const holeMesh = new THREE.Mesh(holeGeo, steelMat);
+      group.add(holeMesh);
+
+      // D-Iron Bracket Frame
+      const dFrameGroup = new THREE.Group();
+      const sidePlateGeo = new THREE.BoxGeometry(0.1, 3.4, 0.6);
+      const plate1 = new THREE.Mesh(sidePlateGeo, steelMat);
+      plate1.position.x = -1.1;
+      dFrameGroup.add(plate1);
+
+      const topArmGeo = new THREE.BoxGeometry(1.2, 0.1, 0.6);
+      const topArm = new THREE.Mesh(topArmGeo, steelMat);
+      topArm.position.set(-0.55, 1.65, 0);
+      dFrameGroup.add(topArm);
+
+      const botArm = new THREE.Mesh(topArmGeo, steelMat);
+      botArm.position.set(-0.55, -1.65, 0);
+      dFrameGroup.add(botArm);
+
+      group.add(dFrameGroup);
+
+      return group;
+    }
+
+    function createPostInsulatorModel() {
+      const group = new THREE.Group();
+      porcelainMat.color.setHex(0x7e22ce);
+
+      // Solid Column Core
+      const coreGeo = new THREE.CylinderGeometry(0.5, 0.6, 5.2, 24);
+      const coreMesh = new THREE.Mesh(coreGeo, porcelainMat);
+      coreMesh.castShadow = true;
+      group.add(coreMesh);
+
+      // Stacked Shed Skirts
+      const numSheds = 8;
+      const startY = 2.0;
+      const stepY = 0.55;
+
+      for (let i = 0; i < numSheds; i++) {
+        const shedPoints = [];
+        shedPoints.push(new THREE.Vector2(0.5, 0.1));
+        shedPoints.push(new THREE.Vector2(1.25, -0.15));
+        shedPoints.push(new THREE.Vector2(1.15, -0.25));
+        shedPoints.push(new THREE.Vector2(0.5, -0.1));
+        const shedGeo = new THREE.LatheGeometry(shedPoints, 32);
+        const shedMesh = new THREE.Mesh(shedGeo, porcelainMat);
+        shedMesh.position.y = startY - (i * stepY);
+        shedMesh.castShadow = true;
+        group.add(shedMesh);
+      }
+
+      // Top Busbar Flange
+      const topFlangeGeo = new THREE.CylinderGeometry(0.65, 0.65, 0.3, 16);
+      const topFlange = new THREE.Mesh(topFlangeGeo, steelMat);
+      topFlange.position.y = 2.7;
+      group.add(topFlange);
+
+      // Bottom Base Flange
+      const botFlangeGeo = new THREE.CylinderGeometry(0.85, 0.95, 0.4, 8);
+      const botFlange = new THREE.Mesh(botFlangeGeo, steelMat);
+      botFlange.position.y = -2.65;
+      group.add(botFlange);
+
+      return group;
+    }
+
+    function createPolymerModel() {
+      const group = new THREE.Group();
+
+      // Central FRP Fiberglass Rod
+      const frpGeo = new THREE.CylinderGeometry(0.25, 0.25, 6.6, 16);
+      const frpMesh = new THREE.Mesh(frpGeo, frpRodMat);
+      group.add(frpMesh);
+
+      // Silicone Rubber Weather Sheds (Alternating Big/Small)
+      const numSheds = 14;
+      const startY = 2.8;
+      const stepY = 0.42;
+
+      for (let i = 0; i < numSheds; i++) {
+        const isBig = i % 2 === 0;
+        const outerR = isBig ? 1.15 : 0.85;
+        const shedPoints = [];
+        shedPoints.push(new THREE.Vector2(0.25, 0.08));
+        shedPoints.push(new THREE.Vector2(outerR, -0.12));
+        shedPoints.push(new THREE.Vector2(outerR - 0.1, -0.2));
+        shedPoints.push(new THREE.Vector2(0.25, -0.05));
+        const shedGeo = new THREE.LatheGeometry(shedPoints, 32);
+        const shedMesh = new THREE.Mesh(shedGeo, siliconeMat);
+        shedMesh.position.y = startY - (i * stepY);
+        shedMesh.castShadow = true;
+        group.add(shedMesh);
+      }
+
+      // Metal End Fittings (Crimped)
+      const topFittingGeo = new THREE.CylinderGeometry(0.4, 0.4, 0.8, 16);
+      const topFitting = new THREE.Mesh(topFittingGeo, steelMat);
+      topFitting.position.y = 3.3;
+      group.add(topFitting);
+
+      const topEyeGeo = new THREE.TorusGeometry(0.25, 0.09, 12, 16);
+      const topEye = new THREE.Mesh(topEyeGeo, steelMat);
+      topEye.position.y = 3.8;
+      group.add(topEye);
+
+      const botFitting = new THREE.Mesh(topFittingGeo, steelMat);
+      botFitting.position.y = -3.3;
+      group.add(botFitting);
+
+      const botEye = new THREE.Mesh(topEyeGeo, steelMat);
+      botEye.position.y = -3.8;
+      group.add(botEye);
+
+      return group;
+    }
+
+    // =========================================================================
+    // MODEL BUILDER & SCENE SWITCHER
+    // =========================================================================
+    function load3DModel(subTypeId) {
+      // Clear old model group
+      if (currentModelGroup) {
+        scene.remove(currentModelGroup);
+        currentModelGroup.traverse(child => {
+          if (child.geometry) child.geometry.dispose();
+        });
+      }
+
+      // Build model based on ID
+      switch (subTypeId) {
+        case "pin-single": currentModelGroup = createSinglePinModel(); break;
+        case "pin-multi": currentModelGroup = createMultiPinModel(); break;
+        case "suspension-single": currentModelGroup = createDiscUnitModel(); break;
+        case "suspension-string": currentModelGroup = createStringSuspensionModel(); break;
+        case "strain-horizontal": currentModelGroup = createHorizontalStrainModel(); break;
+        case "shackle-spool": currentModelGroup = createShackleModel(); break;
+        case "post-substation": currentModelGroup = createPostInsulatorModel(); break;
+        case "polymer-longrod": currentModelGroup = createPolymerModel(); break;
+        default: currentModelGroup = createSinglePinModel(); break;
+      }
+
+      scene.add(currentModelGroup);
+      updateWireframeMode();
+      setupAnnotations();
+    }
+
+    function updateWireframeMode() {
+      if (!currentModelGroup) return;
+      currentModelGroup.traverse(child => {
+        if (child.isMesh && child.material) {
+          child.material.wireframe = isWireframe;
+        }
+      });
+    }
+
+    // =========================================================================
+    // DYNAMIC FLOATING SPATIAL LABELS & SVG CONNECTOR ENGINE
+    // =========================================================================
+    function setupAnnotations() {
+      // Clear previous labels & SVG paths
+      labelsContainer.innerHTML = '';
+      svgOverlay.innerHTML = '';
+      annotationData = [];
+
+      const parts = currentSubType.parts;
+      if (!parts || !parts.length) return;
+
+      parts.forEach((part, index) => {
+        // Create HTML Label Card
+        const labelEl = document.createElement('div');
+        labelEl.className = `annotation-label absolute px-3 py-1.5 rounded-lg bg-slate-900/90 border border-cyan-500/40 text-slate-100 text-xs shadow-xl backdrop-blur flex items-center gap-2 whitespace-nowrap select-none border-l-4 border-l-cyan-400`;
+        labelEl.innerHTML = `
+          <span class="w-4 h-4 rounded-full bg-cyan-500/20 text-cyan-300 font-mono text-[10px] flex items-center justify-center font-bold">${index + 1}</span>
+          <span class="font-semibold text-slate-200">${part.name}</span>
+        `;
+        labelsContainer.appendChild(labelEl);
+
+        // Create SVG Line Path
+        const pathEl = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        pathEl.setAttribute('stroke', '#06b6d4'); // Cyan-500
+        pathEl.setAttribute('stroke-width', '1.5');
+        pathEl.setAttribute('stroke-dasharray', '3 3');
+        pathEl.setAttribute('fill', 'none');
+        pathEl.setAttribute('opacity', '0.8');
+        svgOverlay.appendChild(pathEl);
+
+        // Create target anchor dot
+        const circleEl = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        circleEl.setAttribute('r', '3.5');
+        circleEl.setAttribute('fill', '#22d3ee');
+        svgOverlay.appendChild(circleEl);
+
+        annotationData.push({
+          target3D: new THREE.Vector3(...part.pos),
+          element: labelEl,
+          path: pathEl,
+          circle: circleEl,
+          angleOffset: (index / parts.length) * Math.PI * 2
+        });
+      });
+    }
+
+    function updateAnnotations() {
+      if (!annotationData.length || !camera || !canvasContainer) return;
+
+      const width = canvasContainer.clientWidth;
+      const height = canvasContainer.clientHeight;
+      const halfW = width / 2;
+      const halfH = height / 2;
+
+      // Project target positions to 2D Screen Space
+      annotationData.forEach((item, i) => {
+        // Compute world position of part anchor
+        const worldPos = item.target3D.clone();
+        if (currentModelGroup) {
+          worldPos.applyMatrix4(currentModelGroup.matrixWorld);
+        }
+
+        // Screen coordinate of 3D point
+        const screenVec = worldPos.clone().project(camera);
+
+        // Is point behind camera?
+        if (screenVec.z > 1) {
+          item.element.style.opacity = '0';
+          item.path.setAttribute('opacity', '0');
+          item.circle.setAttribute('opacity', '0');
+          return;
+        }
+
+        const anchorX = (screenVec.x * halfW) + halfW;
+        const anchorY = (-(screenVec.y) * halfH) + halfH;
+
+        // Smart Label Repositioning (Push labels dynamically OUTSIDE the central model bounding area)
+        // Offset direction calculated relative to 2D center of viewport to avoid covering the model
+        const dx = anchorX - halfW;
+        const dy = anchorY - halfH;
+        const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+
+        // Push distance outside center
+        const radialPush = Math.max(140, Math.min(halfW * 0.4, 260));
+        
+        // Dynamic floating position for label box
+        let labelX = halfW + (dx / dist) * (dist + radialPush * 0.6);
+        let labelY = anchorY + (dy / dist) * 40;
+
+        // Clamp inside screen bounds
+        const pad = 20;
+        labelX = Math.max(pad, Math.min(width - 180, labelX));
+        labelY = Math.max(pad, Math.min(height - 40, labelY));
+
+        // Apply HTML transform
+        item.element.style.transform = `translate3d(${labelX}px, ${labelY}px, 0)`;
+        item.element.style.opacity = '1';
+
+        // Connect SVG Line between 3D Target Anchor (anchorX, anchorY) and Label Box (labelX, labelY)
+        const labelBoxWidth = item.element.offsetWidth || 120;
+        const labelBoxHeight = item.element.offsetHeight || 30;
+
+        // Point on label box edge
+        const boxEdgeX = labelX < anchorX ? labelX + labelBoxWidth : labelX;
+        const boxEdgeY = labelY + labelBoxHeight / 2;
+
+        // Smooth Bezier path curve
+        const cpX = (anchorX + boxEdgeX) / 2;
+        const pathData = `M ${anchorX} ${anchorY} Q ${cpX} ${anchorY} ${boxEdgeX} ${boxEdgeY}`;
+
+        item.path.setAttribute('d', pathData);
+        item.path.setAttribute('opacity', '0.7');
+
+        item.circle.setAttribute('cx', anchorX);
+        item.circle.setAttribute('cy', anchorY);
+        item.circle.setAttribute('opacity', '1');
+      });
+    }
+
+    // =========================================================================
+    // MAIN RENDER LOOP
+    // =========================================================================
+    function animate() {
+      requestAnimationFrame(animate);
+
+      if (controls) controls.update();
+      if (renderer && scene && camera) {
+        renderer.render(scene, camera);
+      }
+
+      updateAnnotations();
+    }
+
+    // =========================================================================
+    // UI BUILDER & EVENT HANDLERS
+    // =========================================================================
+    function renderCategoryButtons() {
+      const container = document.getElementById('categoryContainer');
+      container.innerHTML = '';
+
+      INSULATOR_DATA.forEach(cat => {
+        const active = cat.id === currentCategory.id;
+        const btn = document.createElement('button');
+        btn.className = `w-full text-left px-3 py-2 rounded-lg text-xs font-medium transition flex items-center justify-between border ${
+          active 
+            ? 'bg-cyan-500/15 border-cyan-500/50 text-cyan-300 font-semibold shadow-sm' 
+            : 'bg-slate-900/60 border-slate-800 text-slate-400 hover:bg-slate-800 hover:text-slate-200'
+        }`;
+        btn.innerHTML = `
+          <span>${cat.name}</span>
+          <i data-lucide="chevron-right" class="w-3.5 h-3.5 ${active ? 'opacity-100 text-cyan-400' : 'opacity-40'}"></i>
+        `;
+        btn.onclick = () => {
+          currentCategory = cat;
+          currentSubType = cat.subtypes[0];
+          renderCategoryButtons();
+          renderSubTypeButtons();
+          updateUI();
+        };
+        container.appendChild(btn);
+      });
+      lucide.createIcons();
+    }
+
+    function renderSubTypeButtons() {
+      const container = document.getElementById('subTypeContainer');
+      container.innerHTML = '';
+
+      currentCategory.subtypes.forEach(sub => {
+        const active = sub.id === currentSubType.id;
+        const btn = document.createElement('button');
+        btn.className = `w-full text-left px-3 py-2 rounded-lg text-xs transition flex items-center justify-between border ${
+          active 
+            ? 'bg-emerald-500/15 border-emerald-500/50 text-emerald-300 font-semibold' 
+            : 'bg-slate-900/40 border-slate-800/80 text-slate-400 hover:bg-slate-800/60 hover:text-slate-200'
+        }`;
+        btn.innerHTML = `
+          <div class="flex items-center space-x-2">
+            <span class="w-1.5 h-1.5 rounded-full ${active ? 'bg-emerald-400' : 'bg-slate-600'}"></span>
+            <span>${sub.name}</span>
+          </div>
+          <span class="font-mono text-[10px] text-slate-400 bg-slate-950 px-1.5 py-0.5 rounded border border-slate-800">${sub.voltage}</span>
+        `;
+        btn.onclick = () => {
+          currentSubType = sub;
+          renderSubTypeButtons();
+          updateUI();
+        };
+        container.appendChild(btn);
+      });
+    }
+
+    function updateUI() {
+      // 1. Update Headings & Badges
+      document.getElementById('activeModelTitle').innerText = `${currentCategory.name} — ${currentSubType.name}`;
+      document.getElementById('descPanelHeaderTitle').innerText = `${currentCategory.name} (${currentSubType.name})`;
+      document.getElementById('voltageBadge').innerText = `Rating: ${currentSubType.voltage}`;
+
+      // 2. Overview & Principle
+      document.getElementById('descOverview').innerText = currentSubType.overview;
+      document.getElementById('descPrinciple').innerText = currentSubType.principle;
+
+      // 3. Technical Specs Matrix
+      const specsContainer = document.getElementById('specsList');
+      specsContainer.innerHTML = '';
+      for (const [key, val] of Object.entries(currentSubType.specs)) {
+        const row = document.createElement('div');
+        row.className = 'flex justify-between py-1 border-b border-slate-800/50';
+        row.innerHTML = `<dt class="text-slate-400">${key}:</dt><dd class="font-mono text-cyan-300 font-medium">${val}</dd>`;
+        specsContainer.appendChild(row);
+      }
+
+      // 4. Component Breakdown List
+      const partsGrid = document.getElementById('partsBreakdownGrid');
+      partsGrid.innerHTML = '';
+      currentSubType.parts.forEach((part, idx) => {
+        const card = document.createElement('div');
+        card.className = 'p-2.5 rounded-lg bg-slate-900/80 border border-slate-800 text-xs space-y-1';
+        card.innerHTML = `
+          <div class="font-semibold text-cyan-300 flex items-center gap-1.5">
+            <span class="w-4 h-4 rounded bg-cyan-500/20 text-cyan-400 font-mono text-[10px] flex items-center justify-center font-bold">${idx + 1}</span>
+            ${part.name}
+          </div>
+          <p class="text-slate-400 text-[11px] leading-relaxed">${part.desc}</p>
+        `;
+        partsGrid.appendChild(card);
+      });
+
+      // 5. Deployment Applications Badges
+      const appsContainer = document.getElementById('applicationsBadgeList');
+      appsContainer.innerHTML = '';
+      currentSubType.apps.forEach(app => {
+        const badge = document.createElement('span');
+        badge.className = 'px-2.5 py-1 rounded-md text-xs bg-slate-800 text-slate-300 border border-slate-700/60 font-medium';
+        badge.innerText = app;
+        appsContainer.appendChild(badge);
+      });
+
+      // 6. Reload 3D Model
+      load3DModel(currentSubType.id);
+    }
+
+    // =========================================================================
+    // COLLAPSIBLE PANEL & CONTROL BUTTON EVENTS
+    // =========================================================================
+    function setupEventListeners() {
+      // Toggle Collapsible Description Panel
+      const toggleBtn = document.getElementById('toggleDescBtn');
+      const descContent = document.getElementById('descContent');
+      const toggleIcon = document.getElementById('toggleIcon');
+      const toggleText = document.getElementById('toggleText');
+      let isExpanded = true;
+
+      toggleBtn.onclick = () => {
+        isExpanded = !isExpanded;
+        if (isExpanded) {
+          descContent.classList.remove('hidden');
+          toggleIcon.style.transform = 'rotate(0deg)';
+          toggleText.innerText = 'Hide Details';
+        } else {
+          descContent.classList.add('hidden');
+          toggleIcon.style.transform = 'rotate(180deg)';
+          toggleText.innerText = 'Show Details';
+        }
+      };
+
+      // Reset Camera Angle
+      document.getElementById('resetCamBtn').onclick = () => {
+        if (camera && controls) {
+          camera.position.set(5, 3, 7);
+          controls.target.set(0, 0, 0);
+          controls.update();
+        }
+      };
+
+      // Toggle Wireframe Mode
+      document.getElementById('toggleWireframeBtn').onclick = () => {
+        isWireframe = !isWireframe;
+        updateWireframeMode();
+      };
+    }
+
+    // =========================================================================
+    // INITIALIZATION ENTRY POINT
+    // =========================================================================
+    window.onload = () => {
+      initThreeJS();
+      renderCategoryButtons();
+      renderSubTypeButtons();
+      setupEventListeners();
+      updateUI();
+      lucide.createIcons();
+    };
+  </script>
+<nav class="app-nav app-nav-sticky" aria-label="Main"><a href="index.html" class="nav-tab"><i class="fa-solid fa-house"></i><span>Home</span></a><a href="insulators.html" class="nav-tab" aria-current="page"><i class="fa-solid fa-plug-circle-bolt"></i><span>Insulators</span></a><a href="wire-directory.html" class="nav-tab"><i class="fa-solid fa-bezier-curve"></i><span>Wires</span></a><a href="symbols.html" class="nav-tab"><i class="fa-solid fa-shapes"></i><span>Symbols</span></a><a href="index.html#library" class="nav-tab"><i class="fa-solid fa-layer-group"></i><span>Library</span></a></nav>
+</body>
+</html>

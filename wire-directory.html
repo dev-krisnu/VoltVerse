@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Electrical Wire Cross-Section & Current Rating Directory</title>
+    <link rel="icon" href="favicon.svg" type="image/svg+xml"><meta name="theme-color" content="#080c14"><link rel="stylesheet" href="css/tailwind.css"><link rel="stylesheet" href="css/app.css"><link rel="stylesheet" href="css/fa/fa.css"><script src="vendor/lucide.min.js"></script><script defer src="vendor/alpine.min.js"></script>
+  
+  <!-- Tailwind CSS CDN -->
+  <!-- Alpine.js for lightweight reactive UI state management -->
+  <!-- Lucide Icons -->
+  
+  <!-- Google Fonts: Inter & JetBrains Mono -->
+  
+  <style>
+    [x-cloak] { display: none !important; }
+    
+    /* Strict viewport bounds to prevent horizontal scroll across all mobile devices */
+    html, body {
+      width: 100%;
+      max-width: 100%;
+      overflow-x: hidden;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* Modern subtle scrollbars */
+    ::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #090d16;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #1e293b;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #334155;
+    }
+
+    @media print {
+      body { background: white !important; color: black !important; }
+      .no-print { display: none !important; }
+      .print-only { display: block !important; }
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans antialiased min-h-screen selection:bg-brand-500 selection:text-white flex flex-col"
+      x-data="wireApp()"
+      x-init="initApp()">
+
+  <!-- Sticky Header -->
+  <header class="border-b border-slate-800/80 bg-slate-900/90 backdrop-blur-md sticky top-0 z-30 no-print w-full">
+    <div class="max-w-5xl mx-auto px-3 sm:px-6 py-2.5 sm:py-3.5 flex flex-col sm:flex-row items-center justify-between gap-3">
+      
+      <!-- Brand & Title -->
+      <div class="flex items-center space-x-2.5 sm:space-x-3 w-full sm:w-auto justify-between sm:justify-start">
+        <div class="flex items-center space-x-2.5">
+          <div class="p-1.5 sm:p-2 bg-brand-600/20 text-brand-400 rounded-xl border border-brand-500/30 shrink-0">
+            <i data-lucide="zap" class="w-5 h-5 sm:w-6 sm:h-6"></i>
+          </div>
+          <div>
+            <h1 class="text-base sm:text-lg font-bold text-white tracking-tight flex items-center gap-2">
+              WireSpec Directory
+            </h1>
+            <p class="text-[10px] sm:text-xs text-slate-400">Wire Ampacity & Cross-Section Reference</p>
+          </div>
+        </div>
+
+        <!-- Material Switcher (Visible on Mobile inside header right) -->
+        <div class="inline-flex p-1 bg-slate-950 rounded-lg border border-slate-800 text-[11px] font-semibold sm:hidden">
+          <button @click="setMaterial('cu')" 
+                  :class="material === 'cu' ? 'bg-amber-600 text-white shadow-sm' : 'text-slate-400'"
+                  class="px-2 py-1 rounded-md transition-all">
+            Cu
+          </button>
+          <button @click="setMaterial('al')" 
+                  :class="material === 'al' ? 'bg-cyan-600 text-white shadow-sm' : 'text-slate-400'"
+                  class="px-2 py-1 rounded-md transition-all">
+            Al
+          </button>
+        </div>
+      </div>
+
+      <!-- Conductor Material Switcher & Actions (Desktop/Tablet) -->
+      <div class="flex items-center justify-between sm:justify-end gap-2 sm:gap-3 w-full sm:w-auto">
+        <!-- Desktop Material Switcher -->
+        <div class="hidden sm:inline-flex p-1 bg-slate-950 rounded-xl border border-slate-800 text-xs font-semibold">
+          <button @click="setMaterial('cu')" 
+                  :class="material === 'cu' ? 'bg-amber-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'"
+                  class="px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-amber-300"></span>
+            Copper (Cu)
+          </button>
+          <button @click="setMaterial('al')" 
+                  :class="material === 'al' ? 'bg-cyan-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'"
+                  class="px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-cyan-300"></span>
+            Aluminum (Al)
+          </button>
+        </div>
+
+        <!-- Print Action Button -->
+        <button @click="window.print()" 
+                class="flex items-center gap-1.5 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-1.5 sm:py-2 rounded-xl border border-slate-700 transition">
+          <i data-lucide="printer" class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-400"></i>
+          <span class="text-xs">Print Reference</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Layout -->
+  <main class="max-w-5xl mx-auto px-3 sm:px-6 py-4 sm:py-6 flex-1 w-full">
+    
+    <!-- Hero / Summary Banner -->
+    <div class="mb-4 sm:mb-6 p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-slate-900 via-slate-900/95 to-brand-950/30 border border-slate-800 relative overflow-hidden">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <div class="flex items-center gap-2 mb-2">
+            <span class="px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs font-mono font-semibold transition-colors border"
+                  :class="material === 'cu' ? 'bg-amber-500/10 text-amber-400 border-amber-500/30' : 'bg-cyan-500/10 text-cyan-300 border-cyan-500/30'"
+                  x-text="material === 'cu' ? 'Copper (Cu) Conductor Mode' : 'Aluminum (Al) Conductor Mode'"></span>
+            <span class="text-[10px] sm:text-xs text-slate-400">IEC 60228 Standard</span>
+          </div>
+          <h2 class="text-lg sm:text-2xl font-bold text-white tracking-tight">
+            Commonly Used Wire Cross Sections
+          </h2>
+          <p class="mt-1 text-xs sm:text-sm text-slate-400 leading-relaxed">
+            Standard current carrying capacities for domestic and industrial installations. Tap any row to view voltage ratings, appliance applications, and live voltage drop simulations.
+          </p>
+        </div>
+
+        <!-- Metric Badges -->
+        <div class="grid grid-cols-2 sm:flex sm:items-center gap-2 text-center shrink-0">
+          <div class="p-2 sm:p-3 bg-slate-800/80 rounded-xl border border-slate-700/60 min-w-[100px]">
+            <div class="text-[10px] text-slate-400">Selected Material</div>
+            <div class="text-sm sm:text-base font-bold font-mono text-white mt-0.5" x-text="material === 'cu' ? 'Copper' : 'Aluminum'"></div>
+          </div>
+          <div class="p-2 sm:p-3 bg-slate-800/80 rounded-xl border border-slate-700/60 min-w-[100px]">
+            <div class="text-[10px] text-slate-400">Max Ampacity</div>
+            <div class="text-sm sm:text-base font-bold font-mono text-emerald-400 mt-0.5" x-text="material === 'cu' ? '140 A' : '108 A'"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filters & Search Toolbar -->
+    <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mb-4">
+      
+      <!-- Category Filter Tabs -->
+      <div class="inline-flex p-1 bg-slate-900 rounded-xl border border-slate-800 text-xs font-medium w-full sm:w-auto">
+        <button @click="activeTab = 'all'" 
+                :class="activeTab === 'all' ? 'bg-brand-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'"
+                class="px-3 py-1.5 rounded-lg transition-all flex-1 sm:flex-initial text-center">
+          All Sizes
+        </button>
+        <button @click="activeTab = 'domestic'" 
+                :class="activeTab === 'domestic' ? 'bg-brand-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'"
+                class="px-3 py-1.5 rounded-lg transition-all flex-1 sm:flex-initial text-center">
+          Domestic
+        </button>
+        <button @click="activeTab = 'industrial'" 
+                :class="activeTab === 'industrial' ? 'bg-brand-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'"
+                class="px-3 py-1.5 rounded-lg transition-all flex-1 sm:flex-initial text-center">
+          Industrial
+        </button>
+      </div>
+
+      <!-- Search Input Box -->
+      <div class="relative w-full sm:max-w-xs">
+        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
+          <i data-lucide="search" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i>
+        </div>
+        <input type="text" 
+               x-model="searchQuery" 
+               placeholder="Search cross section or amp..." 
+               class="w-full pl-9 pr-8 py-2 bg-slate-900 border border-slate-800 rounded-xl text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition">
+        <button x-show="searchQuery.length > 0" 
+                @click="searchQuery = ''" 
+                class="absolute inset-y-0 right-0 pr-2.5 flex items-center text-slate-500 hover:text-slate-300">
+          <i data-lucide="x" class="w-3.5 h-3.5"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Strictly Fitted 2-Column Main Table (Zero Horizontal Overflow) -->
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl w-full">
+      <table class="w-full text-left border-collapse table-fixed">
+        <thead>
+          <tr class="bg-slate-950/80 border-b border-slate-800 text-[10px] sm:text-xs font-semibold text-slate-400 uppercase tracking-wider">
+            <th class="py-3 px-3 sm:px-5 w-1/2">Wire Cross Section</th>
+            <th class="py-3 px-3 sm:px-5 text-right w-1/2" x-text="material === 'cu' ? 'Copper Current Rating' : 'Aluminum Rating'"></th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-800/60 text-xs font-normal">
+          <template x-for="wire in filteredWires" :key="wire.size">
+            <tr @click="openModal(wire)" 
+                class="hover:bg-slate-800/60 active:bg-slate-800/80 cursor-pointer transition-colors group">
+              
+              <!-- Column 1: Cross Section Size -->
+              <td class="py-3 px-3 sm:px-5">
+                <div class="flex items-center gap-2.5 sm:gap-3">
+                  <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center font-mono font-bold text-xs sm:text-sm group-hover:border-brand-500/50 transition shrink-0"
+                       :class="material === 'cu' ? 'text-amber-400' : 'text-cyan-400'">
+                    <span x-text="wire.size"></span>
+                  </div>
+                  <div class="min-w-0 flex-1">
+                    <div class="font-bold text-slate-100 font-mono text-xs sm:text-sm flex flex-wrap items-center gap-1 truncate">
+                      <span x-text="wire.size + ' mm²'"></span>
+                      <span class="text-[9px] px-1.5 py-0.2 rounded font-sans uppercase font-medium"
+                            :class="wire[material].restricted ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30' : 'bg-slate-800 text-slate-400'"
+                            x-text="wire[material].restricted ? 'Restricted' : wire.category"></span>
+                    </div>
+                    <div class="text-[10px] sm:text-[11px] text-slate-400 truncate" x-text="wire[material].shortDesc || wire.category"></div>
+                  </div>
+                </div>
+              </td>
+
+              <!-- Column 2: Ampacity Rating -->
+              <td class="py-3 px-3 sm:px-5 text-right">
+                <div class="inline-flex items-center justify-end gap-1.5 sm:gap-2">
+                  <span class="inline-flex items-center gap-1 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-bold font-mono border shadow-sm"
+                        :class="getRatingBadgeClass(wire[material].maxAmp)">
+                    <i data-lucide="zap" class="w-3 h-3 sm:w-3.5 sm:h-3.5"></i>
+                    <span x-text="wire[material].rating"></span>
+                  </span>
+                  <i data-lucide="chevron-right" class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-500 group-hover:text-brand-400 transform group-hover:translate-x-0.5 transition-transform shrink-0"></i>
+                </div>
+              </td>
+            </tr>
+          </template>
+
+          <!-- Empty State -->
+          <tr x-show="filteredWires.length === 0">
+            <td colspan="2" class="py-12 text-center text-slate-500">
+              <i data-lucide="search-x" class="w-8 h-8 mx-auto mb-2 text-slate-600"></i>
+              <p class="text-xs sm:text-sm font-medium">No cable sizes match your search criteria.</p>
+              <button @click="searchQuery = ''; activeTab = 'all'" class="mt-2 text-xs text-brand-400 hover:underline">Reset Filters</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Electrical Guidelines & Technical Notes -->
+    <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-3.5 sm:gap-4">
+      <div class="p-3.5 sm:p-4 rounded-xl bg-slate-900 border border-slate-800">
+        <div class="flex items-center gap-2 text-amber-400 font-semibold text-xs mb-1.5">
+          <i data-lucide="alert-triangle" class="w-4 h-4"></i>
+          Max Allowed Voltage Drop
+        </div>
+        <p class="text-[11px] text-slate-400 leading-relaxed">
+          Standard code recommendations limit total voltage drop to <strong>3% for branch lighting circuits</strong> and <strong>5% for heavy power loads</strong> to ensure efficient operation.
+        </p>
+      </div>
+
+      <div class="p-3.5 sm:p-4 rounded-xl bg-slate-900 border border-slate-800">
+        <div class="flex items-center gap-2 text-emerald-400 font-semibold text-xs mb-1.5">
+          <i data-lucide="shield-check" class="w-4 h-4"></i>
+          Continuous Load 80% Rule
+        </div>
+        <p class="text-[11px] text-slate-400 leading-relaxed">
+          For continuous loads running over 3 hours (e.g. EV chargers, AC units), design the circuit load to not exceed <strong>80% of the wire rating</strong>.
+        </p>
+      </div>
+
+      <div class="p-3.5 sm:p-4 rounded-xl bg-slate-900 border border-slate-800">
+        <div class="flex items-center gap-2 text-cyan-400 font-semibold text-xs mb-1.5">
+          <i data-lucide="layers" class="w-4 h-4"></i>
+          Copper vs. Aluminum Rule
+        </div>
+        <p class="text-[11px] text-slate-400 leading-relaxed">
+          Aluminum provides ~61% conductivity of Copper. When substituting, select <strong>one size larger</strong> Aluminum conductor compared to Copper.
+        </p>
+      </div>
+    </div>
+  </main>
+
+  <!-- Interactive Detail Modal -->
+  <div x-show="isModalOpen" 
+       x-cloak
+       class="fixed inset-0 z-50 overflow-y-auto no-print"
+       aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    
+    <!-- Backdrop -->
+    <div x-show="isModalOpen" 
+         x-transition:enter="transition ease-out duration-200"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-150"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         @click="closeModal()" 
+         class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm transition-opacity"></div>
+
+    <div class="flex items-center justify-center min-h-screen p-2.5 sm:p-4 text-center">
+      
+      <!-- Modal Box -->
+      <div x-show="isModalOpen"
+           x-transition:enter="transition ease-out duration-200"
+           x-transition:enter-start="opacity-0 scale-95 translate-y-4"
+           x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+           x-transition:leave="transition ease-in duration-150"
+           x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+           x-transition:leave-end="opacity-0 scale-95 translate-y-4"
+           class="relative bg-slate-900 border border-slate-800 rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all w-full max-w-2xl my-4">
+        
+        <template x-if="selectedWire">
+          <div>
+            <!-- Header -->
+            <div class="p-4 sm:p-5 border-b border-slate-800 bg-slate-950/70 flex items-start justify-between gap-3">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-slate-800 border border-slate-700 font-mono font-bold text-base sm:text-lg flex items-center justify-center shrink-0"
+                     :class="material === 'cu' ? 'text-amber-400' : 'text-cyan-400'">
+                  <span x-text="selectedWire.size"></span>
+                </div>
+                <div>
+                  <div class="flex flex-wrap items-center gap-1.5">
+                    <h3 class="text-base sm:text-lg font-bold text-white font-mono" x-text="selectedWire.size + ' mm² Cable Details'"></h3>
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold uppercase"
+                          :class="material === 'cu' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' : 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30'"
+                          x-text="material === 'cu' ? 'Copper Conductor' : 'Aluminum Conductor'"></span>
+                  </div>
+                  <p class="text-[11px] text-slate-400 mt-0.5" x-text="'Continuous Ampacity: ' + activeMaterialData.rating + ' | Working Voltage: ' + selectedWire.voltage"></p>
+                </div>
+              </div>
+              <button @click="closeModal()" class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition">
+                <i data-lucide="x" class="w-5 h-5"></i>
+              </button>
+            </div>
+
+            <div class="p-4 sm:p-5 space-y-4 sm:space-y-5 max-h-[75vh] overflow-y-auto">
+
+              <!-- Warning for small aluminum conductors -->
+              <div x-show="material === 'al' && activeMaterialData.restricted" 
+                   class="p-3 bg-rose-500/10 border border-rose-500/30 rounded-xl text-xs text-rose-300 flex items-start gap-2">
+                <i data-lucide="alert-circle" class="w-4 h-4 shrink-0 text-rose-400 mt-0.5"></i>
+                <div>
+                  <strong class="font-bold text-rose-200">Standard Restriction Note:</strong>
+                  <span>Aluminum conductors smaller than 2.5mm² are generally restricted for domestic fixed wiring due to mechanical softness. Copper is standard for small sizes.</span>
+                </div>
+              </div>
+
+              <!-- Applications Section -->
+              <div>
+                <h4 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                  <i data-lucide="plug-zap" class="w-3.5 h-3.5 text-brand-400"></i>
+                  Common Appliance & Installation Uses
+                </h4>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <template x-for="app in activeMaterialData.applications" :key="app">
+                    <div class="p-2.5 bg-slate-800/50 rounded-xl border border-slate-700/50 flex items-center gap-2">
+                      <div class="w-1.5 h-1.5 rounded-full shrink-0"
+                           :class="material === 'cu' ? 'bg-amber-400' : 'bg-cyan-400'"></div>
+                      <span class="text-xs text-slate-200" x-text="app"></span>
+                    </div>
+                  </template>
+                </div>
+              </div>
+
+              <!-- Electrical Properties Grid -->
+              <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 p-3 bg-slate-950/80 rounded-xl border border-slate-800 text-xs">
+                <div>
+                  <div class="text-slate-500 text-[10px]">Working Voltage</div>
+                  <div class="font-mono font-semibold text-slate-200 text-xs mt-0.5" x-text="selectedWire.voltage"></div>
+                </div>
+                <div>
+                  <div class="text-slate-500 text-[10px]">Rec. MCB / Fuse</div>
+                  <div class="font-mono font-bold text-amber-400 text-xs mt-0.5" x-text="activeMaterialData.recommendedProtection"></div>
+                </div>
+                <div>
+                  <div class="text-slate-500 text-[10px]">Resistance</div>
+                  <div class="font-mono font-semibold text-slate-200 text-xs mt-0.5" x-text="activeMaterialData.resistance + ' Ω/km'"></div>
+                </div>
+                <div>
+                  <div class="text-slate-500 text-[10px]">Insulation Type</div>
+                  <div class="font-medium text-slate-200 text-xs mt-0.5" x-text="activeMaterialData.insulation"></div>
+                </div>
+              </div>
+
+              <!-- Mini Voltage Drop & Distance Simulator -->
+              <div class="p-3.5 sm:p-4 bg-slate-800/40 rounded-xl border border-slate-700/60">
+                <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+                  <h4 class="text-xs font-semibold text-slate-200 flex items-center gap-1.5">
+                    <i data-lucide="calculator" class="w-3.5 h-3.5 text-cyan-400"></i>
+                    Live Voltage Drop Simulator (<span x-text="material === 'cu' ? 'Copper' : 'Aluminum'"></span>)
+                  </h4>
+                  
+                  <!-- Phase selector -->
+                  <div class="inline-flex p-0.5 bg-slate-950 rounded-lg border border-slate-800 text-[10px]">
+                    <button @click="calcPhase = '1p'" 
+                            :class="calcPhase === '1p' ? 'bg-brand-600 text-white' : 'text-slate-400'"
+                            class="px-2 py-0.5 rounded transition">1-Phase (230V)</button>
+                    <button @click="calcPhase = '3p'" 
+                            :class="calcPhase === '3p' ? 'bg-brand-600 text-white' : 'text-slate-400'"
+                            class="px-2 py-0.5 rounded transition">3-Phase (400V)</button>
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+                  <!-- Load Current Slider -->
+                  <div>
+                    <div class="flex justify-between text-[11px] mb-1">
+                      <span class="text-slate-400">Operating Load:</span>
+                      <span class="font-mono font-bold text-brand-400" x-text="calcCurrent + ' A'"></span>
+                    </div>
+                    <input type="range" 
+                           min="1" 
+                           :max="activeMaterialData.maxAmp" 
+                           x-model.number="calcCurrent" 
+                           class="w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-brand-500">
+                  </div>
+
+                  <!-- Distance Slider -->
+                  <div>
+                    <div class="flex justify-between text-[11px] mb-1">
+                      <span class="text-slate-400">Run Length:</span>
+                      <span class="font-mono font-bold text-cyan-400" x-text="calcDistance + ' Meters'"></span>
+                    </div>
+                    <input type="range" 
+                           min="5" 
+                           max="100" 
+                           step="5" 
+                           x-model.number="calcDistance" 
+                           class="w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-cyan-500">
+                  </div>
+                </div>
+
+                <!-- Simulation Result Card -->
+                <div class="grid grid-cols-3 gap-2 p-2.5 bg-slate-950 rounded-lg border border-slate-800 text-center">
+                  <div>
+                    <div class="text-[9px] text-slate-500">Calculated Drop</div>
+                    <div class="font-mono font-bold text-xs sm:text-sm mt-0.5" 
+                         :class="simulatedVoltageDrop.percent <= 3 ? 'text-emerald-400' : (simulatedVoltageDrop.percent <= 5 ? 'text-amber-400' : 'text-rose-400')"
+                         x-text="simulatedVoltageDrop.volts + ' V'"></div>
+                  </div>
+                  <div>
+                    <div class="text-[9px] text-slate-500">Drop Percentage</div>
+                    <div class="font-mono font-bold text-xs sm:text-sm mt-0.5" 
+                         :class="simulatedVoltageDrop.percent <= 3 ? 'text-emerald-400' : (simulatedVoltageDrop.percent <= 5 ? 'text-amber-400' : 'text-rose-400')"
+                         x-text="'±' + simulatedVoltageDrop.percent + '%'"></div>
+                  </div>
+                  <div>
+                    <div class="text-[9px] text-slate-500">Compliance</div>
+                    <div class="text-[10px] sm:text-xs font-semibold mt-0.5 truncate" 
+                         :class="simulatedVoltageDrop.percent <= 3 ? 'text-emerald-400' : (simulatedVoltageDrop.percent <= 5 ? 'text-amber-400' : 'text-rose-400')"
+                         x-text="simulatedVoltageDrop.status"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="p-3.5 bg-slate-950 border-t border-slate-800 flex items-center justify-between">
+              <button @click="copyWireSummary(selectedWire)" 
+                      class="text-xs font-medium text-slate-400 hover:text-slate-200 flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg hover:bg-slate-800 transition">
+                <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                <span x-text="copied ? 'Copied to Clipboard!' : 'Copy Cable Specs'"></span>
+              </button>
+
+              <button @click="closeModal()" 
+                      class="px-4 py-1.5 bg-brand-600 hover:bg-brand-500 text-white rounded-xl text-xs font-semibold transition">
+                Close
+              </button>
+            </div>
+          </div>
+        </template>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="border-t border-slate-800/80 py-4 text-center text-xs text-slate-500 no-print mt-auto">
+    <div class="max-w-5xl mx-auto px-4">
+      Standard Reference Tool for Electrical Technicians & Engineers • IEC 60228 Standard
+    </div>
+  </footer>
+
+  <script>
+    function wireApp() {
+      return {
+        material: 'cu', // 'cu' for Copper, 'al' for Aluminum
+        activeTab: 'all',
+        searchQuery: '',
+        isModalOpen: false,
+        selectedWire: null,
+        calcCurrent: 10,
+        calcDistance: 25,
+        calcPhase: '1p',
+        copied: false,
+
+        // Complete database of domestic & industrial wires (Cu & Al parameters)
+        wireData: [
+          {
+            size: "0.75",
+            voltage: "300 / 500 V",
+            category: "domestic",
+            cu: {
+              rating: "6 A – 7 A",
+              maxAmp: 7,
+              shortDesc: "Light Duty Flexible Cords",
+              recommendedProtection: "6A MCB (Type B)",
+              resistance: "26.0",
+              insulation: "PVC Flex",
+              maxTemp: "70°C",
+              restricted: false,
+              applications: [
+                "Table lamps & ceiling fans",
+                "Mobile chargers & small radio sets",
+                "Light LED drivers (< 100W)",
+                "Pendant light fittings"
+              ]
+            },
+            al: {
+              rating: "4 A – 5 A (Not Recommended)",
+              maxAmp: 5,
+              shortDesc: "Restricted Use",
+              recommendedProtection: "6A Fuse",
+              resistance: "42.0",
+              insulation: "PVC Flex",
+              maxTemp: "70°C",
+              restricted: true,
+              applications: [
+                "Restricted in standard domestic wiring",
+                "Specialized low-power signal cables",
+                "Light duty OEM equipment"
+              ]
+            }
+          },
+          {
+            size: "1.0",
+            voltage: "300 / 500 V",
+            category: "domestic",
+            cu: {
+              rating: "10 A – 11 A",
+              maxAmp: 11,
+              shortDesc: "Primary Lighting Circuits",
+              recommendedProtection: "10A MCB (Type B)",
+              resistance: "18.1",
+              insulation: "PVC / FR-PVC",
+              maxTemp: "70°C",
+              restricted: false,
+              applications: [
+                "Domestic ceiling lighting circuits",
+                "Exhaust fans & ventilation switches",
+                "Smart home lighting automation wiring",
+                "Doorbell & security sensor feeds"
+              ]
+            },
+            al: {
+              rating: "7 A – 8 A",
+              maxAmp: 8,
+              shortDesc: "Light Utility Circuits",
+              recommendedProtection: "6A / 10A Fuse",
+              resistance: "29.5",
+              insulation: "PVC",
+              maxTemp: "70°C",
+              restricted: true,
+              applications: [
+                "Utility shed low-power lighting",
+                "Auxiliary control signaling"
+              ]
+            }
+          },
+          {
+            size: "1.5",
+            voltage: "450 / 750 V",
+            category: "domestic",
+            cu: {
+              rating: "13 A – 15 A",
+              maxAmp: 15,
+              shortDesc: "Standard Sockets & Lighting",
+              recommendedProtection: "10A - 16A MCB",
+              resistance: "12.1",
+              insulation: "FR PVC / XLPE",
+              maxTemp: "70°C - 90°C",
+              restricted: false,
+              applications: [
+                "Standard 5A / 6A wall power sockets",
+                "TV, desktop computers, home audio",
+                "Primary home lighting distribution",
+                "Small kitchen appliances (blenders, mixers)"
+              ]
+            },
+            al: {
+              rating: "9 A – 11 A",
+              maxAmp: 11,
+              shortDesc: "Light Auxiliary Lines",
+              recommendedProtection: "10A MCB",
+              resistance: "19.8",
+              insulation: "PVC",
+              maxTemp: "70°C",
+              restricted: false,
+              applications: [
+                "Secondary lighting runs",
+                "Small outdoor garden lighting"
+              ]
+            }
+          },
+          {
+            size: "2.5",
+            voltage: "450 / 750 V",
+            category: "domestic",
+            cu: {
+              rating: "18 A – 21 A",
+              maxAmp: 21,
+              shortDesc: "Heavy Power Sockets & ACs",
+              recommendedProtection: "16A - 20A MCB",
+              resistance: "7.41",
+              insulation: "FR-LSH PVC",
+              maxTemp: "70°C - 90°C",
+              restricted: false,
+              applications: [
+                "15A / 16A heavy appliance sockets",
+                "Refrigerators & chest freezers",
+                "Room Air Conditioners (up to 1.5 Ton)",
+                "Water heaters & geysers (up to 2 kW)",
+                "Microwave ovens & washing machines"
+              ]
+            },
+            al: {
+              rating: "13 A – 15 A",
+              maxAmp: 15,
+              shortDesc: "Standard Appliance Feeders",
+              recommendedProtection: "16A MCB",
+              resistance: "12.1",
+              insulation: "PVC",
+              maxTemp: "70°C",
+              restricted: false,
+              applications: [
+                "General power sockets (moderate load)",
+                "Light workshop sub-feeds"
+              ]
+            }
+          },
+          {
+            size: "4.0",
+            voltage: "450 / 750 V",
+            category: "domestic",
+            cu: {
+              rating: "26 A – 28 A",
+              maxAmp: 28,
+              shortDesc: "Heavy Duty Appliances & Sub-DB",
+              recommendedProtection: "25A - 32A MCB",
+              resistance: "4.61",
+              insulation: "FR-LSH PVC / XLPE",
+              maxTemp: "90°C",
+              restricted: false,
+              applications: [
+                "Large split AC units (2.0 Ton+)",
+                "Induction cooktops & electric ovens",
+                "Instant water heaters (3 kW - 4.5 kW)",
+                "Sub-distribution feeds for room DBs"
+              ]
+            },
+            al: {
+              rating: "19 A – 21 A",
+              maxAmp: 21,
+              shortDesc: "Power Outlets & Small Pumps",
+              recommendedProtection: "20A MCB",
+              resistance: "7.52",
+              insulation: "PVC",
+              maxTemp: "70°C",
+              restricted: false,
+              applications: [
+                "Sub-panels for domestic floors",
+                "Water pump motors (1 HP - 2 HP)"
+              ]
+            }
+          },
+          {
+            size: "6.0",
+            voltage: "450 / 750 V",
+            category: "domestic",
+            cu: {
+              rating: "34 A – 37 A",
+              maxAmp: 37,
+              shortDesc: "Main Service Entrance & EV",
+              recommendedProtection: "32A - 40A MCB",
+              resistance: "3.08",
+              insulation: "XLPE / PVC",
+              maxTemp: "90°C",
+              restricted: false,
+              applications: [
+                "Main service entrance for residential flats",
+                "Level 2 EV Chargers (7.2 kW)",
+                "Centralized HVAC units & heavy geysers",
+                "Main feeder line to sub-DB"
+              ]
+            },
+            al: {
+              rating: "25 A – 28 A",
+              maxAmp: 28,
+              shortDesc: "Apartment Mains & Feeders",
+              recommendedProtection: "25A - 32A MCB",
+              resistance: "5.03",
+              insulation: "PVC / XLPE",
+              maxTemp: "70°C - 90°C",
+              restricted: false,
+              applications: [
+                "Service line for small single-story homes",
+                "Single phase workshop main supply"
+              ]
+            }
+          },
+          {
+            size: "10.0",
+            voltage: "0.6 / 1 kV",
+            category: "industrial",
+            cu: {
+              rating: "45 A – 50 A",
+              maxAmp: 50,
+              shortDesc: "High Power Meter & Solar Mains",
+              recommendedProtection: "50A - 63A MCB",
+              resistance: "1.83",
+              insulation: "Armored XLPE / PVC",
+              maxTemp: "90°C",
+              restricted: false,
+              applications: [
+                "Energy meter to main indoor DB board",
+                "Residential solar inverter grid connection",
+                "Commercial kitchen heavy range induction",
+                "Small workshop 3-phase machinery"
+              ]
+            },
+            al: {
+              rating: "34 A – 38 A",
+              maxAmp: 38,
+              shortDesc: "Commercial Sub-Feeders",
+              recommendedProtection: "40A MCB",
+              resistance: "3.01",
+              insulation: "Armored PVC",
+              maxTemp: "70°C",
+              restricted: false,
+              applications: [
+                "Utility mains to residential floor DB",
+                "Outbuilding sub-station links"
+              ]
+            }
+          },
+          {
+            size: "16.0",
+            voltage: "0.6 / 1 kV",
+            category: "industrial",
+            cu: {
+              rating: "60 A – 68 A",
+              maxAmp: 68,
+              shortDesc: "Villa Mains & 3-Phase Motors",
+              recommendedProtection: "63A MCB / MCCB",
+              resistance: "1.15",
+              insulation: "Armored XLPE",
+              maxTemp: "90°C",
+              restricted: false,
+              applications: [
+                "Independent villa main supply cable",
+                "3-phase induction motors (up to 15 HP)",
+                "Industrial sub-panel main supply",
+                "Commercial lift / elevator power supply"
+              ]
+            },
+            al: {
+              rating: "45 A – 52 A",
+              maxAmp: 52,
+              shortDesc: "Main Service Entrance",
+              recommendedProtection: "50A - 63A MCB",
+              resistance: "1.91",
+              insulation: "Armored XLPE",
+              maxTemp: "90°C",
+              restricted: false,
+              applications: [
+                "Residential complex underground service feed",
+                "Small warehouse 3-phase board"
+              ]
+            }
+          },
+          {
+            size: "25.0",
+            voltage: "0.6 / 1 kV",
+            category: "industrial",
+            cu: {
+              rating: "80 A – 90 A",
+              maxAmp: 90,
+              shortDesc: "Commercial Panel & Chillers",
+              recommendedProtection: "80A - 100A MCCB",
+              resistance: "0.727",
+              insulation: "Armored XLPE",
+              maxTemp: "90°C",
+              restricted: false,
+              applications: [
+                "Commercial distribution panel main feed",
+                "Heavy central HVAC chillers & cooling towers",
+                "3-phase pumps & industrial compressors",
+                "Backup diesel generator output feeder"
+              ]
+            },
+            al: {
+              rating: "60 A – 68 A",
+              maxAmp: 68,
+              shortDesc: "Industrial Feeder & Pumps",
+              recommendedProtection: "63A - 80A MCCB",
+              resistance: "1.20",
+              insulation: "Armored XLPE",
+              maxTemp: "90°C",
+              restricted: false,
+              applications: [
+                "Commercial floor main distribution cable",
+                "3-phase agricultural water pumps"
+              ]
+            }
+          },
+          {
+            size: "35.0",
+            voltage: "0.6 / 1 kV",
+            category: "industrial",
+            cu: {
+              rating: "100 A – 115 A",
+              maxAmp: 115,
+              shortDesc: "Motor Control Centers (MCC)",
+              recommendedProtection: "100A - 125A MCCB",
+              resistance: "0.524",
+              insulation: "Armored XLPE",
+              maxTemp: "90°C",
+              restricted: false,
+              applications: [
+                "Industrial Motor Control Centers (MCC)",
+                "Heavy manufacturing plant machinery",
+                "Main distribution panel for commercial floors",
+                "Industrial arc furnace secondary feeds"
+              ]
+            },
+            al: {
+              rating: "75 A – 85 A",
+              maxAmp: 85,
+              shortDesc: "Factory Feeder Line",
+              recommendedProtection: "80A - 100A MCCB",
+              resistance: "0.868",
+              insulation: "Armored XLPE",
+              maxTemp: "90°C",
+              restricted: false,
+              applications: [
+                "Factory main sub-panel connection",
+                "Commercial building main riser cable"
+              ]
+            }
+          },
+          {
+            size: "50.0",
+            voltage: "0.6 / 1 kV",
+            category: "industrial",
+            cu: {
+              rating: "125 A – 140 A",
+              maxAmp: 140,
+              shortDesc: "Heavy Plant Distribution",
+              recommendedProtection: "125A - 160A MCCB",
+              resistance: "0.387",
+              insulation: "Armored XLPE",
+              maxTemp: "90°C",
+              restricted: false,
+              applications: [
+                "Heavy industrial plant power distribution",
+                "Main feeder cables for transformer sub-stations",
+                "Large 3-phase induction motors (50 HP+)",
+                "Industrial welding shop main feeders"
+              ]
+            },
+            al: {
+              rating: "95 A – 108 A",
+              maxAmp: 108,
+              shortDesc: "Primary Feeder Cable",
+              recommendedProtection: "100A - 125A MCCB",
+              resistance: "0.641",
+              insulation: "Armored XLPE",
+              maxTemp: "90°C",
+              restricted: false,
+              applications: [
+                "Main utility incoming feed line",
+                "Large industrial plant distribution line"
+              ]
+            }
+          }
+        ],
+
+        initApp() {
+          // Initialize Lucide icons on Alpine load
+          this.$nextTick(() => {
+            if (window.lucide) lucide.createIcons();
+          });
+        },
+
+        setMaterial(mat) {
+          this.material = mat;
+          this.$nextTick(() => {
+            if (window.lucide) lucide.createIcons();
+          });
+        },
+
+        get filteredWires() {
+          return this.wireData.filter(wire => {
+            const matchesTab = this.activeTab === 'all' || wire.category === this.activeTab;
+            const query = this.searchQuery.toLowerCase().trim();
+            if (!query) return matchesTab;
+
+            const sizeMatch = wire.size.includes(query);
+            const matData = wire[this.material];
+            const ratingMatch = matData.rating.toLowerCase().includes(query);
+            const appMatch = matData.applications.some(a => a.toLowerCase().includes(query));
+            const descMatch = matData.shortDesc.toLowerCase().includes(query);
+
+            return matchesTab && (sizeMatch || ratingMatch || appMatch || descMatch);
+          });
+        },
+
+        get activeMaterialData() {
+          if (!this.selectedWire) return {};
+          return this.selectedWire[this.material];
+        },
+
+        get simulatedVoltageDrop() {
+          if (!this.selectedWire) return { volts: 0, percent: 0, status: 'Normal' };
+          
+          const matData = this.selectedWire[this.material];
+          const resistancePerKm = parseFloat(matData.resistance) || 1;
+          const lengthMeters = this.calcDistance;
+          const currentAmps = this.calcCurrent;
+          
+          // Resistance for double length (out and back) for 1-phase, or factor 1.732 for 3-phase
+          let voltageDropVolts = 0;
+          let nominalVoltage = 230;
+
+          if (this.calcPhase === '1p') {
+            nominalVoltage = 230;
+            // V_drop = (2 * L * I * R) / 1000
+            voltageDropVolts = (2 * lengthMeters * currentAmps * resistancePerKm) / 1000;
+          } else {
+            nominalVoltage = 400;
+            // V_drop = (sqrt(3) * L * I * R) / 1000
+            voltageDropVolts = (1.732 * lengthMeters * currentAmps * resistancePerKm) / 1000;
+          }
+
+          const dropPercent = (voltageDropVolts / nominalVoltage) * 100;
+          
+          let status = 'Excellent (≤2%)';
+          if (dropPercent > 5) {
+            status = 'Critical (>5%)';
+          } else if (dropPercent > 3) {
+            status = 'Acceptable (3-5%)';
+          }
+
+          return {
+            volts: voltageDropVolts.toFixed(2),
+            percent: dropPercent.toFixed(2),
+            status: status
+          };
+        },
+
+        getRatingBadgeClass(maxAmp) {
+          if (maxAmp <= 15) return 'bg-slate-800 text-slate-300 border-slate-700';
+          if (maxAmp <= 30) return 'bg-blue-500/10 text-blue-400 border-blue-500/30';
+          if (maxAmp <= 60) return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30';
+          return 'bg-amber-500/10 text-amber-400 border-amber-500/30';
+        },
+
+        openModal(wire) {
+          this.selectedWire = wire;
+          this.calcCurrent = Math.min(10, wire[this.material].maxAmp);
+          this.calcDistance = 20;
+          this.isModalOpen = true;
+          this.copied = false;
+          this.$nextTick(() => {
+            if (window.lucide) lucide.createIcons();
+          });
+        },
+
+        closeModal() {
+          this.isModalOpen = false;
+          this.selectedWire = null;
+        },
+
+        copyWireSummary(wire) {
+          const matData = wire[this.material];
+          const text = `Wire Cross-Section: ${wire.size} mm² (${this.material.toUpperCase()})\nRating: ${matData.rating}\nWorking Voltage: ${wire.voltage}\nMCB Protection: ${matData.recommendedProtection}\nApplications: ${matData.applications.join(', ')}`;
+          
+          // Fallback clipboard logic
+          const textarea = document.createElement('textarea');
+          textarea.value = text;
+          document.body.appendChild(textarea);
+          textarea.select();
+          document.execCommand('copy');
+          document.body.removeChild(textarea);
+          
+          this.copied = true;
+          setTimeout(() => { this.copied = false; }, 3000);
+        }
+      }
+    }
+  </script>
+<nav class="app-nav app-nav-sticky" aria-label="Main"><a href="index.html" class="nav-tab"><i class="fa-solid fa-house"></i><span>Home</span></a><a href="insulators.html" class="nav-tab"><i class="fa-solid fa-plug-circle-bolt"></i><span>Insulators</span></a><a href="wire-directory.html" class="nav-tab" aria-current="page"><i class="fa-solid fa-bezier-curve"></i><span>Wires</span></a><a href="symbols.html" class="nav-tab"><i class="fa-solid fa-shapes"></i><span>Symbols</span></a><a href="index.html#library" class="nav-tab"><i class="fa-solid fa-layer-group"></i><span>Library</span></a></nav>
+</body>
+</html>

@@ -18,6 +18,8 @@ window.VOLTVERSE_LIBRARY = [
         desc: 'Yoke, poles, armature, commutator and brushes in 3D, with a spinning rotor and the working principle of each part.' },
       { title: 'DC Motor Types Comparison', href: 'dc-motor-types.html', tag: '3D + circuits', icon: 'fa-diagram-project',
         desc: 'Series, shunt and compound motors side by side: 3D cutaway, circuit schematic, equations, characteristics and uses.' },
+      { title: 'DC Generator Cut-Section', href: 'dc-generator.html', tag: '3D model', icon: 'fa-bolt',
+        desc: 'Yoke, pole cores, pole shoes, field windings, armature, commutator, brushes, cooling fan and sealed bearings, with cut section, exploded view and an air gap highlight.' },
       { title: '3D Induction Motor', href: 'induction-motor.html', tag: '3D model', icon: 'fa-fan',
         desc: 'A cast-iron TEFC motor cut in half: squirrel cage and slip ring constructions, exploded view and the rotating field.' }
     ] },
@@ -32,6 +34,16 @@ window.VOLTVERSE_LIBRARY = [
     tools: [
       { title: 'Rectifier & Filter Visualizer', href: 'rectifier.html', tag: 'Circuit + scope', icon: 'fa-wave-square',
         desc: 'Half-wave, center-tap and bridge rectifiers with C, L, LC and pi filters: current flow, oscilloscope, ripple and efficiency.' }
+    ] },
+  { id: 'reference', title: 'Components & Reference', accent: 'sky', icon: 'fa-shapes',
+    blurb: 'Insulators, wires and the symbols you meet in every drawing.',
+    tools: [
+      { title: '3D Insulator Visualizer', href: 'insulators.html', tag: '3D model', icon: 'fa-plug-circle-bolt',
+        desc: 'Pin, suspension, strain, shackle, post and composite insulators with annotated parts and ratings.' },
+      { title: 'Wire Directory & Voltage Drop', href: 'wire-directory.html', tag: 'Calculator', icon: 'fa-bezier-curve',
+        desc: 'Wire cross-sections and current ratings, plus a voltage drop calculator.' },
+      { title: 'Electrical & Electronics Symbols', href: 'symbols.html', tag: 'Reference', icon: 'fa-shapes',
+        desc: 'A searchable guide to the circuit symbols used in diploma courses.' }
     ] },
   { id: 'practice', title: 'Practice', accent: 'sky', icon: 'fa-graduation-cap',
     blurb: 'Check what you remember after exploring.',

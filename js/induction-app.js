@@ -46,7 +46,7 @@
     fan: { name: 'Cooling Fan & Cowl', category: 'COOLING SYSTEM', icon: 'fa-fan', material: 'Plastic or aluminium fan, sheet steel cowl', spec: 'TEFC: totally enclosed, fan cooled',
       description: 'A fan on the non-drive end of the shaft blows outside air along the fins of the frame. The grilled cowl protects the fan and guides the air. The inside of the motor stays sealed from dust and water.',
       features: ['Fan speed follows the rotor speed, so cooling falls if the motor runs slowly.', 'The cowl grille keeps fingers away from the blades.', 'Dirty fins or a blocked grille make the motor run hot.'],
-      comparison: 'Both constructions have the fan. On the slip ring motor the shaft passes through the cowl and the slip rings sit beyond it, inside an open guard.' },
+      comparison: 'Both constructions have the fan. On the slip ring motor the slip rings sit in an open guard just behind the end cover, and the fan and cowl are at the very end of the shaft.' },
     terminal_box: { name: 'Terminal Box', category: 'ELECTRICAL CONNECTION', icon: 'fa-plug', material: 'Cast iron or aluminium', spec: '6 terminals: U1 V1 W1 / W2 U2 V2',
       description: 'A box on top of the frame where the supply cable meets the stator leads. Brass links join the terminals for star or delta connection.',
       features: ['Three links in a row give delta, a single bar across three gives star.', 'A gland seals the cable entry.', 'An earth terminal is provided for safety.'],
@@ -63,7 +63,7 @@
     var d = Math.max(9.2, 8.6 / a + 1.4 + state.explode * (state.type === 'slip' ? 7 : 4));
     return new THREE.Vector3(0.42, 0.28, 0.86).normalize().multiplyScalar(d);
   }
-  function homeTarget() { return new THREE.Vector3(-0.3 + (state.type === 'slip' ? 0.5 : 0) + state.explode * 0.5, 0.1, 0); }
+  function homeTarget() { return new THREE.Vector3(-0.3 + (state.type === 'slip' ? 0.9 : 0) + state.explode * 0.5, 0.1, 0); }
 
   function init() {
     var box = $('canvas-container');
