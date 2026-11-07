@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Hobby Electronics Lab | VoltVerse</title>
+<meta name="description" content="3D models of Arduino, ESP32, HC-05, Raspberry Pi Pico and more, with pinouts, specs and five buildable starter projects.">
+<meta name="theme-color" content="#080c14"><link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="css/tailwind.css"><link rel="stylesheet" href="css/app.css"><link rel="stylesheet" href="css/fa/fa.css">
+<style>
+.hobby-item{display:flex;gap:.75rem;align-items:center;text-align:left;width:100%;padding:.6rem .75rem;border-radius:.9rem;border:1px solid #1e293b;background:rgba(15,23,42,.6);color:#cbd5e1;min-height:48px}
+.hobby-item i{width:1.5rem;text-align:center;color:#22d3ee}.hobby-item strong{display:block;font-size:.875rem;color:#f1f5f9}.hobby-item small{color:#94a3b8;font-size:.7rem}
+.hobby-item[aria-current=true]{border-color:#22d3ee;background:rgba(8,145,178,.18)}
+.mode-btn{flex:1;padding:.6rem;border-radius:.8rem;font-weight:600;font-size:.875rem;border:1px solid #1e293b;color:#94a3b8;min-height:44px}.mode-btn[aria-pressed=true]{background:rgba(8,145,178,.25);color:#67e8f9;border-color:#22d3ee}
+#hobby-canvas{height:46vh;min-height:280px}#hobby-canvas canvas{display:block;touch-action:none}
+@media(min-width:1024px){#hobby-canvas{height:520px}}
+@media(max-width:639px){#hobby-list{display:flex;overflow-x:auto;scroll-snap-type:x proximity;padding-bottom:.25rem}#hobby-list .hobby-item{min-width:200px;width:200px;flex:none;scroll-snap-align:start}}
+</style>
+<script src="vendor/three.min.js"></script><script src="vendor/OrbitControls.js"></script>
+</head>
+<body class="bg-[#080c14] text-slate-200 min-h-screen">
+<header class="px-4 py-4 max-w-6xl mx-auto"><h1 class="text-2xl md:text-3xl font-bold text-white"><i class="fa-solid fa-microchip text-cyan-400 mr-2"></i>Hobby Electronics Lab</h1>
+<p class="text-sm text-slate-400 mt-1">Ten boards and parts in 3D, and five starter projects you can build and extend. Drag to rotate, scroll or pinch to zoom.</p></header>
+<main class="max-w-6xl mx-auto px-4 pb-6 grid gap-4 lg:grid-cols-[280px_1fr]">
+<aside class="space-y-3"><div class="flex gap-2" role="group" aria-label="Section"><button class="mode-btn" data-mode="parts" type="button">Components</button><button class="mode-btn" data-mode="projects" type="button">Projects</button></div>
+<div id="hobby-list" class="grid gap-2 sm:grid-cols-2 lg:grid-cols-1"></div></aside>
+<div class="min-w-0"><div class="rounded-2xl border border-slate-800 bg-slate-950/70 overflow-hidden relative"><div class="absolute top-3 left-3 z-10 rounded-xl bg-black/60 px-3 py-1.5 backdrop-blur"><span id="hobby-title" class="font-display font-bold text-white"></span> <span id="hobby-tag" class="ml-2 text-xs text-cyan-300"></span></div><div id="hobby-canvas" role="img" aria-label="Interactive 3D model"></div></div>
+<div id="hobby-details" class="mt-4"></div></div></main>
+<nav class="app-nav app-nav-sticky" aria-label="Main"><a href="index.html" class="nav-tab"><i class="fa-solid fa-house"></i><span>Home</span></a><a href="hobby-electronics.html" class="nav-tab" aria-current="page"><i class="fa-solid fa-microchip"></i><span>Hobby</span></a><a href="symbols.html" class="nav-tab"><i class="fa-solid fa-shapes"></i><span>Symbols</span></a><a href="index.html#library" class="nav-tab"><i class="fa-solid fa-layer-group"></i><span>Library</span></a></nav>
+<script src="js/hobby-data.js"></script><script src="js/hobby-models.js"></script><script src="js/hobby-app.js"></script>
+</body></html>

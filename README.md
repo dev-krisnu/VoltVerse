@@ -23,3 +23,12 @@ Add objects to `js/quiz-data.js` with `id`, `topic`, `q`, `options` (4), `correc
 ## Tailwind
 CSS is prebuilt in `css/tailwind.css`. After adding new classes in HTML or `js/`:
 `npm i -D tailwindcss@3.4.17 && npx tailwindcss -c tailwind.config.js -i css/tailwind.src.css -o css/tailwind.css --minify`
+
+
+## Added in this update
+- Slip ring induction motor: slip rings now sit in an open guard behind the end cover, with the fan and cowl at the very end (as on the real machine).
+- DC Generator cut-section (`dc-generator.html`): pole shoes, field windings, air gap, cooling fan, sealed ball bearings, half-cut and exploded views, wheel and pinch zoom.
+- Ported to local assets (no CDN): `insulators.html`, `wire-directory.html`, `symbols.html`.
+- Hobby Electronics Lab (`hobby-electronics.html`): 10 parts and 5 starter projects in 3D.
+- Fonts: Space Grotesk (headings) + Inter (text) + JetBrains Mono (data), all self-hosted. Icon font subset extended.
+- Rebuild CSS after adding classes: `npx tailwindcss@3.4.17 -c tailwind.config.js -i css/tailwind.src.css -o css/tailwind.css --minify`

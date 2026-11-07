@@ -23,6 +23,12 @@ window.VOLTVERSE_LIBRARY = [
       { title: '3D Induction Motor', href: 'induction-motor.html', tag: '3D model', icon: 'fa-fan',
         desc: 'A cast-iron TEFC motor cut in half: squirrel cage and slip ring constructions, exploded view and the rotating field.' }
     ] },
+  { id: 'generators', title: 'Generators', accent: 'amber', icon: 'fa-bolt',
+    blurb: 'Turn motion into electricity. Cut one open and see how the DC output is made.',
+    tools: [
+      { title: 'DC Generator Cut-Section', href: 'dc-generator.html', tag: '3D model', icon: 'fa-bolt',
+        desc: 'Yoke, pole cores, pole shoes, field windings, armature, commutator, brushes, cooling fan and sealed bearings. Half-cut and exploded views, with the air gap highlighted.' }
+    ] },
   { id: 'switches', title: 'Switches', accent: 'amber', icon: 'fa-toggle-on',
     blurb: 'Fourteen interactive switch labs, from the knife switch to the MCB.',
     tools: [
@@ -45,6 +51,22 @@ window.VOLTVERSE_LIBRARY = [
       { title: 'Electrical & Electronics Symbols', href: 'symbols.html', tag: 'Reference', icon: 'fa-shapes',
         desc: 'A searchable guide to the circuit symbols used in diploma courses.' }
     ] },
+  { id: 'reference', title: 'Components & Reference', accent: 'sky', icon: 'fa-book',
+    blurb: 'Insulators, cables and symbols: the parts around the machines.',
+    tools: [
+      { title: '3D Insulator Visualizer', href: 'insulators.html', tag: '3D model', icon: 'fa-plug-circle-bolt',
+        desc: 'Pin, suspension, strain, shackle, post and composite insulators with labelled parts, creepage distance and flashover ratings.' },
+      { title: 'Wire Directory & Voltage Drop', href: 'wire-directory.html', tag: 'Calculator', icon: 'fa-bezier-curve',
+        desc: 'Cable cross-sections with current ratings, plus a voltage drop calculator for length, load and material.' },
+      { title: 'Electrical & Electronics Symbols', href: 'symbols.html', tag: 'Reference', icon: 'fa-shapes',
+        desc: 'A searchable guide to the circuit symbols in the diploma syllabus, with what each one does.' }
+    ] },
+  { id: 'hobby', title: 'Hobby Electronics', accent: 'cyan', icon: 'fa-microchip',
+    blurb: 'The boards and parts you build projects with, plus starter projects to build and extend.',
+    tools: [
+      { title: 'Hobby Electronics Lab', href: 'hobby-electronics.html', tag: '10 3D parts + 5 projects', icon: 'fa-microchip',
+        desc: 'Arduino Uno, ESP32, HC-05, servo, ultrasonic sensor, relay and more in 3D, with pinouts, specs, and five starter projects you can build.' }
+    ] },
   { id: 'practice', title: 'Practice', accent: 'sky', icon: 'fa-graduation-cap',
     blurb: 'Check what you remember after exploring.',
     tools: [
@@ -53,5 +75,5 @@ window.VOLTVERSE_LIBRARY = [
     ] },
   { id: 'soon', title: 'Coming next', soon: true,
     blurb: 'The library keeps growing. Planned families:',
-    items: ['Generators', 'Synchronous motors', 'Circuit breakers', 'Relays and contactors', 'Capacitors and inductors', 'Rectifiers and inverters'] }
+    items: ['Synchronous motors', 'Circuit breakers', 'Relays and contactors', 'Capacitors and inductors', 'Rectifiers and inverters'] }
 ];
