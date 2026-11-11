@@ -39,9 +39,9 @@
   }
   /* female tulip contact pointing along +X local (opening faces +X) */
   function tulip() {
-    var g = G(), body = mesh(new T.CylinderGeometry(.095, .105, .2, 20), X.alu()); body.rotation.z = Math.PI / 2; body.position.x = -.1; g.add(body);
-    for (var i = 0; i < 8; i++) { var a = i / 8 * 6.283, f = mesh(new T.BoxGeometry(.28, .026, .04), X.silver(), .06, Math.cos(a) * .072, Math.sin(a) * .072); f.rotation.x = a; g.add(f); }
-    [0, .13].forEach(function (x) { var r = mesh(new T.TorusGeometry(.082, .012, 8, 24), X.dark(), x + .01, 0, 0); r.rotation.y = Math.PI / 2; g.add(r); });
+    var g = G(), body = mesh(new T.CylinderGeometry(.125, .135, .26, 24), X.alu()); body.rotation.z = Math.PI / 2; body.position.x = -.12; g.add(body);
+    for (var i = 0; i < 8; i++) { var a = i / 8 * 6.283, f = mesh(new T.BoxGeometry(.34, .03, .05), X.silver(), .07, Math.cos(a) * .09, Math.sin(a) * .09); f.rotation.x = a; g.add(f); }
+    [0, .13].forEach(function (x) { var r = mesh(new T.TorusGeometry(.105, .016, 8, 24), X.dark(), x + .01, 0, 0); r.rotation.y = Math.PI / 2; g.add(r); });
     return g;
   }
   /* male pin contact pointing along +X local */
@@ -61,11 +61,15 @@
   }
   /* earth switch for one phase: blade hinged beside the line-side post, swings to an earthing contact */
   function earthSwitch(SH, x, z0, len, sign) {
-    var g = G(); g.position.set(x, SH + .12, z0);
+    var ZO = 1.0, g = G(); g.position.set(x, SH + .12, z0 + ZO);
     var hinge = pivot(.22, .05, X.dark()); g.add(hinge); g.add(mesh(new T.BoxGeometry(.3, .08, .3), X.galv(), 0, -.06, 0));
     var arm = new T.Group(); if (sign < 0) arm.scale.x = -1; arm.add(tubeAlong(len, .07, X.alu())); var lug = mesh(new T.BoxGeometry(.16, .05, .12), X.earthC(), len, 0, 0); arm.add(lug); g.add(arm);
     g.userData.arm = arm; g.userData.sign = sign;
-    var gl = new V.Merge(X.cu()); gl.rod(v3(0, -.1, 0), v3(sign * .1, -.5, .0), .025); g.add(gl.mesh());
+    /* own galvanised pedestal + pad so the hinge is never floating */
+    var ped = new V.Merge(X.galv()); [[-.12, -.12], [.12, -.12], [.12, .12], [-.12, .12]].forEach(function (o) { ped.rod(v3(o[0], -SH - .12 + .24, o[1]), v3(o[0] * .8, -.1, o[1] * .8), .05); }); ped.box(0, -.06, 0, .36, .06, .36);
+    g.add(ped.mesh()); g.add(mesh(new T.BoxGeometry(.7, .22, .7), X.pad(), 0, -SH - .12 + .11, 0));
+    /* flexible earth braid down to the ground grid (hangs from the hinge) */
+    var gl = new V.Merge(X.cu()); gl.rod(v3(0, -.1, .2), v3(sign * .05, -.6, .26), .022); gl.rod(v3(sign * .05, -.6, .26), v3(sign * .05, -SH - .1, .26), .022); g.add(gl.mesh());
     return g;
   }
   function mechanism(g, x, z0, SH) {
@@ -104,7 +108,7 @@
 
   /* ============ SINGLE BREAK (center break) ============ */
   B.single = function () {
-    var lm = liveMat(), PH = 2.5;
+    var lm = liveMat(), PH = 2.5, zs3 = [-3.2, 0, 3.2];
     return scaffold({ xs: [-1.3, 1.3], earthX: -2.05, earthLen: 2.5, earthSign: 1, mechX: -3.0, tall: 7, w: 8, liveMats: [lm],
       l: { posts: 'Twin post insulators', contacts: 'Centre contacts', blades: 'Contact arms', drive: 'Counter-rotation drive' },
       phase: function (SH, z0, P) {
@@ -114,10 +118,20 @@
         [hl, hr].forEach(function (h, i) { h.add(mesh(new T.CylinderGeometry(.19, .19, .2, 24), X.galv(), 0, .1, 0)); var t = terminal(); t.position.set(0, .22, 0); h.add(t); });
         var al = tubeAlong(1.2, .11, lm); var ar = tubeAlong(1.2, .11, lm); hl.add(al); al.position.y = .1; var tl = tulip(); tl.position.set(1.2, .1, 0); hl.add(tl);
         ar.rotation.y = Math.PI; ar.position.y = .1; hr.add(ar); var pn = pin(); pn.rotation.y = Math.PI; pn.position.set(-1.2 + .0, .1, 0); hr.add(pn);
-        var crL = link(X.galv(), .045), crR = link(X.galv(), .045); L.add(mesh(new T.CylinderGeometry(.07, .07, .22, 10), X.dark(), 0, .3, 0)); P.drive.add(crL); P.drive.add(crR);
-        return { set: function (t) { hl.rotation.y = -t * 90 * RAD; hr.rotation.y = t * 90 * RAD; pl.rotation.y = hl.rotation.y; pr.rotation.y = hr.rotation.y;
-          var a = new T.Vector3(-1.3 + .4 * Math.cos(-t * 90 * RAD), SH + .35, z0 + .4 * Math.sin(-t * 90 * RAD) * -1), b = new T.Vector3(1.3 - .4 * Math.cos(t * 90 * RAD), SH + .35, z0 + .4 * Math.sin(t * 90 * RAD) * -1);
-          place(crL, v3(-1.3, SH + .35, z0), a); place(crR, v3(1.3, SH + .35, z0), b); } };
+        /* crank plates fixed to each post foot (turn with the post), pins at their tips */
+        var CR = .26, YC = SH + .38;
+        var cl = G(), cr = G(); cl.position.y = .38; cr.position.y = .38; cl.add(mesh(new T.BoxGeometry(.1, .05, CR + .12), X.galv(), 0, 0, CR / 2 - .02)); cr.add(mesh(new T.BoxGeometry(.1, .05, CR + .12), X.galv(), 0, 0, CR / 2 - .02)); L.add(cl); Rg.add(cr);
+        var rodL = link(X.galv(), .05), rodR = link(X.galv(), .05); P.drive.add(rodL); P.drive.add(rodR);
+        var slider = mesh(new T.BoxGeometry(.3, .16, .3), X.dark(), 0, YC, z0); P.drive.add(slider);
+        var pinsM = [mesh(new T.CylinderGeometry(.045, .045, .16, 10), X.dark()), mesh(new T.CylinderGeometry(.045, .045, .16, 10), X.dark())]; pinsM.forEach(function (q) { P.drive.add(q); });
+        if (!P.drive.userData.rail) { P.drive.userData.rail = true; var rail = new V.Merge(X.galv()); rail.rod(v3(0, YC - .12, zs3[0] - .6), v3(0, YC - .12, zs3[2] + 1.6), .06); P.drive.add(rail.mesh()); }
+        var LEN = 1.75;
+        return { set: function (t) { var th = t * 90 * RAD, sn = Math.sin(th), cs = Math.cos(th);
+          hl.rotation.y = -th; hr.rotation.y = th; pl.rotation.y = -th; pr.rotation.y = th; L.userData.th = th;
+          var pL = v3(-1.3 - CR * sn, YC, z0 + CR * cs), pR = v3(1.3 + CR * sn, YC, z0 + CR * cs);
+          var zc = z0 + CR * cs + Math.sqrt(Math.max(.01, LEN * LEN - (1.3 + CR * sn) * (1.3 + CR * sn)));
+          var C = v3(0, YC, zc); slider.position.copy(C);
+          place(rodL, pL, C); place(rodR, pR, C); pinsM[0].position.copy(pL); pinsM[1].position.copy(pR); cl.rotation.y = -th; cr.rotation.y = th; } };
       } });
   };
 
