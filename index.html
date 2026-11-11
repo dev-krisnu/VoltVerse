@@ -17,22 +17,27 @@
 <link rel="prefetch" href="transformer-explorer.html"><link rel="prefetch" href="dc-motor.html">
 <style>html{scroll-behavior:smooth}#library{scroll-margin-top:16px}@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}@keyframes spin-dash{to{stroke-dashoffset:-62}}.fb{animation:spin-dash 3s linear infinite}</style>
 <link rel="stylesheet" href="css/mobile.css"><script src="js/mobile.js"></script>
+<link rel="stylesheet" href="css/fx.css"><script src="js/sky.js" defer></script><script src="js/fx.js" defer></script>
 </head>
 <body class="min-h-screen bg-[#080c14] text-gray-100 antialiased" style="background-image:radial-gradient(circle at 80% 0%,#12263d 0%,#080c14 55%)">
-<header class="max-w-6xl mx-auto px-5 pt-5 flex items-center gap-3">
+<header class="home-bar">
   <svg class="vn-mark" style="width:42px;height:38px" aria-hidden="true"><use href="#vn-mark"/></svg>
   <div class="leading-none"><span class="font-orbitron vn-grad font-black tracking-[.24em] text-lg">V-NODE</span><span class="block font-orbitron text-[9px] tracking-[.42em] text-cyan-300/70 mt-1.5 uppercase">Electrical Visualizers</span></div>
+  <span class="grow"></span>
+  <a class="pill-link" href="hobby-electronics.html" style="--c:#22d3ee"><i class="fa-solid fa-microchip"></i><span>Hobby Electronics</span></a>
+  <a class="pill-link" href="quiz.html" style="--c:#f59e0b"><i class="fa-solid fa-graduation-cap"></i><span>Electrical Quiz</span></a>
 </header>
 <main class="max-w-6xl mx-auto px-5 pb-12">
   <section class="grid md:grid-cols-2 gap-6 items-center pt-8 md:pt-12">
     <div>
-      <h1 class="text-4xl md:text-6xl font-extrabold tracking-tight leading-[1.04]">Every electrical component, <span class="vn-grad">explored in 3D.</span></h1>
+      <h1 class="hero-title text-4xl md:text-6xl font-extrabold tracking-tight leading-[1.04]">Every electrical component, <span class="vn-grad">explored in 3D.</span></h1>
       <p class="mt-5 text-gray-300 max-w-lg leading-relaxed">V-NODE is a growing library of interactive 3D models, cut-sections and live calculators for the machines and parts behind electricity. Open them up, spin them, and see how they actually work.</p>
       <div class="mt-7 flex flex-wrap gap-3">
-        <a href="#library" class="px-5 py-3 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-gray-950 font-bold shadow-lg shadow-cyan-500/30 transition">Browse the library</a>
-        <a href="transformer-explorer.html" class="px-5 py-3 rounded-xl border border-gray-600 hover:bg-white/5 font-bold transition">Start with a transformer</a>
-      </div>
-      <p id="lib-stats" class="mt-5 text-xs font-mono text-gray-500"></p>
+          <a href="#library" id="browse" class="cta px-5 py-3 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-gray-950 font-bold shadow-lg shadow-cyan-500/30 transition">Browse the library</a>
+          <a href="#library" id="explore" class="px-5 py-3 rounded-xl border border-cyan-400/40 hover:bg-cyan-400/10 font-bold text-cyan-100 transition">Start exploring</a>
+        </div>
+        <div class="chips"><a class="pill-link" href="hobby-electronics.html" style="--c:#22d3ee"><i class="fa-solid fa-microchip"></i><span>Hobby Electronics</span></a><a class="pill-link" href="quiz.html" style="--c:#f59e0b"><i class="fa-solid fa-graduation-cap"></i><span>Electrical Quiz</span></a></div>
+        <p id="lib-stats" class="mt-5 text-xs font-mono text-gray-500"></p>
     </div>
     <div id="hero3d" class="relative w-full max-w-lg mx-auto aspect-square">
       <svg id="hero-fallback" viewBox="0 0 400 400" class="w-full h-full" role="img" aria-label="Cross-section of an electric machine: a two-pole rotor inside a ring of coils">
@@ -43,22 +48,17 @@
       <canvas id="hero-gl" class="hidden absolute inset-0 w-full h-full cursor-grab" style="touch-action:pan-y" aria-hidden="true"></canvas>
     </div>
   </section>
-  <section class="mt-10" aria-label="Quiz">
-    <a href="quiz.html" class="group flex flex-col sm:flex-row sm:items-center gap-4 rounded-2xl p-5 bg-gradient-to-r from-sky-900/50 to-slate-900/70 border border-sky-500/40 hover:border-sky-300 transition">
-      <span class="w-12 h-12 rounded-xl bg-sky-400/15 text-sky-300 flex items-center justify-center shrink-0"><i class="fa-solid fa-graduation-cap text-xl"></i></span>
-      <div class="flex-1"><h2 class="font-bold text-lg text-white">Want to test your knowledge?</h2><p class="text-sm text-gray-300 mt-0.5">Take a 10-question quiz from a bank of 50 diploma-level questions. Every answer comes with an explanation.</p></div>
-      <span class="px-4 py-2 rounded-lg bg-sky-400 group-hover:bg-sky-300 text-gray-950 font-bold text-sm text-center">Start the quiz</span>
-    </a>
-  </section>
+  
   <div id="library" class="pt-6">
-    <h2 class="text-2xl md:text-3xl font-extrabold tracking-tight">The library</h2>
+    <div class="lib-head"><div><h2 class="text-2xl md:text-3xl font-extrabold tracking-tight">The library</h2><p class="text-sm text-gray-400 mt-1">Pick a category, then a tool. Everything opens in 3D.</p></div></div>
     <div id="library-root"></div>
     <noscript><ul class="mt-4 list-disc pl-5 text-gray-300"><li><a href="transformer-explorer.html">3D Transformer Explorer</a></li><li><a href="transformer-calculator.html">Transformer Calculator</a></li><li><a href="dc-motor.html">DC Motor Cut-Section Visualizer</a></li><li><a href="dc-motor-types.html">DC Motor Types Comparison</a></li><li><a href="induction-motor.html">3D Induction Motor</a></li><li><a href="transformer-design.html">Transformer Design Calculator</a></li><li><a href="dc-generator.html">DC Generator</a></li><li><a href="insulators.html">Insulators</a></li><li><a href="wire-directory.html">Wire Directory</a></li><li><a href="symbols.html">Symbols</a></li><li><a href="supports.html">Line Supports</a></li><li><a href="isolators.html">HV Isolators</a></li><li><a href="ppe.html">Arc-Flash PPE</a></li><li><a href="safety-guide.html">Safety Guide</a></li><li><a href="hobby-electronics.html">Hobby Electronics</a></li><li><a href="quiz.html">Electrical Quiz Lab</a></li></ul></noscript>
   </div>
 </main>
-<footer class="max-w-6xl mx-auto px-5 pb-8 text-xs text-gray-500">V-NODE: built for diploma-level electrical engineering students. Works on phones, tablets and desktops.</footer>
+<footer class="foot"><svg class="vn-mark" style="width:44px;height:40px;margin:0 auto" aria-hidden="true"><use href="#vn-mark"/></svg><div class="font-orbitron vn-grad font-black tracking-[.3em] text-sm mt-2">V-NODE</div><div class="links"><a href="#library">Library</a><a href="hobby-electronics.html">Hobby Electronics</a><a href="quiz.html">Electrical Quiz</a><a href="safety-guide.html">Safety Rules</a></div><p class="text-xs text-gray-500">Built for diploma-level electrical engineering students. Works on phones, tablets and desktops.</p></footer>
 <script src="js/library.js"></script>
 <script src="js/home.js"></script>
 <script src="js/hero.js"></script>
+<script>document.getElementById('explore').addEventListener('click',function(e){e.preventDefault();if(window.vnodeOpenCategory)window.vnodeOpenCategory(1);});</script>
 </body>
 </html>

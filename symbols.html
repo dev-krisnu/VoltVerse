@@ -40,6 +40,7 @@
         }
     </style>
 <link rel="stylesheet" href="css/mobile.css"><script src="js/mobile.js"></script>
+<link rel="stylesheet" href="css/fx.css"><script src="js/sky.js" defer></script><script src="js/fx.js" defer></script>
 </head>
 <body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-screen transition-colors duration-200 flex flex-col">
 
@@ -1204,7 +1205,7 @@
         }
 
         function initTheme() {
-            if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            if (localStorage.theme === 'dark' || !('theme' in localStorage)) {
                 document.documentElement.classList.add('dark');
             } else {
                 document.documentElement.classList.remove('dark');

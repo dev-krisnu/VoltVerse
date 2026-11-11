@@ -39,3 +39,8 @@ CSS is prebuilt in `css/tailwind.css`. After adding new classes in HTML or `js/`
 - **Isolators** (`isolators.html`): six working HV isolators with earth-switch interlock (`js/isolators-*.js`).
 - **Arc-flash PPE** (`ppe.html`): animated 3D worker for categories 1 to 4 (`js/ppe-human.js`, `js/ppe-person.js`), arc-flash test, garment inspector. **Safety guide** (`safety-guide.html`, Alpine vendored in `vendor/alpine.min.js`).
 - **Mobile**: `css/mobile.css` + `js/mobile.js` (pixel-ratio cap, sticky 3D stage layouts, scroll reveal), `css/vk.css` for the new pages, shared engine `js/vk-engine.js`.
+
+## V-NODE 2.1 additions
+- **Library** is now seven categories (Transformer, Motors, Generator, Basic Electrical, Electrical Safety, Transmission & Switchgear, Power Electronics) in `js/library.js`. `js/home.js` renders them as tap-to-open cards: category, then tool, then Open. Hobby Electronics and the Quiz sit as chips beside the hero buttons.
+- **Night sky** (`js/sky.js`): one fixed canvas behind every page with twinkling stars, aurora, moon and shooting stars. Pauses when hidden, static with reduced motion.
+- **Interaction layer** (`css/fx.css`, `js/fx.js`): hover lift and pointer spotlight, tap ripple, shimmer, floating hero, unified header icon tile on every page.

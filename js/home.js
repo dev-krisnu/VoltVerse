@@ -1,23 +1,38 @@
+/* Home library: seven categories. Tap a category to see its tools, tap a tool to read about it, tap Open to go inside. */
 (function () {
-  var A = {
-    cyan:  { bd: 'border-cyan-500/30 hover:border-cyan-300', tx: 'text-cyan-300', chip: 'bg-cyan-400/10 text-cyan-300', ic: 'bg-cyan-400/10 text-cyan-300' },
-    sky:   { bd: 'border-sky-500/30 hover:border-sky-300', tx: 'text-sky-300', chip: 'bg-sky-400/10 text-sky-300', ic: 'bg-sky-400/10 text-sky-300' },
-    amber: { bd: 'border-amber-500/30 hover:border-amber-300', tx: 'text-amber-300', chip: 'bg-amber-400/10 text-amber-300', ic: 'bg-amber-400/10 text-amber-300' }
-  };
-  var lib = window.VOLTVERSE_LIBRARY || [], html = '', tools = 0, fams = 0;
+  var lib = window.VOLTVERSE_LIBRARY || [], root = document.getElementById('library-root'); if (!root) return;
+  var html = '<div class="lib-grid">', tools = 0, n = 0;
+  function e(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
   lib.forEach(function (f) {
-    if (f.soon) {
-      html += '<section class="mt-12" aria-labelledby="h-' + f.id + '"><h3 id="h-' + f.id + '" class="text-lg font-bold text-gray-300">' + f.title + '</h3><p class="text-sm text-gray-500 mt-1">' + f.blurb + '</p><div class="mt-3 flex flex-wrap gap-2">' +
-        f.items.map(function (i) { return '<span class="px-3 py-1.5 rounded-full border border-dashed border-gray-700 text-xs text-gray-400">' + i + '</span>'; }).join('') + '</div></section>';
-      return;
-    }
-    fams++; tools += f.tools.length;
-    var a = A[f.accent] || A.cyan;
-    html += '<section class="mt-12" aria-labelledby="h-' + f.id + '"><div class="flex items-center gap-3"><span class="w-9 h-9 rounded-lg flex items-center justify-center ' + a.ic + '"><i class="fa-solid ' + f.icon + '"></i></span><div><h3 id="h-' + f.id + '" class="text-xl font-bold ' + a.tx + '">' + f.title + '</h3><p class="text-sm text-gray-400">' + f.blurb + '</p></div></div><div class="mt-4 grid sm:grid-cols-2 lg:grid-cols-3 gap-4">' +
-      f.tools.map(function (t) {
-        return '<a href="' + t.href + '" class="group block rounded-2xl p-5 bg-slate-900/70 border ' + a.bd + ' transition"><div class="flex items-center justify-between"><span class="px-2 py-0.5 rounded-md text-[11px] font-semibold ' + a.chip + '">' + t.tag + '</span><i class="fa-solid ' + t.icon + ' text-gray-500 group-hover:text-white transition"></i></div><h4 class="mt-3 font-bold text-white">' + t.title + '</h4><p class="mt-1.5 text-sm text-gray-400 leading-relaxed">' + t.desc + '</p></a>';
-      }).join('') + '</div></section>';
+    if (f.soon) return; n++; tools += f.tools.length;
+    html += '<article class="cat vk-rv" id="cat-' + n + '" style="--c:' + f.color + '" data-id="' + f.id + '">' +
+      '<button class="cat-head" type="button" aria-expanded="false" aria-controls="cb-' + n + '" id="ch-' + n + '"><span class="cat-no">' + (n < 10 ? '0' : '') + n + '</span><span class="cat-ic"><i class="fa-solid ' + f.icon + '"></i></span>' +
+      '<span class="cat-tx"><b>' + e(f.title) + '</b><small>' + e(f.key) + '</small></span><span class="cat-ct">' + f.tools.length + '</span><i class="fa-solid fa-chevron-down cat-chev"></i></button>' +
+      '<div class="cat-body" id="cb-' + n + '" role="region" aria-labelledby="ch-' + n + '"><div class="cat-in"><p class="cat-bl">' + e(f.blurb) + '</p><div class="cat-list">' +
+      f.tools.map(function (t, i) {
+        return '<div class="tool" style="--i:' + i + '"><button class="tool-head" type="button" aria-expanded="false"><span class="tool-ic"><i class="fa-solid ' + t.icon + '"></i></span><span class="tool-t">' + e(t.title) + '</span><span class="tool-tag">' + e(t.tag) + '</span><i class="fa-solid fa-chevron-down"></i></button>' +
+          '<div class="tool-body"><div class="tool-in"><p>' + e(t.desc) + '</p><a class="tool-go" href="' + t.href + '">Open <i class="fa-solid fa-arrow-right"></i></a></div></div></div>';
+      }).join('') + '</div></div></div></article>';
   });
-  var root = document.getElementById('library-root'); if (root) root.innerHTML = html;
-  var st = document.getElementById('lib-stats'); if (st) st.textContent = tools + ' interactive tools across ' + fams + ' component families, and growing';
+  html += '</div>';
+  var soon = lib.filter(function (f) { return f.soon; })[0];
+  if (soon) html += '<div style="margin-top:26px"><h3 style="font-size:15px;font-weight:700;color:#9fb0c5">' + e(soon.title) + '</h3><p style="font-size:13px;color:#6b7e96;margin-top:2px">' + e(soon.blurb) + '</p><div class="soon-row">' + soon.items.map(function (i) { return '<span class="px-3 py-1.5 rounded-full border border-dashed border-gray-700 text-xs text-gray-400">' + e(i) + '</span>'; }).join('') + '</div></div>';
+  root.innerHTML = html;
+  var st = document.getElementById('lib-stats'); if (st) st.textContent = tools + ' interactive tools in ' + n + ' categories, and growing';
+
+  function openCat(c, scroll) {
+    root.querySelectorAll('.cat.open').forEach(function (o) { if (o !== c) setCat(o, false); });
+    setCat(c, !c.classList.contains('open'));
+    if (scroll && c.classList.contains('open')) setTimeout(function () { var y = c.getBoundingClientRect().top + scrollY - 76; scrollTo({ top: y, behavior: matchMedia('(prefers-reduced-motion:reduce)').matches ? 'auto' : 'smooth' }); }, 120);
+  }
+  function setCat(c, on) { c.classList.toggle('open', on); c.querySelector('.cat-head').setAttribute('aria-expanded', on); if (!on) c.querySelectorAll('.tool.open').forEach(function (t) { setTool(t, false); }); }
+  function setTool(t, on) { t.classList.toggle('open', on); t.querySelector('.tool-head').setAttribute('aria-expanded', on); }
+  root.addEventListener('click', function (ev) {
+    var th = ev.target.closest('.tool-head'), ch = ev.target.closest('.cat-head');
+    if (th) { var t = th.parentNode, on = !t.classList.contains('open'); t.parentNode.querySelectorAll('.tool.open').forEach(function (o) { setTool(o, false); }); setTool(t, on); }
+    else if (ch) openCat(ch.parentNode, true);
+  });
+  window.vnodeOpenCategory = function (i) { var c = document.getElementById('cat-' + i); if (c) openCat(c, true); };
+  var m = /^#cat-(\d+)/.exec(location.hash); if (m) setTimeout(function () { window.vnodeOpenCategory(+m[1]); }, 600);
+  if (window.vkReveal) window.vkReveal();
 })();
