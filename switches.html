@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Electrical Switches | VoltVerse</title>
+<link rel="stylesheet" href="css/vnode.css"><script src="js/vnode.js"></script>
+<title>Electrical Switches | V-NODE</title>
 <meta name="description" content="Fourteen interactive 3D electrical switches: knife, toggle, push button, rotary, float, limit, centrifugal, SPST, SPDT, DPST, DPDT, flush, intermediate and MCB.">
 <meta name="theme-color" content="#080c14">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
@@ -17,11 +18,12 @@ body{background:#080c14 radial-gradient(circle at 85% -5%,#12263d 0%,#080c14 55%
 #cat-chips{scrollbar-width:none}#cat-chips::-webkit-scrollbar{display:none}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
+<link rel="stylesheet" href="css/mobile.css"><script src="js/mobile.js"></script>
 </head>
 <body class="min-h-screen text-gray-100 antialiased">
 <header class="max-w-6xl mx-auto px-5 pt-5 flex items-center gap-2.5">
-  <a href="index.html" aria-label="VoltVerse home" class="w-9 h-9 rounded-lg bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/20"><i class="fa-solid fa-bolt text-white"></i></a>
-  <span class="font-extrabold tracking-tight text-lg">VoltVerse</span>
+  <a href="index.html" aria-label="V-NODE home" class="w-9 h-9 rounded-lg bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/20"><i class="fa-solid fa-bolt text-white"></i></a>
+  <span class="font-extrabold tracking-tight text-lg">V-NODE</span>
 </header>
 <main class="max-w-6xl mx-auto px-5 pb-10">
   <section class="grid md:grid-cols-[1fr_auto] gap-6 items-center pt-8">
@@ -58,7 +60,7 @@ body{background:#080c14 radial-gradient(circle at 85% -5%,#12263d 0%,#080c14 55%
     <div><div class="text-sm font-bold text-white">Test your knowledge</div><div class="text-[11px] text-slate-400 mt-0.5">Take a 10-question quiz after exploring.</div></div><i class="fa-solid fa-graduation-cap text-sky-400"></i>
   </a>
 </main>
-<nav class="app-nav" aria-label="Main"><a href="index.html" class="nav-tab"><i class="fa-solid fa-house"></i><span>Home</span></a><a href="switches.html" class="nav-tab" aria-current="page"><i class="fa-solid fa-toggle-on"></i><span>Switches</span></a><a href="index.html#library" class="nav-tab"><i class="fa-solid fa-layer-group"></i><span>Library</span></a></nav>
+<nav class="app-nav" aria-label="Main"><a href="index.html" class="nav-tab"><svg class="vn-mark" aria-hidden="true"><use href="#vn-mark"/></svg><span>Home</span></a><a href="switches.html" class="nav-tab" aria-current="page"><i class="fa-solid fa-toggle-on"></i><span>Switches</span></a><a href="index.html#library" class="nav-tab"><i class="fa-solid fa-layer-group"></i><span>Library</span></a></nav>
 <script src="js/switches-data.js"></script>
 <script src="js/switches-hub.js"></script>
 </body>

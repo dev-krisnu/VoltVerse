@@ -1,4 +1,4 @@
-# VoltVerse – the 3D Electrical Component Library
+# V-NODE – the 3D Electrical Component Library
 Static site, no build step needed.
 
 ## Pages
@@ -32,3 +32,10 @@ CSS is prebuilt in `css/tailwind.css`. After adding new classes in HTML or `js/`
 - Hobby Electronics Lab (`hobby-electronics.html`): 10 parts and 5 starter projects in 3D.
 - Fonts: Space Grotesk (headings) + Inter (text) + JetBrains Mono (data), all self-hosted. Icon font subset extended.
 - Rebuild CSS after adding classes: `npx tailwindcss@3.4.17 -c tailwind.config.js -i css/tailwind.src.css -o css/tailwind.css --minify`
+
+## V-NODE 2.0 additions
+- **Brand**: the site is now V-NODE. `js/vnode.js` + `css/vnode.css` draw the splash/loader (cinematic logo, grid and sparks with the neon-glass title, progress and telemetry). First visit per session plays the full intro (tap to skip); later pages and internal links use a short branded curtain.
+- **Line Supports** (`supports.html`): 15 structures (wooden, steel, RCC/PCC, six lattice types). Models are generated in `js/supports-models.js` and `js/supports-lattice.js`, content in `js/supports-data.js`. Deep links: `supports.html#lat_delta`.
+- **Isolators** (`isolators.html`): six working HV isolators with earth-switch interlock (`js/isolators-*.js`).
+- **Arc-flash PPE** (`ppe.html`): animated 3D worker for categories 1 to 4 (`js/ppe-human.js`, `js/ppe-person.js`), arc-flash test, garment inspector. **Safety guide** (`safety-guide.html`, Alpine vendored in `vendor/alpine.min.js`).
+- **Mobile**: `css/mobile.css` + `js/mobile.js` (pixel-ratio cap, sticky 3D stage layouts, scroll reveal), `css/vk.css` for the new pages, shared engine `js/vk-engine.js`.

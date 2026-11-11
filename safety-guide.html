@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <link rel="stylesheet" href="css/vnode.css"><script src="js/vnode.js"></script>
+<title>V-NODE Safety: Electrical Safety Guide Across Regions</title>
+    <!-- Tailwind CSS -->
+    
+    
+    <!-- Alpine.js -->
+    <script defer src="vendor/alpine.min.js"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="css/tailwind.css"><link rel="stylesheet" href="css/app.css"><link rel="stylesheet" href="css/fa/fa.css"><link rel="stylesheet" href="css/mobile.css">
+    <!-- Google Fonts -->
+    
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .glow-yellow { box-shadow: 0 0 20px rgba(245, 158, 11, 0.2); }
+        .glow-cyan { box-shadow: 0 0 20px rgba(6, 182, 212, 0.2); }
+    </style>
+</head>
+<body class="bg-darkBg text-slate-100 min-h-screen flex flex-col selection:bg-amber-500 selection:text-black" x-data="safetyApp()">
+
+    <!-- Top Navigation Bar -->
+    <header class="sticky top-0 z-50 bg-darkBg/90 backdrop-blur-md border-b border-slate-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <a href="index.html#library" class="mr-2 w-9 h-9 rounded-xl grid place-items-center bg-slate-800 text-slate-300 shrink-0" aria-label="Back to library"><i class="fa-solid fa-arrow-left"></i></a><div class="flex items-center space-x-3 cursor-pointer" @click="activeTab = 'home'; search=''; selectedCategory='all'">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 to-yellow-300 flex items-center justify-center text-darkBg font-black text-xl shadow-lg glow-yellow">
+                    <i class="fa-solid fa-bolt"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg tracking-wide text-white">V-NODE <span class="text-amber-400">Safety</span></h1>
+                    <p class="text-xs text-slate-400">Global Safety Protocol Guide</p>
+                </div>
+            </div>
+
+            <!-- Desktop Nav Items -->
+            <nav class="hidden md:flex items-center space-x-1">
+                <button @click="activeTab = 'home'" :class="activeTab === 'home' ? 'bg-slate-800 text-amber-400 border-amber-500/50' : 'text-slate-300 hover:text-white hover:bg-slate-800/50'" class="px-4 py-2 rounded-lg text-sm font-medium transition border border-transparent">
+                    <i class="fa-solid fa-house mr-2"></i>Overview
+                </button>
+                <button @click="activeTab = 'regions'" :class="activeTab === 'regions' ? 'bg-slate-800 text-amber-400 border-amber-500/50' : 'text-slate-300 hover:text-white hover:bg-slate-800/50'" class="px-4 py-2 rounded-lg text-sm font-medium transition border border-transparent">
+                    <i class="fa-solid fa-layer-group mr-2"></i>Safety Zones
+                </button>
+                <button @click="activeTab = 'quiz'" :class="activeTab === 'quiz' ? 'bg-slate-800 text-amber-400 border-amber-500/50' : 'text-slate-300 hover:text-white hover:bg-slate-800/50'" class="px-4 py-2 rounded-lg text-sm font-medium transition border border-transparent">
+                    <i class="fa-solid fa-brain mr-2"></i>Safety Quiz
+                </button>
+                <button @click="activeTab = 'glossary'" :class="activeTab === 'glossary' ? 'bg-slate-800 text-amber-400 border-amber-500/50' : 'text-slate-300 hover:text-white hover:bg-slate-800/50'" class="px-4 py-2 rounded-lg text-sm font-medium transition border border-transparent">
+                    <i class="fa-solid fa-book mr-2"></i>Search Rules
+                </button>
+            </nav>
+
+            <!-- Mobile Menu Button -->
+            <div class="md:hidden flex items-center">
+                <button @click="mobileMenuOpen = !mobileMenuOpen" class="text-slate-300 hover:text-white p-2 rounded-lg bg-slate-800">
+                    <i :class="mobileMenuOpen ? 'fa-solid fa-xmark' : 'fa-solid fa-bars'" class="text-xl"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Drawer Navigation -->
+        <div x-show="mobileMenuOpen" x-transition class="md:hidden bg-cardBg border-b border-slate-800 px-4 pt-2 pb-4 space-y-2">
+            <button @click="activeTab = 'home'; mobileMenuOpen = false" class="block w-full text-left px-3 py-2 rounded-lg text-base font-medium text-slate-200 hover:bg-slate-800">
+                <i class="fa-solid fa-house mr-3 text-amber-400"></i>Overview
+            </button>
+            <button @click="activeTab = 'regions'; mobileMenuOpen = false" class="block w-full text-left px-3 py-2 rounded-lg text-base font-medium text-slate-200 hover:bg-slate-800">
+                <i class="fa-solid fa-layer-group mr-3 text-amber-400"></i>Safety Zones
+            </button>
+            <button @click="activeTab = 'quiz'; mobileMenuOpen = false" class="block w-full text-left px-3 py-2 rounded-lg text-base font-medium text-slate-200 hover:bg-slate-800">
+                <i class="fa-solid fa-brain mr-3 text-amber-400"></i>Safety Quiz
+            </button>
+            <button @click="activeTab = 'glossary'; mobileMenuOpen = false" class="block w-full text-left px-3 py-2 rounded-lg text-base font-medium text-slate-200 hover:bg-slate-800">
+                <i class="fa-solid fa-book mr-3 text-amber-400"></i>Search Rules
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+
+        <!-- TAB 1: OVERVIEW / HOME -->
+        <div x-show="activeTab === 'home'" x-transition class="space-y-12">
+            <!-- Hero Section -->
+            <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-cardBg via-slate-900 to-darkBg border border-slate-800 p-8 sm:p-12 shadow-2xl">
+                <div class="absolute right-0 top-0 -mt-12 -mr-12 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
+                <div class="absolute left-1/3 bottom-0 w-64 h-64 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none"></div>
+                
+                <div class="relative z-10 max-w-2xl space-y-6">
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                        <i class="fa-solid fa-shield-halved mr-1.5"></i> Electrical Safety Standards
+                    </span>
+                    <h2 class="text-3xl sm:text-5xl font-extrabold tracking-tight text-white leading-tight">
+                        Master Electrical Safety Across <span class="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-yellow-200">All Environments</span>
+                    </h2>
+                    <p class="text-slate-300 text-base sm:text-lg leading-relaxed">
+                        Electricity powers our modern world, but it can be dangerous if mishandled. Learn easy-to-understand safety rules tailored for homes, factories, high-voltage substations, and major power grids.
+                    </p>
+                    <div class="flex flex-wrap gap-4 pt-2">
+                        <button @click="activeTab = 'regions'" class="px-6 py-3 bg-amber-500 hover:bg-amber-400 text-darkBg font-bold rounded-xl shadow-lg shadow-amber-500/20 transition flex items-center space-x-2">
+                            <span>Explore Zones</span>
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                        <button @click="activeTab = 'quiz'" class="px-6 py-3 bg-slate-800 hover:bg-slate-700 text-white font-semibold rounded-xl border border-slate-700 transition flex items-center space-x-2">
+                            <i class="fa-solid fa-gamepad text-cyan-400"></i>
+                            <span>Take Safety Quiz</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4 Zone Cards Grid -->
+            <div>
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <h3 class="text-2xl font-bold text-white">Select an Electrical Zone</h3>
+                        <p class="text-sm text-slate-400">Click on any environment to view specific safety rules, hazards, and PPE requirements.</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <!-- Domestic Card -->
+                    <div @click="selectZone('domestic')" class="group bg-cardBg rounded-2xl p-6 border border-slate-800 hover:border-amber-500/50 cursor-pointer transition transform hover:-translate-y-1 shadow-lg flex flex-col justify-between">
+                        <div>
+                            <div class="w-12 h-12 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center text-xl mb-4 group-hover:scale-110 transition">
+                                <i class="fa-solid fa-house-chimney"></i>
+                            </div>
+                            <h4 class="text-lg font-bold text-white mb-2">1. Domestic (Home)</h4>
+                            <p class="text-slate-400 text-sm leading-relaxed mb-4">
+                                Everyday safety for appliances, wall outlets, wet areas like bathrooms, and child protection.
+                            </p>
+                        </div>
+                        <div class="flex items-center text-amber-400 text-sm font-semibold group-hover:translate-x-1 transition">
+                            <span>View Rules</span> <i class="fa-solid fa-chevron-right ml-2 text-xs"></i>
+                        </div>
+                    </div>
+
+                    <!-- Industrial Card -->
+                    <div @click="selectZone('industrial')" class="group bg-cardBg rounded-2xl p-6 border border-slate-800 hover:border-cyan-500/50 cursor-pointer transition transform hover:-translate-y-1 shadow-lg flex flex-col justify-between">
+                        <div>
+                            <div class="w-12 h-12 rounded-xl bg-cyan-500/10 text-cyan-400 flex items-center justify-center text-xl mb-4 group-hover:scale-110 transition">
+                                <i class="fa-solid fa-industry"></i>
+                            </div>
+                            <h4 class="text-lg font-bold text-white mb-2">2. Industrial Plants</h4>
+                            <p class="text-slate-400 text-sm leading-relaxed mb-4">
+                                Heavy machinery, LOTO (Lockout/Tagout) protocols, heavy-duty panels, and specialized PPE.
+                            </p>
+                        </div>
+                        <div class="flex items-center text-cyan-400 text-sm font-semibold group-hover:translate-x-1 transition">
+                            <span>View Rules</span> <i class="fa-solid fa-chevron-right ml-2 text-xs"></i>
+                        </div>
+                    </div>
+
+                    <!-- Substation Card -->
+                    <div @click="selectZone('substation')" class="group bg-cardBg rounded-2xl p-6 border border-slate-800 hover:border-amber-500/50 cursor-pointer transition transform hover:-translate-y-1 shadow-lg flex flex-col justify-between">
+                        <div>
+                            <div class="w-12 h-12 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center text-xl mb-4 group-hover:scale-110 transition">
+                                <i class="fa-solid fa-tower-broadcast"></i>
+                            </div>
+                            <h4 class="text-lg font-bold text-white mb-2">3. Substations</h4>
+                            <p class="text-slate-400 text-sm leading-relaxed mb-4">
+                                High-voltage step-down yards, transformer safety, arc flash protection, and authorized entry only.
+                            </p>
+                        </div>
+                        <div class="flex items-center text-amber-400 text-sm font-semibold group-hover:translate-x-1 transition">
+                            <span>View Rules</span> <i class="fa-solid fa-chevron-right ml-2 text-xs"></i>
+                        </div>
+                    </div>
+
+                    <!-- Power Grid Card -->
+                    <div @click="selectZone('grid')" class="group bg-cardBg rounded-2xl p-6 border border-slate-800 hover:border-cyan-500/50 cursor-pointer transition transform hover:-translate-y-1 shadow-lg flex flex-col justify-between">
+                        <div>
+                            <div class="w-12 h-12 rounded-xl bg-cyan-500/10 text-cyan-400 flex items-center justify-center text-xl mb-4 group-hover:scale-110 transition">
+                                <i class="fa-solid fa-network-wired"></i>
+                            </div>
+                            <h4 class="text-lg font-bold text-white mb-2">4. Power Grid</h4>
+                            <p class="text-slate-400 text-sm leading-relaxed mb-4">
+                                Transmission lines, grid dispatch communication, emergency blackout handling, and clearance buffers.
+                            </p>
+                        </div>
+                        <div class="flex items-center text-cyan-400 text-sm font-semibold group-hover:translate-x-1 transition">
+                            <span>View Rules</span> <i class="fa-solid fa-chevron-right ml-2 text-xs"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Golden Safety Rules Banner -->
+            <div class="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 border border-slate-700/80 rounded-2xl p-6 sm:p-8">
+                <h3 class="text-xl font-bold text-white mb-4 flex items-center">
+                    <i class="fa-solid fa-triangle-exclamation text-amber-400 mr-3 text-2xl"></i>
+                    The Universal Golden Rules of Electrical Safety
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="bg-darkBg/60 p-4 rounded-xl border border-slate-800">
+                        <span class="text-amber-400 font-bold text-lg">01.</span>
+                        <h5 class="font-bold text-white mt-1 mb-1">Treat Every Wire as Live</h5>
+                        <p class="text-slate-400 text-sm">Never assume a wire or equipment is dead or safe until you test it yourself with a certified voltage detector.</p>
+                    </div>
+                    <div class="bg-darkBg/60 p-4 rounded-xl border border-slate-800">
+                        <span class="text-amber-400 font-bold text-lg">02.</span>
+                        <h5 class="font-bold text-white mt-1 mb-1">Keep Dry and Isolated</h5>
+                        <p class="text-slate-400 text-sm">Water conducts electricity easily. Always keep hands, floors, and equipment completely dry before operating switches.</p>
+                    </div>
+                    <div class="bg-darkBg/60 p-4 rounded-xl border border-slate-800">
+                        <span class="text-amber-400 font-bold text-lg">03.</span>
+                        <h5 class="font-bold text-white mt-1 mb-1">Never Overload Outlets</h5>
+                        <p class="text-slate-400 text-sm">Plugging too many heavy appliances into one extension cord creates extreme heat and risks electrical fires.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 2: DETAILED SAFETY ZONES -->
+        <div x-show="activeTab === 'regions'" x-transition class="space-y-8">
+            <!-- Zone Switcher Header -->
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-cardBg p-6 rounded-2xl border border-slate-800">
+                <div>
+                    <h3 class="text-xl font-bold text-white">Select Environment Region</h3>
+                    <p class="text-slate-400 text-sm">Switch between regions to view specific hazards, PPE, and golden rules.</p>
+                </div>
+                <div class="flex flex-wrap gap-2">
+                    <button @click="currentZone = 'domestic'" :class="currentZone === 'domestic' ? 'bg-amber-500 text-darkBg font-bold shadow-lg shadow-amber-500/20' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'" class="px-4 py-2 rounded-xl text-sm transition font-medium">Domestic</button>
+                    <button @click="currentZone = 'industrial'" :class="currentZone === 'industrial' ? 'bg-cyan-500 text-darkBg font-bold shadow-lg shadow-cyan-500/20' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'" class="px-4 py-2 rounded-xl text-sm transition font-medium">Industrial</button>
+                    <button @click="currentZone = 'substation'" :class="currentZone === 'substation' ? 'bg-amber-500 text-darkBg font-bold shadow-lg shadow-amber-500/20' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'" class="px-4 py-2 rounded-xl text-sm transition font-medium">Substation</button>
+                    <button @click="currentZone = 'grid'" :class="currentZone === 'grid' ? 'bg-cyan-500 text-darkBg font-bold shadow-lg shadow-cyan-500/20' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'" class="px-4 py-2 rounded-xl text-sm transition font-medium">Power Grid</button>
+                </div>
+            </div>
+
+            <!-- Dynamic Zone Details Display -->
+            <div class="space-y-6">
+                <!-- Zone Title Banner -->
+                <div class="bg-cardBg border border-slate-800 rounded-2xl p-6 sm:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                    <div class="space-y-2">
+                        <span class="px-3 py-1 rounded-full text-xs font-semibold bg-slate-800 text-amber-400 border border-slate-700" x-text="zones[currentZone].badge"></span>
+                        <h3 class="text-2xl sm:text-3xl font-extrabold text-white" x-text="zones[currentZone].title"></h3>
+                        <p class="text-slate-300 text-base max-w-3xl" x-text="zones[currentZone].description"></p>
+                    </div>
+                    <div class="w-16 h-16 rounded-2xl bg-slate-800 flex items-center justify-center text-amber-400 text-3xl shrink-0 border border-slate-700">
+                        <i :class="zones[currentZone].icon"></i>
+                    </div>
+                </div>
+
+                <!-- Grid Details: Hazards, Rules, PPE -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Hazard Prevention -->
+                    <div class="bg-cardBg border border-slate-800 rounded-2xl p-6 space-y-4">
+                        <h4 class="text-lg font-bold text-white flex items-center pb-3 border-b border-slate-800">
+                            <i class="fa-solid fa-triangle-exclamation text-amber-400 mr-2.5"></i> Common Hazards
+                        </h4>
+                        <ul class="space-y-3">
+                            <template x-for="hazard in zones[currentZone].hazards">
+                                <li class="flex items-start space-x-3 text-sm text-slate-300">
+                                    <i class="fa-solid fa-circle-xmark text-red-400 mt-1 shrink-0"></i>
+                                    <span x-text="hazard"></span>
+                                </li>
+                            </template>
+                        </ul>
+                    </div>
+
+                    <!-- Safety Rules -->
+                    <div class="bg-cardBg border border-slate-800 rounded-2xl p-6 space-y-4">
+                        <h4 class="text-lg font-bold text-white flex items-center pb-3 border-b border-slate-800">
+                            <i class="fa-solid fa-list-check text-cyan-400 mr-2.5"></i> Mandatory Rules
+                        </h4>
+                        <ul class="space-y-3">
+                            <template x-for="rule in zones[currentZone].rules">
+                                <li class="flex items-start space-x-3 text-sm text-slate-300">
+                                    <i class="fa-solid fa-circle-check text-cyan-400 mt-1 shrink-0"></i>
+                                    <span x-text="rule"></span>
+                                </li>
+                            </template>
+                        </ul>
+                    </div>
+
+                    <!-- Required PPE -->
+                    <div class="bg-cardBg border border-slate-800 rounded-2xl p-6 space-y-4">
+                        <h4 class="text-lg font-bold text-white flex items-center pb-3 border-b border-slate-800">
+                            <i class="fa-solid fa-hard-hat text-amber-400 mr-2.5"></i> Required PPE & Gear
+                        </h4>
+                        <div class="flex flex-wrap gap-2 pt-2">
+                            <template x-for="ppe in zones[currentZone].ppe">
+                                <span class="px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-800 text-slate-200 border border-slate-700 flex items-center space-x-1.5">
+                                    <i class="fa-solid fa-shield text-amber-400"></i>
+                                    <span x-text="ppe"></span>
+                                </span>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 3: QUIZ SECTION -->
+        <div x-show="activeTab === 'quiz'" x-transition class="max-w-2xl mx-auto space-y-6">
+            <div class="bg-cardBg border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xl">
+                <div class="text-center space-y-2 mb-6">
+                    <span class="px-3 py-1 rounded-full text-xs font-semibold bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+                        Knowledge Check
+                    </span>
+                    <h3 class="text-2xl font-bold text-white">Electrical Safety Quiz</h3>
+                    <p class="text-slate-400 text-sm">Test what you've learned about domestic, industrial, and high-voltage safety rules.</p>
+                </div>
+
+                <!-- Quiz Active State -->
+                <template x-if="!quizFinished">
+                    <div class="space-y-6">
+                        <div class="flex items-center justify-between text-xs text-slate-400 pb-3 border-b border-slate-800">
+                            <span>Question <strong x-text="currentQuestion + 1"></strong> of <strong x-text="questions.length"></strong></span>
+                            <span>Score: <strong class="text-amber-400" x-text="score"></strong></span>
+                        </div>
+
+                        <div>
+                            <h4 class="text-lg font-semibold text-white mb-4" x-text="questions[currentQuestion].question"></h4>
+                            
+                            <div class="space-y-3">
+                                <template x-for="(option, index) in questions[currentQuestion].options">
+                                    <button @click="selectAnswer(index)" 
+                                            :class="{
+                                                'bg-slate-800 border-slate-700 text-slate-200 hover:bg-slate-700': !answered,
+                                                'bg-emerald-500/20 border-emerald-500 text-emerald-300': answered && index === questions[currentQuestion].correct,
+                                                'bg-red-500/20 border-red-500 text-red-300': answered && selectedOption === index && index !== questions[currentQuestion].correct,
+                                                'bg-slate-800/50 border-slate-800 text-slate-500': answered && index !== questions[currentQuestion].correct && selectedOption !== index
+                                            }"
+                                            class="w-full text-left p-4 rounded-xl border transition flex items-center justify-between font-medium text-sm">
+                                        <span x-text="option"></span>
+                                        <template x-if="answered">
+                                            <span>
+                                                <i x-show="index === questions[currentQuestion].correct" class="fa-solid fa-check text-emerald-400"></i>
+                                                <i x-show="selectedOption === index && index !== questions[currentQuestion].correct" class="fa-solid fa-xmark text-red-400"></i>
+                                            </span>
+                                        </template>
+                                    </button>
+                                </template>
+                            </div>
+                        </div>
+
+                        <!-- Explanation Box after answering -->
+                        <div x-show="answered" x-transition class="bg-darkBg p-4 rounded-xl border border-slate-800 text-sm space-y-1">
+                            <p class="font-semibold text-amber-400">Explanation:</p>
+                            <p class="text-slate-300" x-text="questions[currentQuestion].explanation"></p>
+                        </div>
+
+                        <div class="flex justify-end pt-4">
+                            <button @click="nextQuestion" x-show="answered" class="px-6 py-2.5 bg-amber-500 hover:bg-amber-400 text-darkBg font-bold rounded-xl transition text-sm">
+                                <span x-text="currentQuestion === questions.length - 1 ? 'View Final Results' : 'Next Question'"></span>
+                                <i class="fa-solid fa-arrow-right ml-2"></i>
+                            </button>
+                        </div>
+                    </div>
+                </template>
+
+                <!-- Quiz Completed State -->
+                <template x-if="quizFinished">
+                    <div class="text-center space-y-6 py-6">
+                        <div class="w-20 h-20 bg-amber-500/10 text-amber-400 rounded-full flex items-center justify-center mx-auto text-4xl border border-amber-500/20 glow-yellow">
+                            <i class="fa-solid fa-award"></i>
+                        </div>
+                        <div class="space-y-2">
+                            <h4 class="text-2xl font-bold text-white">Quiz Completed!</h4>
+                            <p class="text-slate-300">You scored <strong class="text-amber-400 text-xl" x-text="score"></strong> out of <strong x-text="questions.length"></strong></p>
+                            <p class="text-sm text-slate-400" x-text="score >= 4 ? 'Excellent! You have a solid grasp of electrical safety rules.' : 'Good effort! Review the safety zones guide and try again to improve.'"></p>
+                        </div>
+                        <button @click="resetQuiz" class="px-6 py-3 bg-amber-500 hover:bg-amber-400 text-darkBg font-bold rounded-xl transition shadow-lg shadow-amber-500/20">
+                            <i class="fa-solid fa-rotate-right mr-2"></i> Retake Quiz
+                        </button>
+                    </div>
+                </template>
+            </div>
+        </div>
+
+        <!-- TAB 4: SEARCH & GLOSSARY -->
+        <div x-show="activeTab === 'glossary'" x-transition class="space-y-6 max-w-4xl mx-auto">
+            <div class="bg-cardBg border border-slate-800 rounded-3xl p-6 sm:p-8 space-y-6">
+                <div>
+                    <h3 class="text-2xl font-bold text-white mb-2">Safety Rule Search</h3>
+                    <p class="text-slate-400 text-sm">Quickly search across all rules, hazards, and recommendations for domestic, industrial, and grid environments.</p>
+                </div>
+
+                <!-- Search Input -->
+                <div class="relative">
+                    <i class="fa-solid fa-magnifying-glass absolute left-4 top-3.5 text-slate-500"></i>
+                    <input type="text" x-model="searchQuery" placeholder="Search rules (e.g., water, LOTO, transformer, gloves)..." 
+                           class="w-full bg-darkBg border border-slate-700 rounded-xl pl-11 pr-4 py-3 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500 transition text-sm">
+                </div>
+
+                <!-- Filter Tags -->
+                <div class="flex flex-wrap gap-2 pt-2">
+                    <button @click="searchCategory = 'all'" :class="searchCategory === 'all' ? 'bg-amber-500 text-darkBg font-bold' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'" class="px-3 py-1.5 rounded-lg text-xs transition">All Categories</button>
+                    <button @click="searchCategory = 'domestic'" :class="searchCategory === 'domestic' ? 'bg-amber-500 text-darkBg font-bold' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'" class="px-3 py-1.5 rounded-lg text-xs transition">Domestic</button>
+                    <button @click="searchCategory = 'industrial'" :class="searchCategory === 'industrial' ? 'bg-cyan-500 text-darkBg font-bold' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'" class="px-3 py-1.5 rounded-lg text-xs transition">Industrial</button>
+                    <button @click="searchCategory = 'substation'" :class="searchCategory === 'substation' ? 'bg-amber-500 text-darkBg font-bold' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'" class="px-3 py-1.5 rounded-lg text-xs transition">Substation</button>
+                    <button @click="searchCategory = 'grid'" :class="searchCategory === 'grid' ? 'bg-cyan-500 text-darkBg font-bold' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'" class="px-3 py-1.5 rounded-lg text-xs transition">Power Grid</button>
+                </div>
+
+                <!-- Search Results List -->
+                <div class="space-y-3 pt-4">
+                    <template x-for="item in filteredRules">
+                        <div class="bg-darkBg border border-slate-800 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:border-slate-700 transition">
+                            <div class="space-y-1">
+                                <div class="flex items-center space-x-2">
+                                    <span class="px-2 py-0.5 rounded text-[10px] uppercase tracking-wider font-bold bg-slate-800 text-amber-400 border border-slate-700" x-text="item.zone"></span>
+                                    <h5 class="font-bold text-white text-sm" x-text="item.title"></h5>
+                                </div>
+                                <p class="text-slate-400 text-xs" x-text="item.description"></p>
+                            </div>
+                            <span class="text-xs text-slate-500 font-medium px-2 py-1 bg-slate-900 rounded border border-slate-800 w-fit">
+                                <i class="fa-solid fa-shield mr-1 text-cyan-400"></i> Verified Rule
+                            </span>
+                        </div>
+                    </template>
+                    <div x-show="filteredRules.length === 0" class="text-center py-12 text-slate-500 text-sm">
+                        No safety rules found matching your search. Try different keywords!
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-cardBg border-t border-slate-800 mt-16 py-8 text-center text-xs text-slate-500 space-y-2">
+        <p>&copy; 2026 V-NODE Safety Electrical Safety Education. Designed for students, workers, and households worldwide.</p>
+        <p class="text-slate-600">Always follow local national electrical codes (NEC, IEC, OSHA) before performing electrical work.</p>
+    </footer>
+
+    <!-- Alpine State Logic -->
+    <script>
+        function safetyApp() {
+            return {
+                activeTab: 'home',
+                mobileMenuOpen: false,
+                currentZone: 'domestic',
+                searchQuery: '',
+                searchCategory: 'all',
+                
+                // Quiz state
+                currentQuestion: 0,
+                selectedOption: null,
+                answered: false,
+                score: 0,
+                quizFinished: false,
+
+                zones: {
+                    domestic: {
+                        title: 'Domestic (Home) Safety Rules',
+                        badge: 'Residential Environment',
+                        description: 'Homes use low voltage (110V-240V), but careless mistakes can still cause fatal shocks or electrical fires. Focus is on plug safety, wet area precautions, and child protection.',
+                        icon: 'fa-solid fa-house-chimney',
+                        hazards: [
+                            'Frayed appliance cords and broken plugs',
+                            'Water contact with switches or sockets in bathrooms/kitchens',
+                            'Overloading extension cords with high-wattage heaters or ACs',
+                            'Exposed wiring or missing socket cover plates accessible to children'
+                        ],
+                        rules: [
+                            'Always unplug electrical appliances before cleaning or repairing them.',
+                            'Never touch switches or plugs with wet hands or bare feet.',
+                            'Install GFCI (Ground Fault Circuit Interrupter) outlets in bathrooms and kitchens.',
+                            'Use safety plug covers if toddlers or young children live in the home.',
+                            'Never run power cords under rugs or carpets where heat can build up.'
+                        ],
+                        ppe: [
+                            'Insulated Rubber Footwear',
+                            'Dry Cotton Gloves (for minor checks)',
+                            'Non-conductive Plastic Tools'
+                        ]
+                    },
+                    industrial: {
+                        title: 'Industrial Plant Safety Rules',
+                        badge: 'Manufacturing & Machinery',
+                        description: 'Industrial plants deal with heavy motors, 3-phase high power, and automated machinery. Strict LOTO (Lockout/Tagout) protocols are mandatory before servicing equipment.',
+                        icon: 'fa-solid fa-industry',
+                        hazards: [
+                            'Unexpected machine startup during maintenance',
+                            'Arc flash from heavy industrial breaker panels',
+                            'Damaged insulation on heavy-duty trailing cables',
+                            'Accidental contact with live overhead or floor conduits'
+                        ],
+                        rules: [
+                            'Strictly follow Lockout/Tagout (LOTO) procedures: lock switches and tag them before servicing.',
+                            'Only authorized and certified electricians are allowed to open industrial control panels.',
+                            'Inspect all portable electric tools and cables before every shift.',
+                            'Maintain a clear clearance buffer of at least 3 feet around all electrical panels.',
+                            'Never bypass fuses or circuit breakers with incorrect ratings.'
+                        ],
+                        ppe: [
+                            'Arc Flash Face Shield & Hood',
+                            'NFPA 70E Flame Resistant Clothing',
+                            'Class 0/1/2 Insulated Rubber Gloves',
+                            'Steel-toed Dielectric Boots',
+                            'Safety Helmet'
+                        ]
+                    },
+                    substation: {
+                        title: 'Electrical Substation Safety Rules',
+                        badge: 'High-Voltage Step-Down Yards',
+                        description: 'Substations step down ultra-high voltages for distribution. Entering requires strict authorization, grounding chains, and extreme awareness of electromagnetic fields.',
+                        icon: 'fa-solid fa-tower-broadcast',
+                        hazards: [
+                            'Extreme voltage arcing without direct physical contact',
+                            'Inductive charging on nearby metallic structures',
+                            'Transformer oil fire hazards and toxic smoke',
+                            'Step and touch potential during ground faults'
+                        ],
+                        rules: [
+                            'Only authorized personnel with specialized permits may enter substation yards.',
+                            'Test for voltage and apply temporary portable grounding leads before touching equipment.',
+                            'Maintain safe approach distances based on exact voltage tiers (Never breach OSHA limits).',
+                            'Never use metal ladders or long metal tools inside open substations.',
+                            'In case of oil fire, use dry chemical or CO2 extinguishers—never water.'
+                        ],
+                        ppe: [
+                            'High-Voltage Insulating Gloves with Leather Protectors',
+                            'Arc Flash Suit (Cal/cm² rated for substation level)',
+                            'Insulated Dielectric Matting Boots',
+                            'Non-conductive Hard Hat with Visor'
+                        ]
+                    },
+                    grid: {
+                        title: 'Power Grid Transmission Safety Rules',
+                        badge: 'High-Voltage Transmission Networks',
+                        description: 'Power grids manage bulk power transmission across vast regions at 134kV to 765kV+. Involves national dispatchers, high towers, and massive conductor lines.',
+                        icon: 'fa-solid fa-network-wired',
+                        hazards: [
+                            'High-voltage corona discharge and severe flashover',
+                            'Accidental contact with high-tension wires during tree trimming or construction',
+                            'Backfeed from private generators into grid distribution lines',
+                            'Lightning strikes on transmission towers'
+                        ],
+                        rules: [
+                            'Coordinate all transmission line shutdowns with central grid control dispatchers.',
+                            'Keep cranes, trucks, and scaffolding at least 20+ feet away from overhead high-voltage lines.',
+                            'Never attempt to clear fallen grid lines; treat them as live and cordon off the area.',
+                            'Lineworkers must use bucket trucks with tested insulating booms or certified hot-stick tools.',
+                            'Ensure automatic reclosers are locked out during emergency repairs.'
+                        ],
+                        ppe: [
+                            'Full Body Harness & Fall Protection (for tower climbing)',
+                            'Class 4 High-Voltage Insulating Gloves',
+                            'Conductive Faraday Suits (for live-line barehand work)',
+                            'Arc-Rated Weatherproof Outerwear'
+                        ]
+                    }
+                },
+
+                allRulesDatabase: [
+                    { zone: 'Domestic', title: 'Wet Hands Precaution', description: 'Never touch switches or appliances with wet hands or bare feet to prevent grounding.' },
+                    { zone: 'Domestic', title: 'GFCI Protection', description: 'Install Ground Fault Circuit Interrupters in bathrooms, kitchens, and outdoor sockets.' },
+                    { zone: 'Domestic', title: 'Cord Inspection', description: 'Discard or repair frayed or cracked appliance cords immediately.' },
+                    { zone: 'Industrial', title: 'Lockout/Tagout (LOTO)', description: 'Isolate energy sources with padlocks and warning tags before machinery maintenance.' },
+                    { zone: 'Industrial', title: 'Panel Clearance', description: 'Keep 3 feet of unobstructed space in front of electrical breaker panels at all times.' },
+                    { zone: 'Industrial', title: 'Tool Inspection', description: 'Inspect portable electric tools and insulation before every work shift.' },
+                    { zone: 'Substation', title: 'Authorized Entry Only', description: 'Substation yards are restricted to certified high-voltage technicians with permits.' },
+                    { zone: 'Substation', title: 'Portable Grounding', description: 'Apply temporary grounding leads to discharged equipment before handling.' },
+                    { zone: 'Substation', title: 'Fire Extinguishing', description: 'Use CO2 or dry chemical extinguishers for transformer electrical fires—never water.' },
+                    { zone: 'Grid', title: 'Crane Clearance Buffer', description: 'Keep construction cranes and tall machinery at least 20 feet away from high-tension wires.' },
+                    { zone: 'Grid', title: 'Fallen Line Protocol', description: 'Treat any downed transmission wire as live, stay back, and notify utility dispatchers.' },
+                    { zone: 'Grid', title: 'Hot-Stick Tools', description: 'Use insulated live-line tools for working on energized transmission conductors.' }
+                ],
+
+                get filteredRules() {
+                    return this.allRulesDatabase.filter(item => {
+                        const matchesCategory = this.searchCategory === 'all' || item.zone.toLowerCase() === this.searchCategory.toLowerCase();
+                        const matchesQuery = item.title.toLowerCase().includes(this.searchQuery.toLowerCase()) || 
+                                             item.description.toLowerCase().includes(this.searchQuery.toLowerCase());
+                        return matchesCategory && matchesQuery;
+                    });
+                },
+
+                selectZone(zoneKey) {
+                    this.currentZone = zoneKey;
+                    this.activeTab = 'regions';
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                },
+
+                questions: [
+                    {
+                        question: 'What is the most important rule before cleaning or fixing a home toaster or blender?',
+                        options: [
+                            'Wear heavy-duty substation rubber gloves',
+                            'Unplug the appliance from the wall outlet',
+                            'Turn off the room light switch',
+                            'Splash water on it to cool it down'
+                        ],
+                        correct: 1,
+                        explanation: 'Always unplug domestic appliances before cleaning or inspecting them to completely eliminate the source of electric current.'
+                    },
+                    {
+                        question: 'What does LOTO stand for in industrial safety?',
+                        options: [
+                            'Light Out / Transformer On',
+                            'Line Overload Testing Operation',
+                            'Lockout / Tagout',
+                            'Local Transmission Outlet'
+                        ],
+                        correct: 2,
+                        explanation: 'LOTO stands for Lockout/Tagout, a vital safety procedure used in industry to ensure dangerous machines are properly shut off and not started up again prior to the completion of maintenance.'
+                    },
+                    {
+                        question: 'Why should you never use water on a transformer fire in a substation?',
+                        options: [
+                            'Water will evaporate too quickly',
+                            'Water conducts electricity and can cause fatal electrocution or spread burning oil',
+                            'Water makes the transformer run faster',
+                            'Water is too expensive'
+                        ],
+                        correct: 1,
+                        explanation: 'Water conducts electricity and can spread burning insulating oil, worsening the fire hazard. CO2 or dry chemical extinguishers must be used.'
+                    },
+                    {
+                        question: 'What is the safest minimum action if you encounter a fallen power line on the road?',
+                        options: [
+                            'Pick it up with a dry wooden stick',
+                            'Drive your car directly over it',
+                            'Stay far away, treat it as live, and call emergency utility services',
+                            'Pour water on it to ground it'
+                        ],
+                        correct: 2,
+                        explanation: 'Downed power lines carry thousands of volts. You must stay well away and notify emergency/utility authorities immediately.'
+                    },
+                    {
+                        question: 'Which type of outlet is specifically required in domestic wet areas like bathrooms?',
+                        options: [
+                            'Standard 2-pin socket',
+                            'GFCI (Ground Fault Circuit Interrupter) outlet',
+                            'High-voltage industrial socket',
+                            'Direct wire terminal'
+                        ],
+                        correct: 1,
+                        explanation: 'GFCI outlets instantly cut off electric power when they detect a ground fault, protecting people from electric shock in damp environments.'
+                    }
+                ],
+
+                selectAnswer(index) {
+                    if (this.answered) return;
+                    this.selectedOption = index;
+                    this.answered = true;
+                    if (index === this.questions[this.currentQuestion].correct) {
+                        this.score++;
+                    }
+                },
+
+                nextQuestion() {
+                    if (this.currentQuestion < this.questions.length - 1) {
+                        this.currentQuestion++;
+                        this.selectedOption = null;
+                        this.answered = false;
+                    } else {
+                        this.quizFinished = true;
+                    }
+                },
+
+                resetQuiz() {
+                    this.currentQuestion = 0;
+                    this.selectedOption = null;
+                    this.answered = false;
+                    this.score = 0;
+                    this.quizFinished = false;
+                }
+            }
+        }
+    </script>
+</body>
+</html>

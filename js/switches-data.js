@@ -1,4 +1,4 @@
-/* VoltVerse switch registry. Add a switch here and create its page (copy switch-knife.html) to list it in the menu. */
+/* V-NODE switch registry. Add a switch here and create its page (copy switch-knife.html) to list it in the menu. */
 window.VV_SWITCH_CATS = [
   { id: 'mech', title: 'Mechanism and Operation', blurb: 'How the contacts are driven: by hand, by pressure, by liquid, position or speed.' },
   { id: 'pole', title: 'Pole and Throw', blurb: 'How many circuits a switch controls and how many paths it can choose.' },

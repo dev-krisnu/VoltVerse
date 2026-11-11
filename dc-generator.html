@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DC Generator 3D Cut-Section Explorer</title>
+    <link rel="stylesheet" href="css/vnode.css"><script src="js/vnode.js"></script>
+<title>DC Generator 3D Cut-Section Explorer</title>
     <link rel="icon" href="favicon.svg" type="image/svg+xml"><meta name="theme-color" content="#080c14"><link rel="stylesheet" href="css/tailwind.css"><link rel="stylesheet" href="css/app.css"><link rel="stylesheet" href="css/fa/fa.css"><script src="vendor/three.min.js"></script>
     <!-- Tailwind CSS -->
     <!-- FontAwesome & Inter Font -->
@@ -18,6 +19,7 @@
         ::-webkit-scrollbar-thumb { background: #1f2937; border-radius: 3px; }
         ::-webkit-scrollbar-thumb:hover { background: #374151; }
     </style>
+<link rel="stylesheet" href="css/mobile.css"><script src="js/mobile.js"></script>
 </head>
 <body class="bg-darkBg text-slate-100 min-h-screen flex flex-col selection:bg-neonBlue selection:text-black">
 
@@ -674,6 +676,6 @@
             `;
         });
     </script>
-<nav class="app-nav app-nav-sticky" aria-label="Main"><a href="index.html" class="nav-tab"><i class="fa-solid fa-house"></i><span>Home</span></a><a href="dc-generator.html" class="nav-tab" aria-current="page"><i class="fa-solid fa-bolt"></i><span>Generator</span></a><a href="dc-motor.html" class="nav-tab"><i class="fa-solid fa-gears"></i><span>DC Motor</span></a><a href="index.html#library" class="nav-tab"><i class="fa-solid fa-layer-group"></i><span>Library</span></a></nav>
+<nav class="app-nav app-nav-sticky" aria-label="Main"><a href="index.html" class="nav-tab"><svg class="vn-mark" aria-hidden="true"><use href="#vn-mark"/></svg><span>Home</span></a><a href="dc-generator.html" class="nav-tab" aria-current="page"><i class="fa-solid fa-bolt"></i><span>Generator</span></a><a href="dc-motor.html" class="nav-tab"><i class="fa-solid fa-gears"></i><span>DC Motor</span></a><a href="index.html#library" class="nav-tab"><i class="fa-solid fa-layer-group"></i><span>Library</span></a></nav>
 </body>
 </html>

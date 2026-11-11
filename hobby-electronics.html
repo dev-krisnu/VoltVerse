@@ -2,7 +2,8 @@
 <html lang="en" class="dark">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Hobby Electronics Lab | VoltVerse</title>
+<link rel="stylesheet" href="css/vnode.css"><script src="js/vnode.js"></script>
+<title>Hobby Electronics Lab | V-NODE</title>
 <meta name="description" content="3D models of Arduino, ESP32, HC-05, Raspberry Pi Pico and more, with pinouts, specs and five buildable starter projects.">
 <meta name="theme-color" content="#080c14"><link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="css/tailwind.css"><link rel="stylesheet" href="css/app.css"><link rel="stylesheet" href="css/fa/fa.css">
@@ -16,15 +17,16 @@
 @media(max-width:639px){#hobby-list{display:flex;overflow-x:auto;scroll-snap-type:x proximity;padding-bottom:.25rem}#hobby-list .hobby-item{min-width:200px;width:200px;flex:none;scroll-snap-align:start}}
 </style>
 <script src="vendor/three.min.js"></script><script src="vendor/OrbitControls.js"></script>
+<link rel="stylesheet" href="css/mobile.css"><script src="js/mobile.js"></script>
 </head>
 <body class="bg-[#080c14] text-slate-200 min-h-screen">
 <header class="px-4 py-4 max-w-6xl mx-auto"><h1 class="text-2xl md:text-3xl font-bold text-white"><i class="fa-solid fa-microchip text-cyan-400 mr-2"></i>Hobby Electronics Lab</h1>
 <p class="text-sm text-slate-400 mt-1">Ten boards and parts in 3D, and five starter projects you can build and extend. Drag to rotate, scroll or pinch to zoom.</p></header>
 <main class="max-w-6xl mx-auto px-4 pb-6 grid gap-4 lg:grid-cols-[280px_1fr]">
-<aside class="space-y-3"><div class="flex gap-2" role="group" aria-label="Section"><button class="mode-btn" data-mode="parts" type="button">Components</button><button class="mode-btn" data-mode="projects" type="button">Projects</button></div>
+<aside class="min-w-0 space-y-3"><div class="flex gap-2" role="group" aria-label="Section"><button class="mode-btn" data-mode="parts" type="button">Components</button><button class="mode-btn" data-mode="projects" type="button">Projects</button></div>
 <div id="hobby-list" class="grid gap-2 sm:grid-cols-2 lg:grid-cols-1"></div></aside>
 <div class="min-w-0"><div class="rounded-2xl border border-slate-800 bg-slate-950/70 overflow-hidden relative"><div class="absolute top-3 left-3 z-10 rounded-xl bg-black/60 px-3 py-1.5 backdrop-blur"><span id="hobby-title" class="font-display font-bold text-white"></span> <span id="hobby-tag" class="ml-2 text-xs text-cyan-300"></span></div><div id="hobby-canvas" role="img" aria-label="Interactive 3D model"></div></div>
 <div id="hobby-details" class="mt-4"></div></div></main>
-<nav class="app-nav app-nav-sticky" aria-label="Main"><a href="index.html" class="nav-tab"><i class="fa-solid fa-house"></i><span>Home</span></a><a href="hobby-electronics.html" class="nav-tab" aria-current="page"><i class="fa-solid fa-microchip"></i><span>Hobby</span></a><a href="symbols.html" class="nav-tab"><i class="fa-solid fa-shapes"></i><span>Symbols</span></a><a href="index.html#library" class="nav-tab"><i class="fa-solid fa-layer-group"></i><span>Library</span></a></nav>
+<nav class="app-nav app-nav-sticky" aria-label="Main"><a href="index.html" class="nav-tab"><svg class="vn-mark" aria-hidden="true"><use href="#vn-mark"/></svg><span>Home</span></a><a href="hobby-electronics.html" class="nav-tab" aria-current="page"><i class="fa-solid fa-microchip"></i><span>Hobby</span></a><a href="symbols.html" class="nav-tab"><i class="fa-solid fa-shapes"></i><span>Symbols</span></a><a href="index.html#library" class="nav-tab"><i class="fa-solid fa-layer-group"></i><span>Library</span></a></nav>
 <script src="js/hobby-data.js"></script><script src="js/hobby-models.js"></script><script src="js/hobby-app.js"></script>
 </body></html>

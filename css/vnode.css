@@ -1,0 +1,64 @@
+/* V-NODE brand layer: splash/loader (cinematic visuals + neon-glass text), page curtain, logo mark. */
+@font-face{font-family:"Orbitron";font-style:normal;font-weight:400 900;font-display:swap;src:url(../vendor/fonts/orbitron-latin-wght-normal.woff2) format("woff2")}
+@font-face{font-family:"Share Tech Mono";font-style:normal;font-weight:400;font-display:swap;src:url(../vendor/fonts/share-tech-mono-latin-400-normal.woff2) format("woff2")}
+@font-face{font-family:"Rajdhani";font-style:normal;font-weight:500;font-display:swap;src:url(../vendor/fonts/rajdhani-latin-500-normal.woff2) format("woff2")}
+@font-face{font-family:"Rajdhani";font-style:normal;font-weight:600;font-display:swap;src:url(../vendor/fonts/rajdhani-latin-600-normal.woff2) format("woff2")}
+@font-face{font-family:"Rajdhani";font-style:normal;font-weight:700;font-display:swap;src:url(../vendor/fonts/rajdhani-latin-700-normal.woff2) format("woff2")}
+:root{--vn-cy:#00f2fe;--vn-bl:#4facfe;--vn-bg:#030611}
+.font-orbitron,.vn-word{font-family:Orbitron,"Space Grotesk",Inter,sans-serif}
+.vn-grad{background:linear-gradient(135deg,#fff 0%,#00f2fe 48%,#4facfe 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.vn-mark{width:20px;height:20px;display:block;overflow:visible}
+.nav-tab .vn-mark{width:22px;height:22px}
+.nav-tab[aria-current=page] .vn-mark{filter:drop-shadow(0 0 5px rgba(0,242,254,.7))}
+
+/* ---------- overlay ---------- */
+#vn{position:fixed;inset:0;z-index:100000;background:var(--vn-bg);color:#fff;overflow:hidden;display:flex;align-items:center;justify-content:center;--k:1;opacity:1;transition:opacity calc(.55s*var(--k)) ease,visibility .6s;font-family:Rajdhani,Inter,sans-serif;-webkit-user-select:none;user-select:none;touch-action:none}
+#vn.vn-quick{--k:.3}
+#vn.vn-curtain{opacity:0;transition:opacity .18s ease}
+#vn.vn-curtain.vn-on{opacity:1}
+#vn.vn-out{opacity:0;visibility:hidden;pointer-events:none}
+#vn.vn-out .vn-stage{transform:scale(1.06);filter:blur(5px);transition:transform .6s ease,filter .6s ease}
+.vn-cv{position:absolute;inset:0;width:100%;height:100%}
+.vn-vig{position:absolute;inset:0;background:radial-gradient(circle at center,transparent 28%,rgba(3,6,17,.88) 92%);pointer-events:none}
+.vn-scan{position:absolute;left:0;right:0;top:0;height:3px;background:linear-gradient(90deg,transparent,rgba(0,242,254,.4),transparent);animation:vn-scan 5s linear infinite;pointer-events:none}
+.vn-flare{position:absolute;top:22%;left:0;width:100%;height:190px;background:linear-gradient(90deg,transparent,rgba(79,172,254,.14),rgba(0,242,254,.24),transparent);animation:vn-flare 5.5s cubic-bezier(.4,0,.2,1) infinite .8s;pointer-events:none;opacity:0}
+.vn-aura{position:absolute;width:min(560px,120vw);aspect-ratio:1;border-radius:50%;background:radial-gradient(circle,rgba(0,242,254,.18),rgba(0,114,255,.1) 45%,transparent 70%);filter:blur(40px);pointer-events:none;animation:vn-aura 4s ease-in-out infinite alternate}
+.vn-stage{position:relative;z-index:3;display:flex;flex-direction:column;align-items:center;gap:6px;padding:20px;width:100%;max-width:460px;text-align:center;will-change:transform}
+.vn-logo{width:min(58vw,250px);aspect-ratio:1;overflow:visible;margin-bottom:-6px}
+/* logo drawing (from the cinematic intro) */
+.vn-trace{stroke-dasharray:1400;stroke-dashoffset:1400;animation:vn-trace calc(1.9s*var(--k)) cubic-bezier(.77,0,.175,1) forwards}
+.vn-acc{stroke-dasharray:1400;stroke-dashoffset:1400;animation:vn-trace calc(1.9s*var(--k)) cubic-bezier(.77,0,.175,1) calc(.12s*var(--k)) forwards}
+.vn-node{opacity:0;transform-origin:200px 245px;animation:vn-node calc(1s*var(--k)) cubic-bezier(.34,1.56,.64,1) calc(1.5s*var(--k)) forwards}
+.vn-shock{fill:none;opacity:0;transform-origin:200px 245px;animation:vn-shock calc(1.5s*var(--k)) cubic-bezier(.1,.8,.3,1) calc(1.55s*var(--k)) 2}
+.vn-ring{transform-origin:200px 245px;animation:vn-spin 18s linear infinite}.vn-ring.r2{animation-duration:24s;animation-direction:reverse}
+.vn-pulse{stroke-dasharray:90 230;animation:vn-travel 2.2s linear infinite calc(2s*var(--k))}
+/* neon-glass text (from the glass intro) */
+.vn-glass{position:relative;width:100%;padding:20px 18px 18px;border-radius:24px;background:rgba(12,18,28,.55);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);border:1px solid rgba(0,242,254,.16);box-shadow:0 18px 44px rgba(0,0,0,.55),inset 0 0 28px rgba(0,242,254,.04);opacity:0;transform:translateY(14px) scale(.97);animation:vn-glass calc(.9s*var(--k)) cubic-bezier(.16,1,.3,1) calc(1.35s*var(--k)) forwards}
+.vn-glass .b1,.vn-glass .b2{position:absolute;top:10px;font:400 9px "Share Tech Mono",monospace;letter-spacing:.18em;color:rgba(0,242,254,.34)}
+.vn-glass .b1{left:14px}.vn-glass .b2{right:14px}
+.vn-title{margin:8px 0 12px;font:900 clamp(30px,9.5vw,46px)/1.1 Orbitron,sans-serif;letter-spacing:.3em;padding-left:.3em;text-transform:uppercase;min-height:1.2em;text-shadow:0 0 25px rgba(0,242,254,.55),0 0 50px rgba(0,114,255,.3);background:linear-gradient(135deg,#fff 0%,#00f2fe 50%,#0072ff 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.vn-bar{width:min(200px,60%);height:5px;margin:0 auto 12px;border-radius:5px;background:rgba(8,47,73,.6);border:1px solid rgba(0,242,254,.2);padding:1px;overflow:hidden}
+.vn-bar i{display:block;height:100%;width:0;border-radius:5px;background:linear-gradient(90deg,#22d3ee,#5eead4,#3b82f6);box-shadow:0 0 12px #00f2fe}
+.vn-sub{margin:0;font:700 10px Orbitron,sans-serif;letter-spacing:.55em;padding-left:.55em;color:rgba(103,232,249,.85);text-transform:uppercase;opacity:0;animation:vn-sub calc(1.3s*var(--k)) cubic-bezier(.16,1,.3,1) calc(1.9s*var(--k)) forwards}
+.vn-tele{margin-top:12px;display:inline-flex;align-items:center;gap:10px;padding:6px 14px;border-radius:999px;background:rgba(8,47,73,.3);border:1px solid rgba(0,242,254,.22);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);opacity:0;animation:vn-fadein .7s ease calc(2s*var(--k)) forwards}
+.vn-tele .dot{width:7px;height:7px;border-radius:50%;background:#22d3ee;box-shadow:0 0 8px #00f2fe;animation:vn-blink 1.1s ease-in-out infinite}
+.vn-tele .msg{font:400 11px "Share Tech Mono",monospace;letter-spacing:.14em;color:rgba(103,232,249,.92);white-space:nowrap}
+.vn-skip{position:absolute;bottom:calc(18px + env(safe-area-inset-bottom));left:0;right:0;text-align:center;font:400 10px "Share Tech Mono",monospace;letter-spacing:.2em;color:rgba(103,232,249,.38);z-index:4;pointer-events:none;animation:vn-fadein .6s ease 1.2s both}
+#vn.vn-quick .vn-skip,#vn.vn-curtain .vn-skip{display:none}
+#vn.vn-quick .vn-glass .b1,#vn.vn-quick .vn-glass .b2{display:none}
+@media (max-height:560px){.vn-logo{width:120px}.vn-title{margin:2px 0 8px}.vn-tele{margin-top:6px}}
+@keyframes vn-trace{0%{stroke-dashoffset:1400;opacity:.1}30%{opacity:1}100%{stroke-dashoffset:0;opacity:1}}
+@keyframes vn-node{0%{transform:scale(0) rotate(-45deg);opacity:0}50%{transform:scale(1.4) rotate(0);opacity:1;filter:brightness(2.4) drop-shadow(0 0 30px #00f2fe)}100%{transform:scale(1);opacity:1;filter:brightness(1.2) drop-shadow(0 0 16px #00f2fe)}}
+@keyframes vn-shock{0%{transform:scale(.2);opacity:1;stroke-width:5px}100%{transform:scale(4.2);opacity:0;stroke-width:.5px}}
+@keyframes vn-spin{to{transform:rotate(360deg)}}
+@keyframes vn-travel{from{stroke-dashoffset:640}to{stroke-dashoffset:-640}}
+@keyframes vn-glass{to{opacity:1;transform:none}}
+@keyframes vn-sub{0%{opacity:0;letter-spacing:.15em;filter:blur(6px)}100%{opacity:.9;letter-spacing:.55em;filter:blur(0)}}
+@keyframes vn-fadein{to{opacity:1}}
+@keyframes vn-blink{50%{opacity:.35}}
+@keyframes vn-scan{from{transform:translateY(-100%)}to{transform:translateY(100vh)}}
+@keyframes vn-flare{0%{transform:translateX(-100%) rotate(40deg);opacity:0}50%{opacity:.45}100%{transform:translateX(200%) rotate(40deg);opacity:0}}
+@keyframes vn-aura{from{transform:scale(.9);opacity:.7}to{transform:scale(1.08);opacity:1}}
+@media (prefers-reduced-motion:reduce){#vn *{animation-duration:.01ms!important;animation-delay:0s!important}.vn-scan,.vn-flare{display:none}}
+/* small inline loader used inside 3D stages */
+.vk-load .vn-mini{width:64px;height:64px;overflow:visible}

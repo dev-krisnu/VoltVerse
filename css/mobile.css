@@ -1,0 +1,52 @@
+/* VoltVerse global mobile + motion layer (loaded on every page) */
+html{-webkit-tap-highlight-color:transparent;scroll-padding-top:72px}
+body{overflow-x:clip;overscroll-behavior-y:none}
+img,svg,video,canvas{max-width:100%}
+button,a,[role=button],select,summary{touch-action:manipulation}
+button:active:not(:disabled),.nav-tab:active,a.group:active{transform:scale(.97)}
+button,.nav-tab,a.group{transition:transform .15s ease,background-color .2s,border-color .2s,color .2s,opacity .2s}
+/* cross-page transitions (Chrome/Edge/Safari 18+): pages slide and fade instead of flashing white */
+@view-transition{navigation:auto}
+::view-transition-old(root){animation:vk-out .22s ease both}
+::view-transition-new(root){animation:vk-in .38s cubic-bezier(.2,.7,.2,1) both}
+@keyframes vk-out{to{opacity:0;transform:translateY(-6px)}}
+@keyframes vk-in{from{opacity:0;transform:translateY(14px)}}
+/* scroll reveal */
+.vk-rv{opacity:0;transform:translateY(18px);transition:opacity .55s ease,transform .55s cubic-bezier(.2,.7,.2,1);transition-delay:var(--d,0ms)}
+.vk-rv.in{opacity:1;transform:none}
+/* 3D canvases: never let a drag on the model scroll the page; never let them overflow */
+canvas{touch-action:none}
+/* horizontal chip rows scroll smoothly with fade hint and no visible bar */
+.vk-scrollx{display:flex;gap:8px;overflow-x:auto;scroll-snap-type:x proximity;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.vk-scrollx::-webkit-scrollbar{display:none}
+.vk-scrollx>*{flex:none;scroll-snap-align:start}
+/* wide tables and math scroll inside their own box instead of widening the page */
+.vk-xwrap{overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%}
+.katex-display{overflow-x:auto;overflow-y:hidden;max-width:100%}
+@media (max-width:1023px){
+  /* min touch target */
+  button,.nav-tab,select,input[type=range]{min-height:40px}
+  input,select,textarea{font-size:16px!important}
+  input[type=range]{touch-action:pan-y}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
+  ::view-transition-group(*),::view-transition-old(*),::view-transition-new(*){animation:none!important}
+}
+
+/* Stacked layouts: 3D stage first and sticky, parts list and description scroll beneath it (phones and small tablets) */
+@media (max-width:1023px){
+  .m-stack main{display:flex!important;flex-direction:column;overflow:visible!important;padding:0 0 96px!important;gap:12px!important;max-width:100%!important}
+  .m-stack main>section,.m-stack main>aside{height:auto!important;max-height:none!important;overflow:visible!important;min-width:0}
+  .m-stack main>.m-stage{order:-1;position:sticky;top:var(--mh,64px);z-index:30;height:clamp(300px,46svh,440px)!important;width:100%;border-radius:0 0 20px 20px!important;overflow:hidden!important;margin:0}
+  .m-stack main>section:not(.m-stage){margin:0 12px;padding:14px!important}
+  .m-stack #partsListContainer{max-height:260px;overflow-y:auto}
+  .m-stack header{padding:10px 12px!important;gap:8px}
+  .m-stack header p{display:none}
+  .m-stack header h1{font-size:15px!important;line-height:1.15}
+  .m-stack header button{font-size:0!important;min-width:40px;justify-content:center;padding:8px 10px!important}
+  .m-stack header button i{font-size:14px}
+  .m-stack .m-stage .absolute.bottom-4{bottom:8px!important;left:8px!important;right:8px!important;padding:6px 8px!important;flex-wrap:wrap}
+  .m-stack .m-stage .absolute.bottom-4 .gap-3{gap:6px 10px!important;flex-wrap:wrap}
+  .m-stack .m-stage .absolute.top-4{top:8px!important;left:8px!important;right:8px!important}
+}

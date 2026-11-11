@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="stylesheet" href="css/vnode.css"><script src="js/vnode.js"></script>
+<title>Arc-Flash PPE in 3D | V-NODE</title>
+<meta name="description" content="A lifelike animated 3D worker wearing NFPA 70E arc-flash PPE categories 1 to 4, with an arc-flash test, every garment explained.">
+<meta name="theme-color" content="#080c14"><link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="preload" href="vendor/fonts/inter-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="css/tailwind.css"><link rel="stylesheet" href="css/app.css"><link rel="stylesheet" href="css/fa/fa.css"><link rel="stylesheet" href="css/mobile.css"><link rel="stylesheet" href="css/vk.css">
+<script src="vendor/three.min.js"></script><script src="vendor/OrbitControls.js"></script><script src="js/mobile.js"></script>
+<style>
+:root{--stage-h:clamp(330px,52svh,520px)}
+@media (min-width:1024px){:root{--stage-h:calc(100svh - var(--hd) - 2px)}}
+.ppe-tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding-top:12px}
+.ppe-tabs button{height:64px;border-radius:16px;background:#0e1522;border:1px solid var(--line);color:#94a3b8;font-weight:700;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;line-height:1}
+.ppe-tabs button b{font:900 22px Orbitron,Inter,sans-serif;color:var(--c)}.ppe-tabs button small{font-size:10px;letter-spacing:.06em;text-transform:uppercase}
+.ppe-tabs button[aria-selected=true]{border-color:var(--c);background:color-mix(in srgb,var(--c) 14%,#0e1522);color:#fff;box-shadow:0 0 0 1px var(--c) inset}
+.flash{position:absolute;inset:0;z-index:12;background:radial-gradient(circle at 50% 45%,#fff,#ffd27a 40%,transparent 75%);opacity:0;pointer-events:none}
+.res{margin-top:12px;padding:14px;border-radius:14px;border:1px solid var(--line);background:#0b111c}
+.res.ok{border-color:#22c55e;background:rgba(34,197,94,.08)}.res.bad{border-color:#ef4444;background:rgba(239,68,68,.1)}
+.meter{height:10px;border-radius:6px;background:#1b2535;overflow:hidden;margin:8px 0}.meter i{display:block;height:100%;width:0;border-radius:6px;background:linear-gradient(90deg,#22c55e,#facc15,#ef4444);transition:width .8s cubic-bezier(.2,.7,.2,1)}
+</style>
+</head>
+<body class="vk">
+<header class="vk-head">
+  <a class="back" href="index.html#library" aria-label="Back to library"><i class="fa-solid fa-arrow-left"></i></a>
+  <div class="ttl"><h1>Arc-Flash PPE</h1><p id="sub">NFPA 70E categories 1 to 4</p></div>
+  <a class="vk-ibtn" href="safety-guide.html" aria-label="Safety guide"><i class="fa-solid fa-shield-halved"></i></a>
+</header>
+<div class="vk-wrap">
+  <section class="vk-stage" id="stage" aria-label="3D worker">
+    <div class="cv" id="cv" role="img" aria-label="Animated 3D worker wearing arc-flash protective equipment"></div>
+    <div class="vk-ov tl"><span class="vk-pill" id="badge" style="border-color:var(--c,#22d3ee)">CAT 1 · 4 cal/cm²</span></div>
+    <div class="vk-ov tr"><button class="vk-ibtn" id="b-reset" type="button" aria-label="Reset view"><i class="fa-solid fa-rotate-left"></i></button><button class="vk-ibtn" id="b-spin" type="button" aria-label="Turntable" aria-pressed="false"><i class="fa-solid fa-arrows-spin"></i></button></div>
+    <div class="vk-ov" style="left:10px;right:10px;bottom:10px;justify-content:center;gap:6px;flex-wrap:wrap" id="poses">
+      <button class="vk-pill" data-pose="stand" aria-pressed="true" type="button">Stand</button><button class="vk-pill" data-pose="walk" aria-pressed="false" type="button">Walk</button><button class="vk-pill" data-pose="work" aria-pressed="false" type="button">Work</button>
+      <button class="vk-pill" id="b-flash" type="button" style="background:rgba(234,88,12,.65);border-color:#fb923c"><i class="fa-solid fa-bolt"></i><span>Arc flash</span></button>
+    </div>
+    <div class="flash" id="flash"></div>
+    <div class="vk-load" aria-hidden="true"><div class="bolt"><svg viewBox="0 0 24 24"><path d="M13 2 4 14h6l-1 8 9-12h-6z"/></svg></div><div class="bar"><i></i></div><small>Dressing the worker…</small></div>
+  </section>
+  <main class="vk-body">
+    <div class="ppe-tabs" id="tabs" role="tablist" aria-label="PPE category"></div>
+    <article class="vk-card vk-fade" id="info"></article>
+  </main>
+</div>
+<nav class="app-nav app-nav-sticky" aria-label="Main"><a href="index.html" class="nav-tab"><svg class="vn-mark" aria-hidden="true"><use href="#vn-mark"/></svg><span>Home</span></a><a href="supports.html" class="nav-tab"><i class="fa-solid fa-tower-cell"></i><span>Supports</span></a><a href="isolators.html" class="nav-tab"><i class="fa-solid fa-plug-circle-bolt"></i><span>Isolators</span></a><a href="ppe.html" class="nav-tab" aria-current="page"><i class="fa-solid fa-user-shield"></i><span>Safety</span></a><a href="index.html#library" class="nav-tab"><i class="fa-solid fa-layer-group"></i><span>Library</span></a></nav>
+<script src="js/vk-engine.js"></script><script src="js/ppe-data.js"></script><script src="js/ppe-human.js"></script><script src="js/ppe-person.js"></script><script src="js/ppe-app.js"></script>
+</body></html>

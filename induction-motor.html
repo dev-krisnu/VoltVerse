@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>3D Three-Phase Induction Motor Visualizer</title>
+    <link rel="stylesheet" href="css/vnode.css"><script src="js/vnode.js"></script>
+<title>3D Three-Phase Induction Motor Visualizer</title>
     <!-- Tailwind CSS -->
     <meta name="theme-color" content="#020617">
     <meta name="description" content="Interactive 3D three-phase induction motor: squirrel cage and slip ring constructions, half cut section, exploded view and rotating magnetic field.">
@@ -71,6 +72,7 @@
         }
     </style>
 <style>body{min-height:100vh;min-height:100dvh;padding-bottom:calc(68px + env(safe-area-inset-bottom,0px))}.app-nav{position:fixed;left:0;right:0;bottom:0}</style>
+<link rel="stylesheet" href="css/mobile.css"><script src="js/mobile.js"></script>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col overflow-x-hidden">
 
@@ -269,7 +271,7 @@
             <div class="flex items-center justify-between gap-3"><div><div class="text-sm font-bold text-white">Test your knowledge</div><div class="text-[11px] text-slate-400 mt-0.5">Take a 10-question quiz on motors, transformers and more.</div></div><i class="fa-solid fa-graduation-cap text-sky-400"></i></div></a>
     </main>
 
-    <nav class="app-nav" aria-label="Main"><a href="index.html" class="nav-tab"><i class="fa-solid fa-house"></i><span>Home</span></a><a href="dc-motor.html" class="nav-tab"><i class="fa-solid fa-gears"></i><span>Construction</span></a><a href="dc-motor-types.html" class="nav-tab"><i class="fa-solid fa-diagram-project"></i><span>Types</span></a><a href="induction-motor.html" class="nav-tab" aria-current="page"><i class="fa-solid fa-fan"></i><span>Induction</span></a><a href="index.html#library" class="nav-tab"><i class="fa-solid fa-layer-group"></i><span>Library</span></a></nav>
+    <nav class="app-nav" aria-label="Main"><a href="index.html" class="nav-tab"><svg class="vn-mark" aria-hidden="true"><use href="#vn-mark"/></svg><span>Home</span></a><a href="dc-motor.html" class="nav-tab"><i class="fa-solid fa-gears"></i><span>Construction</span></a><a href="dc-motor-types.html" class="nav-tab"><i class="fa-solid fa-diagram-project"></i><span>Types</span></a><a href="induction-motor.html" class="nav-tab" aria-current="page"><i class="fa-solid fa-fan"></i><span>Induction</span></a><a href="index.html#library" class="nav-tab"><i class="fa-solid fa-layer-group"></i><span>Library</span></a></nav>
     <script src="js/induction-model.js"></script>
     <script src="js/induction-app.js"></script>
 </body>
