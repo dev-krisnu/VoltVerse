@@ -1,7 +1,7 @@
 (function () {
   'use strict';
   var D = window.HOBBY, HM = window.HobbyModels, $ = function (i) { return document.getElementById(i); };
-  var mode = 'parts', cur = null, scene, camera, renderer, controls, holder, clock = new THREE.Clock(), model = null;
+  var labelsOn = true, mode = 'parts', cur = null, scene, camera, renderer, controls, holder, clock = new THREE.Clock(), model = null;
   function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
 
   function init() {
@@ -25,13 +25,14 @@
   function resize() { var b = $('hobby-canvas'), w = b.clientWidth || 300, h = b.clientHeight || 300; renderer.setSize(w, h); camera.aspect = w / h; camera.updateProjectionMatrix(); if (model) fit(); }
   function fit() {
     var bb = new THREE.Box3().setFromObject(model), s = bb.getSize(new THREE.Vector3()), c = bb.getCenter(new THREE.Vector3());
-    var r = Math.max(s.x, s.y * 1.2, s.z) * 0.5, d = r / Math.tan(THREE.MathUtils.degToRad(camera.fov / 2) * Math.min(1, camera.aspect)) * 1.25;
+    var r = Math.max(s.x, s.y * 1.2, s.z) * 0.5, d = r / Math.tan(THREE.MathUtils.degToRad(camera.fov / 2) * Math.min(1, camera.aspect)) * 1.18;
     controls.target.copy(c); camera.position.set(c.x + d * 0.55, c.y + d * 0.6, c.z + d * 0.75); controls.update();
   }
+  function applyLabels() { var any = false; if (model) model.traverse(function (o) { if (o.userData && o.userData.labels && o.userData.labels.isGroup) { o.userData.labels.visible = labelsOn; any = true; } }); var b = $('hobby-labels'); if (b) { b.style.display = any ? '' : 'none'; b.setAttribute('aria-pressed', labelsOn); } }
   function show(item) {
     cur = item; if (model) holder.remove(model);
     var src = mode === 'parts' ? HM.parts : HM.projects;
-    model = src[item.model](); holder.add(model); controls.autoRotate = true; fit();
+    model = src[item.model](); holder.add(model); controls.autoRotate = true; applyLabels(); fit();
     document.querySelectorAll('[data-item]').forEach(function (b) { b.setAttribute('aria-current', b.dataset.item === item.id ? 'true' : 'false'); });
     $('hobby-title').textContent = item.name;
     $('hobby-tag').textContent = mode === 'parts' ? item.tag : item.level + ' | ' + item.time;
@@ -51,6 +52,7 @@
   function projectHtml(p) {
     return '<p class="text-slate-200 leading-relaxed mb-4">' + esc(p.summary) + '</p><div class="grid gap-3 md:grid-cols-2">' +
       card('Parts you need', list(p.parts)) + card('Wiring', table(p.wiring, 'From', 'To'), 'text-emerald-300') +
+      (p.circuit && window.Circuit ? '<section class="rounded-2xl border border-slate-800 bg-slate-900/60 p-4 md:col-span-2"><h3 class="text-xs font-bold uppercase tracking-widest text-cyan-300 mb-2">Circuit diagram</h3><div class="cx-wrap">' + Circuit.svg(p.circuit) + '</div><div class="cx-leg"><span><i style="background:#f87171"></i>Power</span><span><i style="background:#94a3b8"></i>Ground</span><span><i style="background:#22d3ee"></i>Signals</span><span>Moving dashes show the direction of current</span></div></section>' : '') +
       card('Build steps', '<ol class="space-y-1 text-sm text-slate-300 list-decimal pl-5">' + p.steps.map(function (s) { return '<li>' + esc(s) + '</li>'; }).join('') + '</ol>', 'text-amber-300') +
       card('Extend it', list(p.extend), 'text-violet-300') + '</div>' +
       '<section class="mt-3 rounded-2xl border border-slate-800 bg-black/40 p-4"><div class="flex items-center justify-between mb-2"><h3 class="text-xs font-bold uppercase tracking-widest text-cyan-300">Sketch</h3><button id="copy-code" type="button" class="text-xs px-2 py-1 rounded-lg border border-slate-700 text-slate-300 hover:bg-slate-800">Copy</button></div><pre class="overflow-x-auto text-xs leading-relaxed text-slate-200 font-mono"><code>' + esc(p.code) + '</code></pre></section>' +
@@ -66,6 +68,7 @@
   document.addEventListener('DOMContentLoaded', function () {
     init();
     document.querySelectorAll('[data-mode]').forEach(function (b) { b.addEventListener('click', function () { setMode(b.dataset.mode); }); });
+    var lb = $('hobby-labels'); if (lb) lb.addEventListener('click', function () { labelsOn = !labelsOn; applyLabels(); });
     var h = location.hash.slice(1); if (h.indexOf('p-') === 0) setMode('projects', h.slice(2)); else setMode('parts', h);
   });
 })();

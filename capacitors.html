@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="stylesheet" href="css/vnode.css"><script src="js/vnode.js"></script>
+<title>Capacitors | V-NODE</title>
+<meta name="description" content="Seven capacitor types in 3D with see-inside views: ceramic disc, MLCC, film, electrolytic, tantalum, supercapacitor and variable, with code reader and calculators.">
+<meta name="theme-color" content="#080c14"><link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="preload" href="vendor/fonts/inter-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="css/tailwind.css"><link rel="stylesheet" href="css/app.css"><link rel="stylesheet" href="css/fa/fa.css"><link rel="stylesheet" href="css/mobile.css"><link rel="stylesheet" href="css/vk.css">
+<script src="vendor/three.min.js"></script><script src="vendor/OrbitControls.js"></script><script src="js/mobile.js"></script>
+<link rel="stylesheet" href="css/fx.css"><script src="js/sky.js" defer></script><script src="js/fx.js" defer></script>
+</head>
+<body class="vk">
+<header class="vk-head">
+  <a class="back" href="index.html#library" aria-label="Back to library"><i class="fa-solid fa-arrow-left"></i></a>
+  <div class="ttl"><h1>Capacitors</h1><p id="sub">Pick a capacitor</p></div>
+  <button class="vk-ibtn" id="b-labels" type="button" aria-pressed="false" aria-label="Show part names"><i class="fa-solid fa-tags"></i></button>
+</header>
+<div class="vk-wrap">
+  <section class="vk-stage" id="stage" aria-label="3D viewer">
+    <div class="cv" id="cv" role="img" aria-label="Interactive 3D model"></div>
+    <div class="vk-ov tl"><span class="vk-pill" id="status" role="status"><span class="sd" style="width:8px;height:8px;border-radius:50%;background:#22c55e"></span><span id="st-t">Ready</span></span>
+      <span style="display:flex;gap:6px"><button class="vk-pill" data-v="iso" aria-pressed="true" type="button" style="height:32px;padding:0 11px">3D</button><button class="vk-pill" data-v="top" aria-pressed="false" type="button" style="height:32px;padding:0 11px">Top</button><button class="vk-pill" data-v="front" aria-pressed="false" type="button" style="height:32px;padding:0 11px">Front</button></span></div>
+    <div class="vk-ov tr"><button class="vk-ibtn" id="b-reset" type="button" aria-label="Reset view"><i class="fa-solid fa-rotate-left"></i></button><button class="vk-ibtn" id="b-spin" type="button" aria-label="Auto rotate" aria-pressed="false"><i class="fa-solid fa-arrows-spin"></i></button></div>
+    <div class="vk-ov" style="left:10px;right:10px;bottom:10px;justify-content:center;gap:8px"><button class="vk-pill" id="b-act" type="button" style="height:42px;padding:0 20px;font-size:13.5px;background:rgba(8,145,178,.55);border-color:#22d3ee"><i class="fa-solid fa-play"></i><span>See inside</span></button></div>
+    <div class="vk-load" aria-hidden="true"><div class="bolt"><svg viewBox="0 0 24 24"><path d="M13 2 4 14h6l-1 8 9-12h-6z"/></svg></div><div class="bar"><i></i></div><small>Building model…</small></div>
+  </section>
+  <main class="vk-body">
+    <div class="vk-cat" id="cats" role="tablist" aria-label="Type"></div>
+    <article class="vk-card vk-fade" id="info"></article>
+  </main>
+</div>
+<nav class="app-nav app-nav-sticky" aria-label="Main"><a href="index.html" class="nav-tab"><svg class="vn-mark" aria-hidden="true"><use href="#vn-mark"/></svg><span>Home</span></a><a href="resistors.html" class="nav-tab"><i class="fa-solid fa-wave-square"></i><span>Resistors</span></a><a href="inductors.html" class="nav-tab"><i class="fa-solid fa-ring"></i><span>Inductors</span></a><a href="capacitors.html" class="nav-tab" aria-current="page"><i class="fa-solid fa-battery-half"></i><span>Capacitors</span></a><a href="index.html#library" class="nav-tab"><i class="fa-solid fa-layer-group"></i><span>Library</span></a></nav>
+<script src="js/vk-engine.js"></script><script src="js/passives-common.js"></script><script src="js/capacitors-data.js"></script><script src="js/passives-models.js"></script><script src="js/cat-app.js"></script>
+</body></html>
