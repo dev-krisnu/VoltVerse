@@ -1,0 +1,57 @@
+/* Relays and contactors. Standards: IEC 60947-4-1 (contactors, starters), IEC 60947-4-3 (SSR), IEC 61810 (relays). */
+(function () {
+  var P = PX;
+  var ACT = function (on, off, idle, done) { return { on: on, off: off, idleText: idle, onText: 'Working…', offText: 'Releasing…', doneText: done }; };
+  window.CAT = {
+    kind: 'x', fit: 1.15, order: ['relay', 'contactor', 'overload', 'ssr', 'dol'],
+    prosTitle: 'Where it is used', rowsTitle: 'Specifications', dir: [.5, .4, 1], viewer: { pos: [5, 4, 8], target: [0, 2, 0], size: 25 },
+    models: {
+      relay: { title: 'Electromagnetic relay', short: 'Relay', std: 'IEC 61810 · SPDT, 5 V coil',
+        desc: 'A small switch that is moved by an electromagnet. A weak signal in the coil switches a separate, stronger circuit, and the two circuits are electrically isolated.',
+        act: ACT('Energise the coil', 'De-energise', 'Coil off · COM to NC', 'Coil on · COM to NO'),
+        rating: [['Coil', '5 / 12 / 24 V DC'], ['Contacts', '10 A, 250 V AC'], ['Operate', '≈ 10 ms']],
+        principle: 'Current in the coil makes a magnetic field in the iron core and yoke. The field pulls the armature down against its spring, and the armature moves the common (COM) contact from the normally closed (NC) contact to the normally open (NO) contact. When the coil current stops, the spring pulls the armature back.',
+        pros: ['Switching lamps, motors and heaters from a microcontroller', 'Control circuits and interlocks', 'Automotive circuits such as horns and headlights'],
+        rows: [['Contact form', 'SPDT: one COM, one NO, one NC'], ['Coil voltage', '5, 12, 24 V DC or 24, 230 V AC'], ['Contact rating', 'e.g. 10 A at 250 V AC or 30 V DC'], ['Coil current', 'About 70 mA for a 5 V coil'], ['Life', '100 000 electrical operations']],
+        facts: ['Put a diode across a DC coil. When the coil is switched off it creates a voltage spike that can damage the transistor.', 'The DC rating of a contact is much lower than its AC rating, because DC arcs do not go out by themselves.'],
+        parts: { cover: 'Plastic dust cover.', coil: 'Copper coil wound over an iron core. Energised, it becomes an electromagnet.', yoke: 'Iron yoke that completes the magnetic path.', arm: 'Hinged iron armature carrying the moving contact.', com: 'Common terminal, connected to the armature.', no: 'Normally open: closes when the coil is on.', nc: 'Normally closed: opens when the coil is on.', pins: 'Pins that solder to the board.' } },
+      contactor: { title: 'Contactor (3-pole)', short: 'Contactor', std: 'IEC 60947-4-1',
+        desc: 'A relay built for power. Three heavy main contacts switch a motor or heater, and a coil on a separate low-power control circuit operates them.',
+        act: ACT('Energise the coil', 'De-energise', 'Contacts open', 'Contacts closed · LED on'),
+        rating: [['Poles', '3 main + aux'], ['AC-3 rating', '9 to 800 A'], ['Coil', '24 to 415 V']],
+        principle: 'When the coil is energised, the E-shaped magnet pulls in the moving armature. The armature carries three contact bridges that close all three phases together. Silver-alloy tips resist the arc, and arc chambers cool it. Springs open the contacts when the coil is off. Losing the control supply opens the contactor, so a motor does not restart by itself after a power failure.',
+        pros: ['Starting and stopping 3-phase motors', 'Heaters, compressors and lighting banks', 'Remote and automatic control from a PLC'],
+        rows: [['Main terminals', '1/L1 3/L2 5/L3 in; 2/T1 4/T2 6/T3 out'], ['Coil terminals', 'A1 and A2'], ['Aux contacts', '13-14 NO, 21-22 NC'], ['AC-1', 'Resistive loads'], ['AC-3', 'Squirrel-cage motors: starting and stopping'], ['AC-4', 'Plugging and inching, heavy duty']],
+        facts: ['Choose a contactor by its AC-3 current for motors, not by its AC-1 rating.', 'A contactor does not protect against overload or short-circuit by itself. Add an overload relay and a breaker.'],
+        parts: { body: 'Housing, shown see-through.', term: 'Main power terminals, with line in at the top and load out at the bottom.', fixed: 'Fixed magnet core with the coil.', moving: 'Moving core that closes when pulled.', bridges: 'Copper bridges with silver tips: one for each phase.', sp: 'Springs that open the contacts quickly.', aux: 'Auxiliary contacts for control circuits.', coilT: 'Coil terminals A1 and A2.' } },
+      overload: { title: 'Thermal overload relay', short: 'Overload relay', std: 'IEC 60947-4-1 · Class 10',
+        desc: 'It protects a motor from overload. A bimetal strip heated by the motor current bends when the current is too high for too long, and trips a contact that stops the contactor.',
+        act: ACT('Overload (heat up)', 'Cool down', 'Normal current', 'Tripped'),
+        rating: [['Trip class', '10 (10 s)'], ['Range', '0.1 to 100+ A'], ['Contacts', '95-96 NC, 97-98 NO']],
+        principle: 'The motor current flows through a heater coil around each bimetal strip. The strip has two metals that expand by different amounts, so it bends when heated. The bend grows with current and time. At a set bend it pushes a trip bar that opens the NC contact 95-96 in the contactor coil circuit. The motor stops, the strips cool and you reset the relay by hand.',
+        pros: ['Protecting motors against mechanical overload', 'Protecting against single-phasing (differential trip)', 'Pumps, fans, compressors and conveyors'],
+        rows: [['Class 10', 'Trips in 10 s or less at 7.2 × the set current'], ['Class 20', 'Trips in 20 s, for long starts'], ['Setting', 'Dial set to the motor full-load current'], ['Contacts', '95-96 NC in the control circuit; 97-98 NO for alarm'], ['Reset', 'Manual or automatic']],
+        facts: ['An overload relay does not protect against short-circuits. A fuse or motor breaker does that.', 'Set the dial to the full-load current on the motor nameplate.'],
+        parts: { body: 'Housing, shown see-through.', bim: 'Bimetal strips with heater coils, one for each phase.', terms: 'Power terminals: they go in series with the motor.', lever: 'Trip bar pushed by the bending strips.', nc: 'NC contact in the control circuit.', no: 'NO contact for an alarm lamp.', dial: 'Sets the trip current.', reset: 'Reset button.' } },
+      ssr: { title: 'Solid-state relay (SSR)', short: 'Solid-state relay', std: 'IEC 60947-4-3',
+        desc: 'A relay with no moving parts. A small DC input lights an LED inside, and a light-sensitive switch drives a triac that switches an AC load. It is silent and fast.',
+        act: ACT('Apply the input', 'Remove input', 'Input off · load off', 'Input on · load on'),
+        rating: [['Input', '3 to 32 V DC'], ['Output', '24 to 380 V AC'], ['Current', '10 to 40 A']],
+        principle: 'The input current lights an LED. Its light falls on a photo-detector in an opto-coupler, so the control side and the load side are separated by light and not by wires. The detector triggers the triac, and a zero-cross circuit waits for the AC voltage to pass through zero before it switches on, to cut noise. A triac stops conducting by itself when the AC current goes through zero.',
+        pros: ['Heaters and temperature controllers that switch often', 'Quiet switching in lighting and medical equipment', 'Places with vibration or explosive gas where arcs are dangerous'],
+        rows: [['Isolation', 'Opto-coupler, 2.5 to 4 kV'], ['Switching', 'Zero-cross or random-fire'], ['Heat', 'Needs a heat sink: about 1 W per amp'], ['Leakage', 'A few mA when off'], ['Failure', 'Often fails shorted (stuck on)']],
+        facts: ['An AC output SSR cannot switch a DC load, so use one with a DC (MOSFET) output instead.', 'Fit it on a heat sink with thermal paste, or it will overheat above a few amps.'],
+        parts: { body: 'Case, shown see-through.', sink: 'Aluminium heat sink that carries the heat from the triac.', inp: 'Input terminals, 3 to 32 V DC.', out: 'Output terminals, in series with the AC load.', opto: 'LED and photo-detector pair that isolates control from load.', tri: 'The power switching element.', led: 'Lights when the input is on.' } },
+      dol: { title: 'DOL (direct-on-line) starter', short: 'DOL starter', std: 'IEC 60947-4-1',
+        desc: 'The simplest motor starter: a contactor and an overload relay in a panel with START and STOP buttons. It connects the motor straight to the supply.',
+        act: ACT('Press START', 'Press STOP', 'Motor stopped', 'Motor running'),
+        rating: [['Starting current', '6 to 8 × FLC'], ['Voltage', 'Full line voltage'], ['Use', 'Up to about 5 kW']],
+        principle: 'Pressing START energises the contactor coil through the STOP button and the overload contact. The contactor closes, and its auxiliary contact 13-14 (in parallel with START) keeps the coil energised when you let go: this is the hold-in or sealing circuit. Pressing STOP, an overload trip, or a supply failure breaks the coil circuit and the motor stops.',
+        pros: ['Small pumps, fans and compressors', 'Conveyors, saw benches and machine tools', 'Anywhere the supply can handle the starting current'],
+        rows: [['Parts', 'Contactor, overload relay, START, STOP, breaker'], ['Control circuit', 'START (NO), STOP (NC), seal-in 13-14, overload 95-96'], ['Starting torque', 'Full torque'], ['Drawback', 'High starting current and mechanical stress'], ['Protection', 'Fuse or MCB for short-circuit, overload relay for overload']],
+        facts: ['Starting current is 6 to 8 times full-load current, so large motors use a star-delta starter or a soft starter.', 'The STOP button is wired normally closed so a broken wire stops the motor.'],
+        parts: { ct: 'The contactor that switches the motor.', ov: 'The overload relay in series with the contactor.', st: 'START is normally open; STOP is normally closed.', motor: 'The three-phase motor.', enc: 'The back panel.' } }
+    },
+    extra: function () { return '<h3>Control circuit logic</h3><ul><li>START (NO) is in parallel with the contactor auxiliary contact 13-14.</li><li>STOP (NC) and the overload contact 95-96 are in series with the coil.</li><li>Pressing START closes the coil circuit. The contactor pulls in, and 13-14 closes and holds it on.</li><li>Any open contact in the series chain drops the contactor out.</li></ul>'; }
+  };
+})();

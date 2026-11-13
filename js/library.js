@@ -38,12 +38,13 @@ window.VOLTVERSE_LIBRARY = [
       { title: 'Safety PPE', href: 'ppe.html', tag: 'Animated 3D person', icon: 'fa-user-shield', desc: 'A lifelike worker in each NFPA 70E arc-flash category 1 to 4, with an arc-flash test and every garment explained.' },
       { title: 'Earthing', href: 'earthing.html', tag: '5 ground cut-sections', icon: 'fa-bore-hole', desc: 'Pipe, plate, strip and rod earthing plus the substation earth mat, buried in layered soil, with fault current flow and a resistance calculator.' }
     ] },
-  { id: 'transmission', title: 'Transmission & Switchgear', color: '#c084fc', icon: 'fa-tower-cell', key: 'Poles, insulators and isolators',
+  { id: 'transmission', title: 'Transmission & Switchgear', color: '#c084fc', icon: 'fa-tower-cell', key: 'Poles, insulators, isolators and relays',
     blurb: 'How power travels from the station to your street, and how it is switched safely.',
     tools: [
       { title: 'Poles & Towers', href: 'supports.html', tag: '15 structures', icon: 'fa-tower-cell', desc: 'Wooden, steel, RCC and PCC poles and six lattice tower types, with X-ray views and the real dimensions.' },
       { title: 'Insulator', href: 'insulators.html', tag: '3D model', icon: 'fa-plug-circle-bolt', desc: 'Pin, suspension, strain, shackle, post and composite insulators with labelled parts, creepage distance and flashover ratings.' },
-      { title: 'HV Isolator', href: 'isolators.html', tag: '6 working models', icon: 'fa-power-off', desc: 'Single-break, double-break, vertical-break, knee-break, pantograph and semi-pantograph isolators with an earth switch interlock.' }
+      { title: 'HV Isolator', href: 'isolators.html', tag: '6 working models', icon: 'fa-power-off', desc: 'Single-break, double-break, vertical-break, knee-break, pantograph and semi-pantograph isolators with an earth switch interlock.' },
+      { title: 'Relays & Contactors', href: 'relays.html', tag: '5 devices', icon: 'fa-bolt-lightning', desc: 'Relay, contactor, thermal overload relay, solid-state relay and a DOL starter. Energise the coil and watch the contacts move.' }
     ] },
   { id: 'power-electronics', title: 'Power Electronics', color: '#2dd4bf', icon: 'fa-wave-square', key: 'Turn AC into DC',
     blurb: 'Switching AC into DC and smoothing it out.',
@@ -51,5 +52,5 @@ window.VOLTVERSE_LIBRARY = [
       { title: 'Rectifier', href: 'rectifier.html', tag: 'Circuit + scope', icon: 'fa-wave-square', desc: 'Half-wave, center-tap and bridge rectifiers with C, L, LC and pi filters: current flow, oscilloscope, ripple and efficiency.' }
     ] },
   { id: 'soon', title: 'Coming next', soon: true, blurb: 'The library keeps growing. Planned:',
-    items: ['Synchronous motors', 'Circuit breakers', 'Relays and contactors', 'Motor starters', 'AC to DC converters', 'Hobby electronics: more boards, servos and projects'] }
+    items: ['Synchronous motors', 'Circuit breakers (MCCB, RCCB, ACB, VCB)', 'Star-delta and soft starters', 'AC to DC converters', 'Hobby electronics: more boards, servos and projects'] }
 ];
