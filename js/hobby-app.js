@@ -60,7 +60,7 @@
   }
   function renderList() {
     var items = mode === 'parts' ? D.parts : D.projects;
-    $('hobby-list').innerHTML = items.map(function (i) { return '<button type="button" data-item="' + i.id + '" class="hobby-item"><i class="fa-solid ' + i.icon + '"></i><span><strong>' + esc(i.name) + '</strong><small>' + esc(mode === 'parts' ? i.tag : i.level + ' | ' + i.time) + '</small></span></button>'; }).join('');
+    var lastG = null; $('hobby-list').innerHTML = items.map(function (i) { var hd = ''; if (mode === 'parts' && i.group && i.group !== lastG) { lastG = i.group; hd = '<p class="hobby-grp">' + esc(i.group) + '</p>'; } return hd + '<button type="button" data-item="' + i.id + '" class="hobby-item"><i class="fa-solid ' + i.icon + '"></i><span><strong>' + esc(i.name) + '</strong><small>' + esc(mode === 'parts' ? i.tag : i.level + ' | ' + i.time) + '</small></span></button>'; }).join('');
     document.querySelectorAll('[data-item]').forEach(function (b) { b.addEventListener('click', function () { show(items.filter(function (x) { return x.id === b.dataset.item; })[0]); window.scrollTo({ top: 0, behavior: 'smooth' }); }); });
     document.querySelectorAll('[data-mode]').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.mode === mode); });
   }

@@ -44,3 +44,15 @@ CSS is prebuilt in `css/tailwind.css`. After adding new classes in HTML or `js/`
 - **Library** is now seven categories (Transformer, Motors, Generator, Basic Electrical, Electrical Safety, Transmission & Switchgear, Power Electronics) in `js/library.js`. `js/home.js` renders them as tap-to-open cards: category, then tool, then Open. Hobby Electronics and the Quiz sit as chips beside the hero buttons.
 - **Night sky** (`js/sky.js`): one fixed canvas behind every page with twinkling stars, aurora, moon and shooting stars. Pauses when hidden, static with reduced motion.
 - **Interaction layer** (`css/fx.css`, `js/fx.js`): hover lift and pointer spotlight, tap ripple, shimmer, floating hero, unified header icon tile on every page.
+
+## V-NODE 2.3 additions
+New pages, all built on the catalogue engine (`js/cat-app.js` + `js/vk-engine.js`) with the shared model helpers in `js/kit.js`:
+- **Circuit Breakers** (`breakers.html`): MCB, MCCB, RCCB/ELCB, ACB, VCB with overload and short-circuit modes and time-current curves (`js/breakers-*.js`, `js/tcchart.js`).
+- **Synchronous Motor** (`sync-motor.html`): rotor locking onto the field, slip-ring and damper-bar cutaway, why it is not self-starting, V-curve and power factor (`js/syncmotor-*.js`).
+- **Motor Starters** (`starters.html`): star-delta, auto-transformer, rotor-resistance, soft starter with a current-time graph (`js/starters-*.js`).
+- **AC to DC Converters** (`ac-dc.html`): bridge adaptor, SMPS, phone charger with a waveform at each stage (`js/acdc-*.js`).
+- **Diodes and Transistors** (`semiconductors.html`), **Fuses** (`fuses.html`), **Cables and Wires** (`cables.html`), **Meters and Instruments** (`meters.html`), **Switchyard Equipment** (`substation.html`).
+- **Hobby Electronics**: 19 more parts (8 boards and modules, 6 sensors, 5 wiring and tool guides) in `js/hobby3-models.js` and `js/hobby3-data.js`. The parts list is now grouped.
+- **FAQ** (`faq.html`): 64 searchable questions in `js/faq-data.js`, rendered by `js/faq.js`.
+
+Engine options added to a model definition in `window.CAT`: `modes` (segmented buttons, passed to `update` as the third argument), `modeInfo`, `slider`, `chart` (a canvas with `window.CATCHART` helpers), `speed`, `linear`, `statusFn` and `html`. To add a tool: write `<name>-data.js` and `<name>-models.js`, generate the page with `tools/make_cat_page.py`, and add it to `js/library.js`.

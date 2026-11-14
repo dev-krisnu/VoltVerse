@@ -1,0 +1,49 @@
+/* Cables. Current ratings are typical, copper conductors, reference method C (clipped direct), 30 °C ambient (BS 7671 / IEC 60364-5-52 style). Always check the standard and the maker's data for a real installation. */
+(function () {
+  var ACT = { on: 'Peel the layers', off: 'Close up', idleText: 'Complete cable', onText: 'Stripping…', offText: 'Closing…', doneText: 'All layers exposed' };
+  var SZ = ['1.5', '2.5', '4', '6', '10', '16', '25'];
+  var PVC = { s: [19.5, 27, 36, 46, 63, 85, 112], t: [17.5, 24, 32, 41, 57, 76, 101] }, XL = { s: [23, 31, 42, 54, 75, 100, 127], t: [21, 28, 36, 48, 66, 88, 117] };
+  function tbl(a, name) { return '<h3>Current-carrying capacity: ' + name + '</h3><div class="vk-xwrap"><table class="cat-grid"><thead><tr><th>Size mm²</th><th>1-phase (2 loaded)</th><th>3-phase (3 loaded)</th></tr></thead><tbody>' + SZ.map(function (z, i) { return '<tr><td>' + z + '</td><td>' + a.s[i] + ' A</td><td>' + a.t[i] + ' A</td></tr>'; }).join('') + '</tbody></table></div><p class="cat-note">Typical values for copper, clipped direct (method C), 30 °C. Voltage drop and grouping may need a larger size.</p>'; }
+  var DER = '<h3>Derating factors</h3><div class="vk-xwrap"><table class="cat-grid"><thead><tr><th>Ambient</th><th>PVC (70 °C)</th><th>XLPE (90 °C)</th></tr></thead><tbody><tr><td>30 °C</td><td>1.00</td><td>1.00</td></tr><tr><td>35 °C</td><td>0.94</td><td>0.96</td></tr><tr><td>40 °C</td><td>0.87</td><td>0.91</td></tr><tr><td>45 °C</td><td>0.79</td><td>0.87</td></tr><tr><td>50 °C</td><td>0.71</td><td>0.82</td></tr></tbody></table></div><p class="cat-note">Grouping: two circuits together ≈ 0.80, three ≈ 0.70, four ≈ 0.65.</p>';
+  window.CAT = {
+    kind: 'x', fit: 1.0, order: ['single', 'multi', 'armoured', 'xlpe'], prosTitle: 'Where it is used', rowsTitle: 'Construction', dir: [.2, .3, 1], viewer: { pos: [8, 5, 16], target: [0, 2, 0], size: 40 },
+    models: {
+      single: { title: 'Single-core wire', short: 'Single-core', std: '1.5 mm² · PVC · 450/750 V', act: ACT, linear: false,
+        desc: 'One copper conductor with one layer of PVC insulation. It is the wire pulled through conduit in house wiring.',
+        rating: [['Conductor', 'Solid or stranded copper'], ['Insulation', 'PVC, 70 °C'], ['Voltage', '450/750 V']],
+        principle: 'The conductor carries the current. The insulation keeps it from touching other wires or people. Colour codes show the use: red, yellow and blue for phases, black for neutral and green or green-yellow for earth, in the system used in India and the IEC system (brown, black, grey for phases, blue for neutral). The conductor size sets how much current it can carry without overheating, and the insulation sets the maximum temperature (PVC 70 °C).',
+        pros: ['Conduit wiring in homes and offices', 'Panel wiring and switchboards', 'Earth continuity conductors'],
+        rows: [['Conductor', 'Annealed copper, class 1 (solid) or 2 (stranded)'], ['Insulation', 'PVC, 0.7 mm for 1.5 mm²'], ['Colours', 'Phase, neutral, earth are different'], ['Max temperature', '70 °C continuous'], ['Short-circuit limit', '160 °C for PVC']],
+        html: tbl(PVC, 'PVC single-core') + DER,
+        facts: ['A cable that gets too hot melts its insulation first. That is why current ratings are based on temperature.', 'Aluminium conductors are lighter and cheaper but need about 1.6 times the area for the same current.'],
+        parts: { cond: 'Stranded copper conductor.', ins: 'PVC insulation, colour-coded.', sh: 'Outer PVC sheath (only on sheathed cable).' } },
+      multi: { title: 'Multicore flexible cable', short: 'Multicore', std: '3 × 1.5 mm² · flexible · PVC', act: ACT, linear: false,
+        desc: 'Several fine-stranded insulated cores inside one round sheath. It flexes without breaking and it is used for appliances, extension leads and portable tools.',
+        rating: [['Cores', '2, 3, 4 or 5'], ['Conductor', 'Fine strands (class 5)'], ['Sheath', 'PVC or rubber']],
+        principle: 'In a three-core flex, the brown (live), blue (neutral) and green-yellow (earth) cores are twisted together. Fillers make the cable round and give it strength. Fine strands let the cable bend thousands of times, but a solid conductor would crack after a few bends. The outer sheath protects the cores against abrasion, and rubber (H07RN-F) resists oil and heat better than PVC.',
+        pros: ['Appliances, extension leads and power tools', 'Machine and control wiring that moves', 'Temporary supply on stages and sites'],
+        rows: [['Core colours', 'Brown (L), blue (N), green-yellow (E)'], ['Strands', '30 to 100 fine wires per core'], ['Sheath', 'PVC (H05VV-F) or rubber (H07RN-F)'], ['Do not', 'Use bare-strand ends without a ferrule'], ['Strain relief', 'A cord grip at the plug']],
+        html: '<h3>Typical ratings, 3-core flexible, PVC</h3><div class="vk-xwrap"><table class="cat-grid"><thead><tr><th>Size mm²</th><th>Max current</th><th>Typical load (230 V)</th></tr></thead><tbody><tr><td>0.75</td><td>6 A</td><td>1.3 kW</td></tr><tr><td>1.0</td><td>10 A</td><td>2.3 kW</td></tr><tr><td>1.5</td><td>16 A</td><td>3.6 kW</td></tr><tr><td>2.5</td><td>25 A</td><td>5.7 kW</td></tr></tbody></table></div><p class="cat-note">Typical values for flexible cord in free air. Coiled cables on a drum must be derated.</p>',
+        facts: ['Never run a coiled extension reel at full load. The trapped heat can melt the cable.', 'Always push the earth core into the earth pin of a plug, and make it slightly longer than the other cores.'],
+        parts: { cores: 'Three fine-stranded insulated cores.', fill: 'Filler that makes the cable round.', sh: 'Outer PVC sheath.' } },
+      armoured: { title: 'Armoured cable (SWA)', short: 'Armoured', std: '3-core · steel wire armour · XLPE · 0.6/1 kV', act: ACT, linear: false,
+        desc: 'A cable with a layer of steel wires wrapped round it. It can be buried or fixed in rough places. The armour protects it and also acts as an earth conductor.',
+        rating: [['Voltage', '0.6/1 kV'], ['Armour', 'Galvanised steel wires'], ['Insulation', 'XLPE (90 °C)']],
+        principle: 'Three insulated cores are laid up with filler, then wrapped in bedding. The steel wire armour (SWA) is wound over it and gives mechanical strength against impact, crushing and digging. Because the armour is steel and all the wires touch, it is also used as the circuit protective conductor, and it must be earthed through a gland. A black PVC sheath on top keeps out water and protects the steel from corrosion. A single-core armoured cable uses aluminium wires because steel would heat up from the magnetic field.',
+        pros: ['Direct burial between buildings', 'Outdoor feeders, pumps and street lighting', 'Industrial plants and mines'],
+        rows: [['Cores', '2, 3, 4 or 5, XLPE or PVC'], ['Bedding', 'PVC or polyethylene under the armour'], ['Armour', 'Galvanised steel wire, 0.9 to 3.15 mm'], ['Gland', 'BW gland: it grips the armour and earths it'], ['Burial depth', 'About 0.5 m under soil, with marker tape']],
+        html: tbl(XL, 'XLPE armoured, copper') + DER,
+        facts: ['Terminate armoured cable with a proper gland, so that the armour is bonded to earth.', 'In a 4-core cable the armour can be a part of the earth return, but not the neutral.'],
+        parts: { cores: 'Three insulated cores.', bed: 'Bedding under the armour.', arm: 'Steel wire armour.', sh: 'Outer sheath.' } },
+      xlpe: { title: 'XLPE power cable', short: 'XLPE', std: 'Single-core · 11 kV · Cu tape screen', act: ACT, linear: false,
+        desc: 'The standard medium and high voltage cable. XLPE (cross-linked polyethylene) is a tough insulation that works at 90 °C and gives a low loss.',
+        rating: [['Voltage', '3.3 to 400 kV'], ['Max conductor temp', '90 °C'], ['Short circuit', '250 °C']],
+        principle: 'At high voltage the electric field is not uniform at the surface of a stranded conductor, so the conductor screen (semi-conducting layer) smooths it. The XLPE insulation then holds the voltage. A second semi-conducting layer, the insulation screen, gives a smooth outer surface of the field. A copper tape or wire screen is earthed, and it carries the earth-fault current. The bedding, an optional armour and the outer sheath protect the cable. Cross-linking the polyethylene makes its long chains bond together, so it does not melt at 90 °C like plain PE.',
+        pros: ['11 kV, 33 kV and 132 kV underground feeders', 'Substations, wind and solar farms', 'Industrial plants with heavy loads'],
+        rows: [['Conductor', 'Copper or aluminium, stranded or compact'], ['Conductor screen', 'Semi-conducting layer that smooths the field'], ['Insulation', 'XLPE, thickness set by voltage'], ['Screen', 'Copper tape, earthed at one or both ends'], ['Sheath', 'PVC or MDPE, often red for HV'], ['Life', '30 to 40 years']],
+        html: '<h3>Typical ratings, 11 kV XLPE, aluminium, in ground</h3><div class="vk-xwrap"><table class="cat-grid"><thead><tr><th>Size mm²</th><th>3-core, buried</th><th>MVA at 11 kV</th></tr></thead><tbody><tr><td>95</td><td>≈ 180 A</td><td>3.4</td></tr><tr><td>150</td><td>≈ 230 A</td><td>4.4</td></tr><tr><td>240</td><td>≈ 300 A</td><td>5.7</td></tr><tr><td>300</td><td>≈ 340 A</td><td>6.5</td></tr></tbody></table></div><p class="cat-note">Very approximate. Soil resistivity and the depth of burial change these a lot. Use the manufacturer’s tables.</p>',
+        facts: ['Water inside the insulation grows "water trees" that eventually fail. A metallic moisture barrier is used on HV cables in wet ground.', 'Terminations and joints are the usual weak points. They need trained jointers.'],
+        parts: { cond: 'Stranded conductor.', cscr: 'Semi-conducting conductor screen.', ins: 'XLPE insulation.', iscr: 'Semi-conducting insulation screen.', tape: 'Copper tape screen. It is earthed.', sh: 'Outer sheath.' } }
+    }
+  };
+})();

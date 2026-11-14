@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="stylesheet" href="css/vnode.css"><script src="js/vnode.js"></script>
+<title>FAQ: Electrical Questions Answered | V-NODE</title>
+<meta name="description" content="64 frequently asked electrical questions with short, clear answers: why birds are safe on power lines, earthing, MCBs, motors, transformers and hobby electronics.">
+<meta name="theme-color" content="#080c14"><link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="preload" href="vendor/fonts/inter-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="css/tailwind.css"><link rel="stylesheet" href="css/app.css"><link rel="stylesheet" href="css/fa/fa.css"><link rel="stylesheet" href="css/mobile.css"><link rel="stylesheet" href="css/vk.css">
+<script src="js/mobile.js"></script>
+<link rel="stylesheet" href="css/fx.css"><script src="js/sky.js" defer></script><script src="js/fx.js" defer></script>
+</head>
+<body class="vk">
+<header class="vk-head">
+  <a class="back" href="index.html#library" aria-label="Back to library"><i class="fa-solid fa-arrow-left"></i></a>
+  <div class="ttl"><h1>FAQ</h1><p id="sub">64 questions, short answers</p></div>
+</header>
+<main class="faq" id="faq">
+  <div class="faq-tools">
+    <label class="faq-search"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i><input id="faq-q" type="search" placeholder="Search questions, e.g. earth, motor, LED" autocomplete="off" aria-label="Search the FAQ"></label>
+    <div class="faq-chips" id="faq-chips" role="group" aria-label="Category"></div>
+    <p class="faq-count" id="faq-count" role="status" aria-live="polite"></p>
+  </div>
+  <div id="faq-list" class="faq-list"></div>
+  <p class="faq-empty" id="faq-empty" hidden>No question matches. Try a shorter word.</p>
+</main>
+<nav class="app-nav app-nav-sticky" aria-label="Main"><a href="index.html" class="nav-tab"><svg class="vn-mark" aria-hidden="true"><use href="#vn-mark"/></svg><span>Home</span></a><a href="hobby-electronics.html" class="nav-tab"><i class="fa-solid fa-microchip"></i><span>Hobby</span></a><a href="faq.html" class="nav-tab" aria-current="page"><i class="fa-solid fa-circle-question"></i><span>FAQ</span></a><a href="quiz.html" class="nav-tab"><i class="fa-solid fa-graduation-cap"></i><span>Quiz</span></a><a href="index.html#library" class="nav-tab"><i class="fa-solid fa-layer-group"></i><span>Library</span></a></nav>
+<script src="js/faq-data.js"></script><script src="js/faq.js"></script>
+</body></html>
